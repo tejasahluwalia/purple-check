@@ -1,0 +1,10 @@
+{{ define "content" }}
+<h1>Purple Check - Home</h1>
+<div>
+    <form action="/search" hx-boost="true" method="post">
+        <label for="username">Search for a user</label>
+        <input type="text" name="username" id="username" required />
+        <button type="submit">Check</button>
+    </form>
+</div>
+{{ end }}

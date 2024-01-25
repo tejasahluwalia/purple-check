@@ -1,0 +1,21 @@
+{{ define "content" }}
+    <h1>{{ .UsernameSearch }}</h1>
+    <a
+        target="_blank"
+        rel="noreferrer"
+        href="https://www.instagram.com/{{ .UsernameSearch }}"
+        >Instagram</a
+    >
+    {{ if .ProfileExists }}
+    {{ else }}
+        <div>
+            <p>
+                This user has not yet connected their account. If this is you, connect your
+            account now.
+            </p>
+        {{ block "connect" . }}{{ end }}
+
+        </div>
+    <a href="/feedback?receiver={{ .UsernameSearch }}">Leave feedback for this user.</a>
+    {{ end }}
+{{ end }}
