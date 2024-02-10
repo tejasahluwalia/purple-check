@@ -1,0 +1,14 @@
+{{ define "feedbackList" }}
+    <div class="grid gap-4">
+        {{ range .FeedbackList }}
+        <div>
+            <div>
+                {{ .Content }}
+            </div>
+            <div>
+                {{ .CreatedAt }}
+            </div>
+        </div>
+        {{ end }}
+    </div>
+{{ end }}

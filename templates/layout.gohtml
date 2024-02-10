@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Purple Check</title>
+		<link rel="stylesheet" href="/static/styles.css" />
+		<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<header>
+			{{ block "search" . }} {{ end }}
+		</header>
+		<section class="px-4 py-8">
+			{{ block "content" . }} {{ end }}
+		</section>
+	</body>
+</html>

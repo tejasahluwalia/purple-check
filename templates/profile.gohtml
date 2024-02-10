@@ -1,0 +1,31 @@
+{{ define "content" }}
+	<div class="flex items-center gap-4">
+		<h1>{{ .UsernameSearch }}</h1>
+		<a target="_blank" rel="noreferrer" href="https://www.instagram.com/{{ .UsernameSearch }}">IG
+		</a>
+	</div>
+	{{ if .ProfileExists }}
+	{{ else }}
+	<div class="p-4 bg-amber-100 rounded text-sm">
+		<p>
+			This user has not yet connected their account.
+		</p>
+		{{ if not .CurrUserExists }}
+		<p>If this is you, connect your account now.</p>
+		{{ block "connect" . }}{{ end }}
+		{{ end }}
+	</div>
+	{{ end }}
+	<div>
+		<input type="radio" name="feedback-view" id="feedback-received" value="feedback-received" checked>
+		<label for="feedback-received">feedback-received</label>
+		<input type="radio" name="feedback-view" id="feedback-given" value="feedback-given">
+		<label for="feedback-given">feedback-given</label>
+		<div id="feedback-list">
+		{{ block "feedbackList" . }}{{ end }}
+		</div>
+	</div>
+	{{ if and .CurrUserExists  (eq .CurrUser.ID  .Profile.ID) }} {{ else }}
+		<a class="underline" href="/feedback?username={{ .UsernameSearch }}">Leave feedback for this user.</a>
+	{{ end }}
+{{ end }}

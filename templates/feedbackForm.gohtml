@@ -1,0 +1,16 @@
+{{ define "content" }}
+<form action="/submit-feedback" method="post">
+    <input type="hidden" name="receiver" value="{{ .Receiver.ID }}">
+    <input type="hidden" name="sender" value="{{ .Giver.ID }}">
+    <div class="flex items-center gap-4">
+        <h1>{{ .Receiver.Username }}</h1>
+        <a target="_blank" rel="noreferrer" href="https://www.instagram.com/{{ .Receiver.Username }}">IG
+        </a>
+    </div>
+    <div>
+        <label for="feedback">Leave feedback</label>
+        <textarea name="feedback" id="feedback" cols="30" rows="10" required></textarea>
+    </div>
+    <button type="submit">Submit</button>
+</form>
+{{ end }}    
