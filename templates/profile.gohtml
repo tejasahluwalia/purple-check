@@ -1,7 +1,7 @@
 {{ define "content" }}
 	<div class="flex items-center gap-4">
-		<h1>{{ .UsernameSearch }}</h1>
-		<a target="_blank" rel="noreferrer" href="https://www.instagram.com/{{ .UsernameSearch }}">IG
+		<h1>{{ .Profile.Username }}</h1>
+		<a target="_blank" rel="noreferrer" href="https://www.instagram.com/{{ .Profile.Username }}">IG
 		</a>
 	</div>
 	{{ if .ProfileExists }}
@@ -26,6 +26,6 @@
 		</div>
 	</div>
 	{{ if and .CurrUserExists  (eq .CurrUser.ID  .Profile.ID) }} {{ else }}
-		<a class="underline" href="/feedback?username={{ .UsernameSearch }}">Leave feedback for this user.</a>
+		<a class="underline" href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback for this user.</a>
 	{{ end }}
 {{ end }}

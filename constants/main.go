@@ -1,0 +1,4 @@
+package constants
+
+var CLIENT_ID = "1845512079238812"
+var CLIENT_SECRET = "b25cd8fd8234b6315478c29e23a001ce"
