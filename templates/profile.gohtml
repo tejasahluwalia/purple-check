@@ -1,31 +1,39 @@
 {{ define "content" }}
-	<div class="flex items-center gap-4">
-		<h1>{{ .Profile.Username }}</h1>
-		<a target="_blank" rel="noreferrer" href="https://www.instagram.com/{{ .Profile.Username }}">IG
-		</a>
-	</div>
-	{{ if .ProfileExists }}
-	{{ else }}
-	<div class="p-4 bg-amber-100 rounded text-sm">
-		<p>
-			This user has not yet connected their account.
-		</p>
-		{{ if not .CurrUserExists }}
-		<p>If this is you, connect your account now.</p>
-		{{ block "connect" . }}{{ end }}
-		{{ end }}
-	</div>
-	{{ end }}
-	<div>
-		<input type="radio" name="feedback-view" id="feedback-received" value="feedback-received" checked>
-		<label for="feedback-received">feedback-received</label>
-		<input type="radio" name="feedback-view" id="feedback-given" value="feedback-given">
-		<label for="feedback-given">feedback-given</label>
-		<div id="feedback-list">
-		{{ block "feedbackList" . }}{{ end }}
+	<section>
+	{{ block "search" . }} {{ end }}
+	</section>
+	<section class="mt-8">
+		<div class="mx-4 flex items-center gap-4 justify-between">
+			<h1 class="text-3xl font-bold bg-purple-100 text-purple-950 px-2 py-1 rounded break-all text-wrap flex">@{{ .Profile.Username }}</h1>
+			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href="https://www.instagram.com/{{ .Profile.Username }}">
+				<img class="h-8 w-8" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo">
+			</a>
 		</div>
-	</div>
+		{{ if .ProfileExists }}
+		{{ else }}
+		<div class="mx-4 p-2 bg-amber-100 rounded text-sm my-4">
+			<p>
+				This user has not yet connected their account.
+			</p>
+			{{ if not .CurrUserExists }}
+			<p>If this is you, connect your account now.</p>
+			{{ block "connect" . }}{{ end }}
+			{{ end }}
+		</div>
+		{{ end }}
+		<div>
+			<div class="mx-4">
+				<input type="radio" name="feedback-view" id="feedback-received" value="feedback-received" checked>
+				<label for="feedback-received">feedback-received</label>
+				<input type="radio" name="feedback-view" id="feedback-given" value="feedback-given">
+				<label for="feedback-given">feedback-given</label>
+			</div>
+			<div id="feedback-list" class="mt-4">
+				{{ block "feedbackList" . }}{{ end }}
+			</div>
+		</div>
+	</section>
 	{{ if and .CurrUserExists  (eq .CurrUser.ID  .Profile.ID) }} {{ else }}
-		<a class="underline" href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback for this user.</a>
+		<a class="absolute left-1/2 -translate-x-1/2 bottom-1/4 mx-auto px-8 py-2 min-w-max bg-violet-800 text-white rounded-full shadow" href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback for this user</a>
 	{{ end }}
 {{ end }}

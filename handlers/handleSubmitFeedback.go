@@ -16,7 +16,7 @@ func HandleSubmitFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", "data/purple-check.db")
+	db, err := sql.Open("sqlite3", "db/purple-check.db")
 
 	if err != nil {
 		log.Fatal(err)

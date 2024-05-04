@@ -23,7 +23,7 @@ func RenderFeedbackForm(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open("sqlite3", "data/purple-check.db")
+	db, err := sql.Open("sqlite3", "db/purple-check.db")
 
 	if err != nil {
 		log.Fatal(err)

@@ -1,11 +1,11 @@
 {{ define "feedbackList" }}
-    <div class="grid gap-4">
+    <div class="grid gap-2">
         {{ range .FeedbackList }}
-        <div>
-            <div>
+        <div class="border-y border-purple-400 bg-purple-100 px-2 py-1">
+            <div class="text-lg">
                 {{ .Comment }}
             </div>
-            <div>
+            <div class="text-sm">
                 {{ .CreatedAt }}
             </div>
         </div>
