@@ -1,33 +1,51 @@
 {{ define "feedbackList" }}
     <div class="grid gap-2">
         {{ range .FeedbackList }}
-        <div class="border-y border-purple-400 bg-purple-100 px-2 py-1">
-            <div>
-                <meter class="appearance-none" min="0" max="5" value="{{ .Rating }}" title="{{ .Rating }} out of 5 stars">
-                    <div id="stars"></div>
-                </meter>
+        <div class="feedback border-y border-purple-300 bg-purple-50 px-2 py-1">
+            <div class="feedback-rating">
+                <input type="hidden" name="rating" value="{{ .Rating }}">
+                <div class="stars">{{ stars .Rating }}</div>
             </div>
             <div class="text-lg">
                 {{ .Comment }}
             </div>
-            <div class="text-sm">
-                {{ .CreatedAt }}
+            <div class="flex justify-between mt-1">
+                <div class="text-sm created-at-datetime">
+                    {{ .CreatedAt }}
+                </div>
+                <div class="text-sm">
+                    {{ .Giver.Username }}
+                </div>
             </div>
+
         </div>
         {{ end }}
     </div>
     <script>
-        const stars = new Map([
-            [1, '★☆☆☆☆'],
-            [2, '★★☆☆☆'],
-            [3, '★★★☆☆'],
-            [4, '★★★★☆'],
-            [5, '★★★★★'],
-        ]);
-        document.querySelectorAll('meter').forEach(meter => {
-            const value = meter.value;
-            const starsValue = stars.get(value);
-            meter.querySelector('#stars').textContent = starsValue;
+        document.querySelectorAll('.created-at-datetime').forEach((datetime) => {
+            const createdAt = datetime.innerHTML.trim();
+            const date = new Date(createdAt);
+            const since = Date.now() - date.getTime();
+            if (since < 1000 * 60) {
+                datetime.innerHTML = 'Just now';
+                return;
+            }
+            if (since < 1000 * 60 * 60) {
+                const minutes = Math.floor(since / (1000 * 60));
+                datetime.innerHTML = `${minutes} minutes ago`;
+                return;
+            }
+            if (since < 1000 * 60 * 60 * 24) {
+                const hours = Math.floor(since / (1000 * 60 * 60));
+                datetime.innerHTML = `${hours} hours ago`;
+                return;
+            }
+
+            datetime.innerHTML = date.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            });
         });
 
     </script>

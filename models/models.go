@@ -17,6 +17,8 @@ type Feedback struct {
 	ID      		string
 	GiverID   		string
 	ReceiverID  	string
+	Giver   		Profile
+	Receiver 		Profile
 	Rating  		int
 	Comment 		string
 	CreatedAt		string `json:"created_at"`

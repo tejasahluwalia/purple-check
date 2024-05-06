@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -19,10 +18,18 @@ type ProfilePageData struct {
 	Profile      	*models.Profile
 	ProfileExists 	bool
 	CurrUserExists 	bool
+	Filter 			string
+}
+
+func stars(rating int) string {
+	return strings.Repeat("★", rating) + strings.Repeat("☆", 5-rating)
 }
 
 func RenderProfile(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/layout.gohtml", "templates/partials/connect.gohtml", "templates/pages/profile.gohtml", "templates/partials/search.gohtml", "templates/partials/feedbackList.gohtml")
+	funcMap := template.FuncMap{
+		"stars": stars,
+	}
+	t, err := template.New("layout.gohtml").Funcs(funcMap).ParseFiles("templates/layout.gohtml", "templates/partials/connect.gohtml", "templates/pages/profile.gohtml", "templates/partials/search.gohtml", "templates/partials/feedbackList.gohtml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,38 +71,26 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	stmt, err = db.Prepare("SELECT id, giver_id, receiver_id, rating, comment, created_at FROM feedback WHERE receiver_id = ?")
+	stmt, err = db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE receiver_id = ? ORDER BY feedback.created_at DESC")
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	rows, err := stmt.Query(profile.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for rows.Next() {
 		var feedback models.Feedback
-		err = rows.Scan(&feedback.ID, &feedback.GiverID, &feedback.ReceiverID, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
+		err = rows.Scan(&feedback.ID, &feedback.Giver.ID, &feedback.Giver.Username, &feedback.Receiver.ID, &feedback.Receiver.Username, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
 		if err != nil {
 			log.Fatal(err)
 		}
-		createdAt, err := time.Parse(time.RFC3339, feedback.CreatedAt)
-		if err != nil {
-			log.Fatal(err)
-		}
-		
-		since := time.Since(createdAt)
-		if since.Hours() < 24 {
-			feedback.CreatedAt = "Today at " + createdAt.Format("3:15 PM")
-		} else if since.Hours() < 48 {
-			feedback.CreatedAt = "Yesterday at " + createdAt.Format("3:15 PM")
-		} else {
-			feedback.CreatedAt = createdAt.Format("Jan 2, 2006 at 3:04 PM")
-		}
-
+		feedback.Giver.Username = string(feedback.Giver.Username[0]) + strings.Repeat("*", len(feedback.Giver.Username)-2) + string(feedback.Giver.Username[len(feedback.Giver.Username)-1])
 		feedbackList = append(feedbackList, feedback)
 	}
-
 
 	cookie, err := r.Cookie("platform_user_id")
 	var currUser models.Profile

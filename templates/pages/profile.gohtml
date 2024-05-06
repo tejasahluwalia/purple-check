@@ -22,21 +22,24 @@
 		</div>
 		{{ end }}
 
-		{{ if ne .Profile.ID .CurrUser.ID }}
-		<div class="flex justify-center my-4">
-			<a class="bg-violet-800 text-white rounded-full shadow px-4 py-1 text-center"
-				href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
-				for this user</a>
-		</div>
-		{{ end}}
-
-		<div>
-			<div class="mx-4">
-				<input type="radio" name="feedback-view" id="feedback-received" value="feedback-received" checked>
-				<label for="feedback-received">feedback-received</label>
-				<input type="radio" name="feedback-view" id="feedback-given" value="feedback-given">
-				<label for="feedback-given">feedback-given</label>
+		{{ if .CurrUserExists }}
+			{{ if ne .Profile.ID .CurrUser.ID }}
+			<div class="flex justify-center my-8 mx-4">
+				<a class="bg-violet-800 text-white rounded w-full shadow px-4 py-2 text-center"
+					href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
+					for this user</a>
 			</div>
+			{{ end}} 
+		{{ else }}
+			<div class="flex justify-center my-8 mx-4">
+				<a class="bg-violet-800 text-white rounded w-full shadow px-4 py-2 text-center"
+					href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
+					for this user</a>
+			</div>
+		{{ end }}
+
+		<div class="my-4">
+			<h2 class="text-2xl font-bold mx-4 mt-8">Feedback Received</h2>
 			<div id="feedback-list" class="mt-4">
 				{{ block "feedbackList" . }}{{ end }}
 			</div>
