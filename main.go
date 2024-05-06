@@ -18,5 +18,5 @@ func main() {
 	mux.HandleFunc("POST /submit-feedback", handlers.HandleSubmitFeedback)
 	fs := http.FileServer(http.Dir("static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
-	http.ListenAndServe(":8080", mux)
+	http.ListenAndServe(":9990", mux)
 }
