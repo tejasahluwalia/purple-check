@@ -1,4 +1,4 @@
-package db
+package main
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func reset() {
+func main() {
 
     db, err := sql.Open("sqlite3", "purple-check.db")
 
@@ -24,7 +24,7 @@ func reset() {
         CREATE UNIQUE INDEX idx_profiles_platform_user_id ON profiles(platform, platform_user_id);
 
 		DROP TABLE IF EXISTS feedback;
-		CREATE TABLE feedback(id INTEGER PRIMARY KEY, giver_id INTEGER, receiver_id INTEGER, comment TEXT, giver_role TEXT, receiver_role TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+		CREATE TABLE feedback(id INTEGER PRIMARY KEY, giver_id INTEGER, receiver_id INTEGER, rating INTEGER, comment TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
 		`
     _, err = db.Exec(sts)
 

@@ -3,7 +3,7 @@
 	{{ block "search" . }} {{ end }}
 	</section>
 	<section class="mt-8">
-		<div class="mx-4 flex items-center gap-4 justify-between">
+		<div class="mx-4 flex items-center gap-4">
 			<h1 class="text-3xl font-bold bg-purple-100 text-purple-950 px-2 py-1 rounded break-all text-wrap flex">@{{ .Profile.Username }}</h1>
 			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href="https://www.instagram.com/{{ .Profile.Username }}">
 				<img class="h-8 w-8" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo">
@@ -21,6 +21,15 @@
 			{{ end }}
 		</div>
 		{{ end }}
+
+		{{ if ne .Profile.ID .CurrUser.ID }}
+		<div class="flex justify-center my-4">
+			<a class="bg-violet-800 text-white rounded-full shadow px-4 py-1 text-center"
+				href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
+				for this user</a>
+		</div>
+		{{ end}}
+
 		<div>
 			<div class="mx-4">
 				<input type="radio" name="feedback-view" id="feedback-received" value="feedback-received" checked>
@@ -33,7 +42,4 @@
 			</div>
 		</div>
 	</section>
-	{{ if and .CurrUserExists  (eq .CurrUser.ID  .Profile.ID) }} {{ else }}
-		<a class="absolute left-1/2 -translate-x-1/2 bottom-1/4 mx-auto px-8 py-2 min-w-max bg-violet-800 text-white rounded-full shadow" href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback for this user</a>
-	{{ end }}
 {{ end }}

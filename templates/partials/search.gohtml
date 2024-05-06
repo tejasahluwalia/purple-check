@@ -1,5 +1,5 @@
 {{ define "search" }}
-<div class="m-4 text-slate-50">
+<header class="p-4 text-slate-50 border-b">
     <a class="flex items-center justify-center mb-4" href="/">
         <img class="h-14 w-14" src="/static/purple-check-logo.svg" alt="The Purple Check logo">
         <span class="text-3xl font-bold ml-4 text-purple-950">Purple Check</span>
@@ -7,9 +7,9 @@
     <form action="/search" method="post" class="block">
         <label for="username" class="text-lg font-semibold hidden">Search for a user</label>
         <div class="flex w-full mt-1">
-            <input class="text-slate-950 border-purple-800 border-2 block flex-1 text-xl px-4 py-1 rounded-full" type="text" name="username" id="username" class="lowercase" required />
+            <input autocapitalize="none" class="text-slate-950 border-purple-800 border-2 block flex-1 text-xl px-4 py-1 rounded-full" type="text" name="username" id="username" class="lowercase" required />
             <button class="ml-2 px-2 bg-white text-black text-lg hidden" type="submit">Search</button>
         </div>
     </form>
-</div>
+</header>
 {{ end }}

@@ -18,7 +18,7 @@ type FeedbackPageData struct {
 }
 
 func RenderFeedbackForm(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/layout.gohtml", "templates/search.gohtml", "templates/feedbackForm.gohtml")
+	t, err := template.ParseFiles("templates/layout.gohtml", "templates/partials/search.gohtml", "templates/pages/feedback-form.gohtml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func RenderFeedbackForm(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Current user not found: ", err)
 		feedbackPageData.GiverExists = false
-		http.Redirect(w, r, "/", http.StatusNotFound)
+		http.Redirect(w, r, "/connect-account", http.StatusSeeOther)
 	} else {
 		stmt, err := db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND platform_user_id = ?")
 		if err != nil {

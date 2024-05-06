@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -21,7 +22,7 @@ type ProfilePageData struct {
 }
 
 func RenderProfile(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/layout.gohtml", "templates/connect.gohtml", "templates/profile.gohtml", "templates/search.gohtml", "templates/feedbackList.gohtml")
+	t, err := template.ParseFiles("templates/layout.gohtml", "templates/partials/connect.gohtml", "templates/pages/profile.gohtml", "templates/partials/search.gohtml", "templates/partials/feedbackList.gohtml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,9 +45,7 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	var feedbackList []models.Feedback
 	
 	err = stmt.QueryRow("instagram", username).Scan(&profile.ID, &profile.Platform, &profile.PlatformUserID, &profile.Username, &profile.Status, &profile.Token)
-	log.Println("Profile: ", profile)
 	if err != nil {
-		log.Println("Profile not found: ", err)
 		stmt, err = db.Prepare("INSERT INTO profiles(platform, platform_user_id, username, status, token) VALUES(?, ?, ?, ?, ?)")
 		if err != nil {
 			log.Fatal(err)
@@ -65,7 +64,7 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	stmt, err = db.Prepare("SELECT id, giver_id, receiver_id, comment, giver_role, receiver_role, created_at FROM feedback WHERE receiver_id = ?")
+	stmt, err = db.Prepare("SELECT id, giver_id, receiver_id, rating, comment, created_at FROM feedback WHERE receiver_id = ?")
 
 	if err != nil {
 		log.Fatal(err)
@@ -76,18 +75,32 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	for rows.Next() {
 		var feedback models.Feedback
-		err = rows.Scan(&feedback.ID, &feedback.GiverID, &feedback.ReceiverID, &feedback.Comment, &feedback.GiverRole, &feedback.ReceiverRole, &feedback.CreatedAt)
+		err = rows.Scan(&feedback.ID, &feedback.GiverID, &feedback.ReceiverID, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
 		if err != nil {
 			log.Fatal(err)
 		}
+		createdAt, err := time.Parse(time.RFC3339, feedback.CreatedAt)
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		since := time.Since(createdAt)
+		if since.Hours() < 24 {
+			feedback.CreatedAt = "Today at " + createdAt.Format("3:15 PM")
+		} else if since.Hours() < 48 {
+			feedback.CreatedAt = "Yesterday at " + createdAt.Format("3:15 PM")
+		} else {
+			feedback.CreatedAt = createdAt.Format("Jan 2, 2006 at 3:04 PM")
+		}
+
 		feedbackList = append(feedbackList, feedback)
 	}
+
 
 	cookie, err := r.Cookie("platform_user_id")
 	var currUser models.Profile
 	var currUserExists bool
 	if err != nil {
-		log.Println("Current user not found: ", err)
 		currUserExists = false
 		var profilePageData ProfilePageData
 		if profile.Status == "not-connected" {
@@ -108,7 +121,6 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	err = stmt.QueryRow("instagram", cookie.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
 	if err != nil {
 		currUserExists = false
-		log.Println("Current user not found: ", err)
 	} else {
 		currUserExists = true
 	}
@@ -123,5 +135,6 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	profilePageData.CurrUserExists = currUserExists
 	profilePageData.CurrUser = &currUser
 	profilePageData.FeedbackList = &feedbackList
+
 	t.Execute(w, profilePageData)
 }

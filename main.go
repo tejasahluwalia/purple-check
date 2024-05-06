@@ -9,6 +9,7 @@ import (
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handlers.RenderHomepage)
+	mux.HandleFunc("GET /connect-account", handlers.RenderConnectAccount)
 	mux.HandleFunc("POST /search", handlers.HandleSearch)
 	mux.HandleFunc("GET /profile/{username}", handlers.RenderProfile)
 	mux.HandleFunc("GET /connect", handlers.HandleConnect)

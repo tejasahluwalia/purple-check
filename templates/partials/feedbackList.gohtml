@@ -1,0 +1,34 @@
+{{ define "feedbackList" }}
+    <div class="grid gap-2">
+        {{ range .FeedbackList }}
+        <div class="border-y border-purple-400 bg-purple-100 px-2 py-1">
+            <div>
+                <meter class="appearance-none" min="0" max="5" value="{{ .Rating }}" title="{{ .Rating }} out of 5 stars">
+                    <div id="stars"></div>
+                </meter>
+            </div>
+            <div class="text-lg">
+                {{ .Comment }}
+            </div>
+            <div class="text-sm">
+                {{ .CreatedAt }}
+            </div>
+        </div>
+        {{ end }}
+    </div>
+    <script>
+        const stars = new Map([
+            [1, '★☆☆☆☆'],
+            [2, '★★☆☆☆'],
+            [3, '★★★☆☆'],
+            [4, '★★★★☆'],
+            [5, '★★★★★'],
+        ]);
+        document.querySelectorAll('meter').forEach(meter => {
+            const value = meter.value;
+            const starsValue = stars.get(value);
+            meter.querySelector('#stars').textContent = starsValue;
+        });
+
+    </script>
+{{ end }}
