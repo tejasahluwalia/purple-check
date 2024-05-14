@@ -1,10 +1,13 @@
 {{ define "content" }}
-{{ block "search" . }} {{ end }}
+<header class="shadow-sm">
+    {{ block "header" . }} {{ end }}
+    {{ block "search" . }} {{ end }}
+</header>
 <section class="p-4">
     <div class="flex">
         <h1 class="text-2xl font-semibold">Leave feedback for @{{ .Receiver.Username }}</h1>
     </div>
-    <form action="/submit-feedback" method="post" class="space-y-4">
+    <form action="/submit-feedback" method="post">
         <input type="hidden" name="receiver_id" value="{{ .Receiver.ID }}">
         <input type="hidden" name="sender_id" value="{{ .Giver.ID }}">
         <div class="flex flex-row-reverse justify-center">
@@ -23,8 +26,9 @@
             <input class="radio-input" type="radio" id="star1" name="rating" value="1" />
             <label class="radio-label" for="star1" title="1 star">1 star</label>
         </div>
-        <textarea name="comment" class="block w-full border p-2 text-lg" aria-label="Feedback" id="comment" cols="30" rows="10" required></textarea>
-        <button class="block border w-full px-4 py-1 rounded" type="submit">Submit</button>
+        <label for="comment" class="block mt-4 text-lg font-semibold">Comment</label>
+        <textarea name="comment" class="block w-full rounded border-2 border-purple-200 p-2 text-lg" aria-label="Feedback" id="comment" rows="2" required></textarea>
+        <button class="mt-4 block font-bold text-xl w-full px-4 py-2 rounded bg-purple-800 text-white" type="submit">Submit</button>
     </form>
 </section>
 

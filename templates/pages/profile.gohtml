@@ -1,48 +1,38 @@
 {{ define "content" }}
-	<section>
+	<section class="shadow-sm">
+	{{ block "header" . }} {{ end }}
 	{{ block "search" . }} {{ end }}
 	</section>
-	<section class="mt-8">
+	<section class="pt-8">
 		<div class="mx-4 flex items-center gap-4">
-			<h1 class="text-3xl font-bold bg-purple-100 text-purple-950 px-2 py-1 rounded break-all text-wrap flex">@{{ .Profile.Username }}</h1>
+			<h1 class="text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-md break-all text-wrap flex">@{{ .Profile.Username }}</h1>
 			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href="https://www.instagram.com/{{ .Profile.Username }}">
-				<img class="h-8 w-8" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo">
+				<img class="h-12 w-12 p-3" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo">
 			</a>
 		</div>
-		{{ if .ProfileExists }}
-		{{ else }}
-		<div class="mx-4 p-2 bg-amber-100 rounded text-sm my-4">
-			<p>
-				This user has not yet connected their account.
-			</p>
-			{{ if not .CurrUserExists }}
-			<p>If this is you, connect your account now.</p>
-			{{ block "connect" . }}{{ end }}
-			{{ end }}
+		<!--<div class="mx-4 my-4">
+			<h2 class="sr-only">Average rating</h2>
+			<div class="flex items-center space-x-2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="text-purple-500 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
+				</svg>
+				<span>
+					4.5 Based on 10 reviews
+				</span>  
+			</div>
+		</div>-->
+		
+		{{ if (or (not .CurrUserExists) (and .CurrUserExists (ne .Profile.ID .CurrUser.ID))) }}
+		<div class="flex justify-center my-8 mx-4">
+			<a class="border border-purple-600 font-bold text-slate-950 rounded-md w-full shadow px-4 py-2 text-center"
+				href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
+				for this user</a>
 		</div>
 		{{ end }}
 
-		{{ if .CurrUserExists }}
-			{{ if ne .Profile.ID .CurrUser.ID }}
-			<div class="flex justify-center my-8 mx-4">
-				<a class="bg-violet-800 text-white rounded w-full shadow px-4 py-2 text-center"
-					href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
-					for this user</a>
-			</div>
-			{{ end}} 
-		{{ else }}
-			<div class="flex justify-center my-8 mx-4">
-				<a class="bg-violet-800 text-white rounded w-full shadow px-4 py-2 text-center"
-					href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
-					for this user</a>
-			</div>
-		{{ end }}
-
-		<div class="my-4">
-			<h2 class="text-2xl font-bold mx-4 mt-8">Feedback Received</h2>
-			<div id="feedback-list" class="mt-4">
-				{{ block "feedbackList" . }}{{ end }}
-			</div>
+		<div class="my-4 p-4">
+			<h2 class="text-xl mb-8 font-bold tracking-tight">Feedback received</h2>
+			{{ block "feedbackList" . }} {{ end }}
 		</div>
 	</section>
 {{ end }}

@@ -24,6 +24,8 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	} else {
+		redirectToProfile := r.URL.Query().Get("state")
+
 		formData := url.Values{}
 		formData.Set("client_id", constants.CLIENT_ID)
 		formData.Set("client_secret", constants.CLIENT_SECRET)
@@ -31,13 +33,21 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 		formData.Set("redirect_uri", "https://www.purple-check.org/connect")
 		formData.Set("code", authCode)
 
+		type ErrorResponse struct {
+			ErrorType string `json:"error_type"`
+			Code	  uint `json:"code"`
+			ErrorMsg  string `json:"error_message"`
+		}
+
 		resp, err := http.PostForm("https://api.instagram.com/oauth/access_token", formData)
 		if err != nil {
-			log.Fatal("Error while getting access token: ", err)
+			log.Println("Error while getting access token: ", err.Error())
 		}
 
 		if resp.StatusCode != 200 {
-			log.Fatal("Error while getting access token: ", resp.Body)
+			var ErrorResponse ErrorResponse
+			json.NewDecoder(resp.Body).Decode(&ErrorResponse)
+			log.Println("Error while getting access token: ", ErrorResponse)
 		}
 
 		type AccessTokenResponse struct {
@@ -51,11 +61,11 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 
 		resp, err = http.Get("https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=" + constants.CLIENT_SECRET + "&access_token=" + res.AccessToken)
 		if err != nil {
-			log.Fatal("Error while getting long lived access token: ", err)
+			log.Println("Error while getting long lived access token: ", resp.Body)
 		}
 
 		if resp.StatusCode != 200 {
-			log.Fatal("Error while getting long lived access token: ", resp.Body)
+			log.Println("Error while getting long lived access token: ", resp.Body)
 		}
 
 		type LongLivedAccessTokenResponse struct {
@@ -77,11 +87,11 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 
 		resp, err = http.Get("https://graph.instagram.com/me?fields=id,username&access_token=" + res2.AccessToken)
 		if err != nil {
-			log.Fatal("Error while getting user node: ", err)
+			log.Println("Error while getting user node: ", err)
 		}
 
 		if resp.StatusCode != 200 {
-			log.Fatal("Error while getting user node: ", resp.Body)
+			log.Println("Error while getting user node: ", resp.Body)
 		}
 
 		json.NewDecoder(resp.Body).Decode(&userNode)
@@ -89,14 +99,14 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 		db, err := sql.Open("sqlite3", "db/purple-check.db")
 
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		defer db.Close()
 
 		stmt, err := db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND username = ? OR platform_user_id = ?")
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		var currUser models.Profile
@@ -104,23 +114,23 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			log.Println("Current user not found: ", err)
-			stmt, err = db.Prepare("INSERT INTO profiles(platform, platform_user_id, username, status, token) VALUES(?, ?, ?, ?, ?)")
+			stmt, err = db.Prepare("INSERT INTO profiles(platform, platform_user_id, username, status, token, expires_in) VALUES(?, ?, ?, ?, ?, ?)")
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
-			_, err = stmt.Exec("instagram", userNode.ID, userNode.Username, "connected", res2.AccessToken)
+			_, err = stmt.Exec("instagram", userNode.ID, userNode.Username, "connected", res2.AccessToken, res2.ExpiresIn)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		} else {
 			log.Println("Current user found in db: ", currUser)
-			stmt, err = db.Prepare("UPDATE profiles SET status = 'connected', token = ?, platform_user_id = ? WHERE platform = ? AND username = ?")
+			stmt, err = db.Prepare("UPDATE profiles SET status = 'connected', token = ?, platform_user_id = ?, expires_in = ? WHERE platform = ? AND username = ?")
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
-			_, err = stmt.Exec(res2.AccessToken, res.UserID, "instagram", userNode.Username)
+			_, err = stmt.Exec(res2.AccessToken, res.UserID, res2.ExpiresIn, "instagram", userNode.Username)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		}
 
@@ -134,7 +144,13 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookie)
 
 		defer resp.Body.Close()
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
+
+		if redirectToProfile == "" {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		} else {
+			http.Redirect(w, r, "/profile/"+redirectToProfile, http.StatusFound)
+			return
+		}
 	}
 }

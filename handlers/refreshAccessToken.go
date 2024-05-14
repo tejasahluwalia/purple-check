@@ -13,7 +13,7 @@ import (
 func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
-		log.Fatal("Error while getting access token: ", err)
+		log.Println("Error while getting access token: ", err)
 	}
 
 	formData := url.Values{}
@@ -22,11 +22,11 @@ func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := http.Get("https://graph.instagram.com/refresh_access_token?" + formData.Encode())
 	if err != nil {
-		log.Fatal("Error while refreshing access token: ", err)
+		log.Println("Error while refreshing access token: ", err)
 	}
 
 	if resp.StatusCode != 200 {
-		log.Fatal("Error while refreshing access token: ", resp.Body)
+		log.Println("Error while refreshing access token: ", resp.Body)
 	}
 
 	type RefreshAccessTokenResponse struct {

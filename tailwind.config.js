@@ -2,8 +2,15 @@
 module.exports = {
   content: ["./templates/**/*.gohtml"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: 'NotoSans'
+      }
+    },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography')
+  ],
 }
 

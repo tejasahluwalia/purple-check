@@ -1,14 +1,10 @@
 {{ define "search" }}
-<header class="p-4 border-b border-slate-300">
-    <a class="flex items-center justify-center mb-4" href="/">
-        <img class="h-14 w-14" src="/static/purple-check-logo.svg" alt="The Purple Check logo">
-        <span class="text-3xl font-bold ml-4 text-purple-950">Purple Check</span>
-    </a>
+<div class="p-4 pt-2">
     <form action="/search" method="post" class="block">
-        <label for="username" class="text-lg font-semibold hidden">Search for a user</label>
+        <label for="username" class="sr-only">Search for a user</label>
         <div class="flex w-full mt-1 relative">
-            <input autocapitalize="none" class="text-slate-950 border-slate-400 border block flex-1 text-xl px-4 py-1 rounded-full" type="text" name="username" id="username" class="lowercase" required />
-            <button class="ml-2 text-slate-600 text-lg rounded-full border bg-slate-100 px-4 border-slate-400" type="submit" aria-label="Search">
+            <input placeholder="@username" autocapitalize="none" class="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 sm:text-sm sm:leading-6 lowercase" type="text" name="username" id="username" required />
+            <button class="hidden ml-2 text-slate-600 text-lg rounded-full border bg-slate-100 px-4 border-slate-400" type="submit" aria-label="Search">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                     class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -17,5 +13,5 @@
             </button>
         </div>
     </form>
-</header>
+</div>
 {{ end }}

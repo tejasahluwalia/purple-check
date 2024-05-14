@@ -1,6 +1,8 @@
 {{ define "connect" }}
-<a class="p-2 border rounded block text-center"
-	href="https://api.instagram.com/oauth/authorize?client_id=1845512079238812&redirect_uri=https%3A%2F%2Fwww.purple-check.org%2Fconnect&scope=user_profile&response_type=code">
-	Connect Instagram
-</a>
+<div class="p-4">
+	<a class="p-2 border rounded block text-center"
+		href="https://api.instagram.com/oauth/authorize?client_id=1845512079238812&redirect_uri=https%3A%2F%2Fwww.purple-check.org%2Fconnect&scope=user_profile&response_type=code&state={{ .RedirectToProfile }}">
+		Connect Instagram
+	</a>
+</div>
 {{ end }}

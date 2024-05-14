@@ -9,6 +9,7 @@ type Profile struct {
 	Username 	string
 	Status   	string
 	Token		sql.NullString
+	ExpiresIn	sql.NullInt64 `json:"expires_in"`
 	CreatedAt	string `json:"created_at"`
 	UpdatedAt	string `json:"updated_at"`
 }

@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'NotoSans';
+  src: url('/static/fonts/NotoSans.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSans';
+  src: url('/static/fonts/NotoSans-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
 .radio-input {
   position: fixed;
   opacity: 0;
@@ -22,6 +36,6 @@
 }
 
 .radio-input:checked ~ .radio-label {
-  color: #ffc700;
-  color: gold;
+  color: #7e22ce;
+  color: purple;
 }

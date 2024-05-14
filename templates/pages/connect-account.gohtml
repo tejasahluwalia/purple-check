@@ -1,8 +1,10 @@
 {{ define "content" }}
-    {{ block "search" . }} {{ end }}
-    <div>
-        <h1>Connect Account</h1>
+    <header class="shadow-sm">
+        {{ block "header" . }} {{ end }}
+    </header>
+    <div class="p-4">
+        <h1 class="text-xl font-bold mb-2">Connect Account</h1>
         <p>You must connect to your instagram account to leave feedback for others.</p>
-        {{ block "connect" . }} {{ end }}
     </div>
+    {{ block "connect" . }} {{ end }}
 {{ end }}

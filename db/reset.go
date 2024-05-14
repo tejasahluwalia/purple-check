@@ -13,14 +13,14 @@ func main() {
     db, err := sql.Open("sqlite3", "purple-check.db")
 
     if err != nil {
-        log.Fatal(err)
+        log.Println(err)
     }
 
     defer db.Close()
 
 	sts := `
 		DROP TABLE IF EXISTS profiles;
-        CREATE TABLE profiles(id INTEGER PRIMARY KEY, platform TEXT, platform_user_id TEXT, username TEXT, status TEXT DEFAULT 'not-connected', token TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+        CREATE TABLE profiles(id INTEGER PRIMARY KEY, platform TEXT, platform_user_id TEXT, username TEXT, status TEXT DEFAULT 'not-connected', token TEXT, expires_in INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
         CREATE UNIQUE INDEX idx_profiles_platform_user_id ON profiles(platform, platform_user_id);
 
 		DROP TABLE IF EXISTS feedback;
@@ -29,7 +29,7 @@ func main() {
     _, err = db.Exec(sts)
 
     if err != nil {
-        log.Fatal(err)
+        log.Println(err)
     }
 
     fmt.Println("table profiles, feedback created")

@@ -6,10 +6,18 @@ import (
 	"net/http"
 )
 
+type ConnectAccountPageData struct {
+	RedirectToProfile string
+}
+
 func RenderConnectAccount(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./templates/layout.gohtml", "./templates/pages/connect-account.gohtml", "./templates/partials/search.gohtml", "./templates/partials/connect.gohtml")
+	t, err := template.ParseFiles("./templates/layout.gohtml", "./templates/pages/connect-account.gohtml", "./templates/partials/header.gohtml", "./templates/partials/connect.gohtml")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-	t.Execute(w, nil)
+	redirectToProfile := r.URL.Query().Get("redirect_to_profile")
+	connectAccountPageData := ConnectAccountPageData{
+		RedirectToProfile: redirectToProfile,
+	}
+	t.Execute(w, connectAccountPageData)
 }

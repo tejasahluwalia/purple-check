@@ -5,9 +5,28 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Purple Check</title>
 		<link rel="stylesheet" href="/static/styles.css" />
-		<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+		<script src="/static/htmx.min.js"></script>
 	</head>
-	<body>
-		{{ block "content" . }} {{ end }}
+	<body class="min-h-screen flex flex-col">
+		<div class="flex-1">
+			{{ block "content" . }} {{ end }}
+		</div>
+		<footer class="bg-purple-900 mt-16">
+			<div class="px-4 py-8">
+				<nav>
+					<ul class="flex justify-center space-x-8">
+						<li>
+							<a href="/privacy-policy" class="text-sm text-purple-50">Privacy</a>
+						</li>
+						<li>
+							<a href="/terms-of-service" class="text-sm text-purple-50">Terms</a>
+						</li>
+						<li>
+							<a href="/delete" class="text-sm text-purple-50">Delete my data</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</footer>
 	</body>
 </html>

@@ -29,70 +29,72 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	funcMap := template.FuncMap{
 		"stars": stars,
 	}
-	t, err := template.New("layout.gohtml").Funcs(funcMap).ParseFiles("templates/layout.gohtml", "templates/partials/connect.gohtml", "templates/pages/profile.gohtml", "templates/partials/search.gohtml", "templates/partials/feedbackList.gohtml")
+	t, err := template.New("layout.gohtml").Funcs(funcMap).ParseFiles("templates/layout.gohtml", "templates/partials/header.gohtml", "templates/partials/connect.gohtml", "templates/pages/profile.gohtml", "templates/partials/search.gohtml", "templates/partials/feedbackList.gohtml")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	username := r.PathValue("username")
 	username = strings.ToLower(username)
 	db, err := sql.Open("sqlite3", "db/purple-check.db")
 
     if err != nil {
-        log.Fatal(err)
+        log.Println(err)
     }
 
     defer db.Close()
 
 	stmt, err := db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND username = ?")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	var profile models.Profile
+	var profileExists bool
 	var feedbackList []models.Feedback
 	
 	err = stmt.QueryRow("instagram", username).Scan(&profile.ID, &profile.Platform, &profile.PlatformUserID, &profile.Username, &profile.Status, &profile.Token)
 	if err != nil {
 		stmt, err = db.Prepare("INSERT INTO profiles(platform, platform_user_id, username, status, token) VALUES(?, ?, ?, ?, ?)")
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		_, err = stmt.Exec("instagram", nil, username, "not-connected", nil)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		stmt, err := db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND username = ?")
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		err = stmt.QueryRow("instagram", username).Scan(&profile.ID, &profile.Platform, &profile.PlatformUserID, &profile.Username, &profile.Status, &profile.Token)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
+	} else {
+		profileExists = true
 	}
 
 	stmt, err = db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE receiver_id = ? ORDER BY feedback.created_at DESC")
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	rows, err := stmt.Query(profile.ID)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	for rows.Next() {
 		var feedback models.Feedback
 		err = rows.Scan(&feedback.ID, &feedback.Giver.ID, &feedback.Giver.Username, &feedback.Receiver.ID, &feedback.Receiver.Username, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
-		feedback.Giver.Username = string(feedback.Giver.Username[0]) + strings.Repeat("*", len(feedback.Giver.Username)-2) + string(feedback.Giver.Username[len(feedback.Giver.Username)-1])
 		feedbackList = append(feedbackList, feedback)
 	}
 
-	cookie, err := r.Cookie("platform_user_id")
+	cookie_platform_user_id, err := r.Cookie("platform_user_id")
 	var currUser models.Profile
 	var currUserExists bool
 	if err != nil {
@@ -111,9 +113,9 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	} 
 	stmt, err = db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND platform_user_id = ?")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-	err = stmt.QueryRow("instagram", cookie.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
+	err = stmt.QueryRow("instagram", cookie_platform_user_id.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
 	if err != nil {
 		currUserExists = false
 	} else {
@@ -121,14 +123,10 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var profilePageData ProfilePageData
-	if profile.Status == "not-connected" {
-		profilePageData.ProfileExists = false
-	} else {
-		profilePageData.ProfileExists = true
-	}	
-	profilePageData.Profile = &profile
-	profilePageData.CurrUserExists = currUserExists
 	profilePageData.CurrUser = &currUser
+	profilePageData.CurrUserExists = currUserExists
+	profilePageData.Profile = &profile
+	profilePageData.ProfileExists = profileExists
 	profilePageData.FeedbackList = &feedbackList
 
 	t.Execute(w, profilePageData)
