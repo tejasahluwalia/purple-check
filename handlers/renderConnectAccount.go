@@ -7,7 +7,8 @@ import (
 )
 
 type ConnectAccountPageData struct {
-	RedirectToProfile string
+	RedirectToProfile string 
+	CurrUserExists    bool
 }
 
 func RenderConnectAccount(w http.ResponseWriter, r *http.Request) {
@@ -18,6 +19,7 @@ func RenderConnectAccount(w http.ResponseWriter, r *http.Request) {
 	redirectToProfile := r.URL.Query().Get("redirect_to_profile")
 	connectAccountPageData := ConnectAccountPageData{
 		RedirectToProfile: redirectToProfile,
+		CurrUserExists:    checkForCurrentUser(r),
 	}
 	t.Execute(w, connectAccountPageData)
 }

@@ -49,7 +49,6 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var profile models.Profile
-	var profileExists bool
 	var feedbackList []models.Feedback
 	
 	err = stmt.QueryRow("instagram", username).Scan(&profile.ID, &profile.Platform, &profile.PlatformUserID, &profile.Username, &profile.Status, &profile.Token)
@@ -70,8 +69,6 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 		}
-	} else {
-		profileExists = true
 	}
 
 	stmt, err = db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE receiver_id = ? ORDER BY feedback.created_at DESC")
@@ -99,34 +96,26 @@ func RenderProfile(w http.ResponseWriter, r *http.Request) {
 	var currUserExists bool
 	if err != nil {
 		currUserExists = false
-		var profilePageData ProfilePageData
-		if profile.Status == "not-connected" {
-			profilePageData.ProfileExists = false
-		} else {
-			profilePageData.ProfileExists = true
-		}
-		profilePageData.Profile = &profile
-		profilePageData.CurrUserExists = currUserExists
-		profilePageData.FeedbackList = &feedbackList
-		t.Execute(w, profilePageData)
-		return
-	} 
-	stmt, err = db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND platform_user_id = ?")
-	if err != nil {
-		log.Println(err)
-	}
-	err = stmt.QueryRow("instagram", cookie_platform_user_id.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
-	if err != nil {
-		currUserExists = false
 	} else {
-		currUserExists = true
+		stmt, err = db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND platform_user_id = ? AND token = ?")
+		if err != nil {
+			log.Println(err)
+		}
+		cookie_access_token, err := r.Cookie("access_token")
+		if err != nil {
+			currUserExists = false
+			log.Println(err)
+		} else {
+			err = stmt.QueryRow("instagram", cookie_platform_user_id.Value, cookie_access_token.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
+			currUserExists = err == nil
+		}
 	}
 
 	var profilePageData ProfilePageData
 	profilePageData.CurrUser = &currUser
 	profilePageData.CurrUserExists = currUserExists
 	profilePageData.Profile = &profile
-	profilePageData.ProfileExists = profileExists
+	profilePageData.ProfileExists = profile.Status == "connected"
 	profilePageData.FeedbackList = &feedbackList
 
 	t.Execute(w, profilePageData)

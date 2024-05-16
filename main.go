@@ -13,6 +13,10 @@ func main() {
 	mux := http.NewServeMux()
 	
 	mux.HandleFunc("GET /", handlers.RenderHomepage)
+	mux.HandleFunc("GET /privacy-policy", handlers.RenderPrivacyPolicy)
+	mux.HandleFunc("GET /terms-of-service", handlers.RenderTermsOfService)
+	mux.HandleFunc("GET /about", handlers.RenderAbout)
+	mux.HandleFunc("GET /contact", handlers.RenderContact)
 	mux.HandleFunc("GET /connect-account", handlers.RenderConnectAccount)
 	mux.HandleFunc("POST /search", handlers.HandleSearch)
 	mux.HandleFunc("GET /profile/{username}", handlers.RenderProfile)
@@ -21,6 +25,7 @@ func main() {
 	mux.HandleFunc("GET /feedback", handlers.RenderFeedbackForm)
 	mux.HandleFunc("DELETE /feedback/{id}", handlers.HandleDeleteFeedback)
 	mux.HandleFunc("POST /submit-feedback", handlers.HandleSubmitFeedback)
+	mux.HandleFunc("POST /disconnect-account", handlers.HandleDisconnect)
 	fs := http.FileServer(http.Dir("static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
 

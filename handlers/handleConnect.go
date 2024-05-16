@@ -134,13 +134,13 @@ func HandleConnect(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		cookie := http.Cookie{Name: "access_token", Value: res2.AccessToken}
+		cookie := http.Cookie{Name: "access_token", Value: res2.AccessToken, HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode, MaxAge: int(res2.ExpiresIn)}
 		http.SetCookie(w, &cookie)
 
-		cookie = http.Cookie{Name: "platform_user_id", Value: strconv.Itoa(int(res.UserID))}
+		cookie = http.Cookie{Name: "platform_user_id", Value: strconv.Itoa(int(res.UserID)), HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode, MaxAge: int(res2.ExpiresIn)}
 		http.SetCookie(w, &cookie)
 
-		cookie = http.Cookie{Name: "expires_in", Value: strconv.Itoa(int(res2.ExpiresIn))}
+		cookie = http.Cookie{Name: "expires_in", Value: strconv.Itoa(int(res2.ExpiresIn)), HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode, MaxAge: int(res2.ExpiresIn)}
 		http.SetCookie(w, &cookie)
 
 		defer resp.Body.Close()

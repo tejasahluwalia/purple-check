@@ -25,6 +25,12 @@ func main() {
 
 		DROP TABLE IF EXISTS feedback;
 		CREATE TABLE feedback(id INTEGER PRIMARY KEY, giver_id INTEGER, receiver_id INTEGER, rating INTEGER, comment TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+
+        DROP TABLE IF EXISTS logs;
+        CREATE TABLE logs(id INTEGER PRIMARY KEY, level INTEGER, message TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+
+        DROP TABLE IF EXISTS tickets;
+        CREATE TABLE tickets(id INTEGER PRIMARY KEY, user_id INTEGER, user_email TEXT, message TEXT, status TEXT DEFAULT 'open', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
 		`
     _, err = db.Exec(sts)
 

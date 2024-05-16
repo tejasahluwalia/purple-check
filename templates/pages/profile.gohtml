@@ -5,7 +5,7 @@
 	</section>
 	<section class="pt-8">
 		<div class="mx-4 flex items-center gap-4">
-			<h1 class="text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-md break-all text-wrap flex">@{{ .Profile.Username }}</h1>
+			<h1 class="text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-lg break-all text-wrap flex">@{{ .Profile.Username }}</h1>
 			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href="https://www.instagram.com/{{ .Profile.Username }}">
 				<img class="h-12 w-12 p-3" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo">
 			</a>
@@ -24,7 +24,7 @@
 		
 		{{ if (or (not .CurrUserExists) (and .CurrUserExists (ne .Profile.ID .CurrUser.ID))) }}
 		<div class="flex justify-center my-8 mx-4">
-			<a class="border border-purple-600 font-bold text-slate-950 rounded-md w-full shadow px-4 py-2 text-center"
+			<a class="border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50"
 				href="/feedback?receiver_id={{ .Profile.ID }}">Leave feedback
 				for this user</a>
 		</div>

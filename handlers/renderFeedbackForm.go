@@ -13,8 +13,8 @@ import (
 
 type FeedbackPageData struct {
 	Receiver 		*models.Profile
-	GiverExists 	bool
-	Giver 			*models.Profile
+	CurrUserExists 	bool
+	CurrUser		*models.Profile
 }
 
 func RenderFeedbackForm(w http.ResponseWriter, r *http.Request) {
@@ -57,27 +57,35 @@ func RenderFeedbackForm(w http.ResponseWriter, r *http.Request) {
 
 	feedbackPageData.Receiver = &profile
 
-	cookie, err := r.Cookie("platform_user_id")
+	cookie_platform_user_id, err := r.Cookie("platform_user_id")
 	if err != nil {
 		log.Println("Current user not found: ", err)
-		feedbackPageData.GiverExists = false
+		feedbackPageData.CurrUserExists = false
 		http.Redirect(w, r, "/connect-account?redirect_to_profile="+profile.Username, http.StatusSeeOther)
 		return
 	} else {
-		stmt, err := db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND platform_user_id = ?")
+		cookie_access_token, err := r.Cookie("access_token")
+		if err != nil {
+			log.Println("Current user not found: ", err)
+			feedbackPageData.CurrUserExists = false
+			http.Redirect(w, r, "/connect-account?redirect_to_profile="+profile.Username, http.StatusSeeOther)
+			return
+		}
+
+		stmt, err := db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = ? AND platform_user_id = ? AND token = ?")
 		if err != nil {
 			log.Println(err)
 		}
 		var currUser models.Profile
-		err = stmt.QueryRow("instagram", cookie.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
+		err = stmt.QueryRow("instagram", cookie_platform_user_id.Value, cookie_access_token.Value).Scan(&currUser.ID, &currUser.Platform, &currUser.PlatformUserID, &currUser.Username, &currUser.Status, &currUser.Token)
 		if err != nil {
 			log.Println("Current user not found: ", err)
-			feedbackPageData.GiverExists = false
+			feedbackPageData.CurrUserExists = false
 			http.Redirect(w, r, "/connect-account?redirect_to_profile="+profile.Username, http.StatusSeeOther)
 			return
 		} else {
-			feedbackPageData.GiverExists = true
-			feedbackPageData.Giver = &currUser
+			feedbackPageData.CurrUserExists = true
+			feedbackPageData.CurrUser = &currUser
 		}
 	}
 
