@@ -9,7 +9,7 @@ import (
 	"github.com/tejasahluwalia/purple-check/models"
 )
 
-func HandleDisconnect(w http.ResponseWriter, r *http.Request) {
+func HandleDeleteData(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("sqlite3", "db/purple-check.db")
 	if err != nil {
 		log.Println(err)
@@ -37,15 +37,15 @@ func HandleDisconnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt, err = db.Prepare("UPDATE profiles SET status = ?, token = NULL, expires_in = NULL WHERE id = ?")
+	stmt, err = db.Prepare("DELETE FROM feedback WHERE giver_id = ?")
 	if err != nil {
 		log.Println(err)
 	}
 
-	_, err = stmt.Exec("not-connected", currUser.ID)
+	_, err = stmt.Exec(currUser.ID)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Failed to disconnect", http.StatusInternalServerError)
+		http.Error(w, "Failed to delete feedback", http.StatusInternalServerError)
 		return
 	}
 

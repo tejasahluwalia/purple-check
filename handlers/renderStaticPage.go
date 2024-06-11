@@ -99,6 +99,16 @@ func RenderContact(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func RenderDeleteDataForm(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("./templates/layout.gohtml", "./templates/pages/delete-my-data.gohtml", "./templates/partials/search.gohtml", "./templates/partials/header.gohtml")
+	if err != nil {
+		log.Println(err)
+	}
+	t.Execute(w, StaticPageData {
+		CurrUserExists: checkForCurrentUser(r),
+	})
+}
+
 func Render404(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("./templates/layout.gohtml", "./templates/pages/404.gohtml", "./templates/partials/search.gohtml", "./templates/partials/header.gohtml")
 	if err != nil {
@@ -109,4 +119,3 @@ func Render404(w http.ResponseWriter, r *http.Request) {
 		CurrUserExists: checkForCurrentUser(r),
 	})
 }
-

@@ -1,0 +1,13 @@
+{{ define "content" }}
+<header class="shadow-sm">
+    {{ block "header" . }} {{ end }}
+</header>
+<section class="px-4 py-8 prose">
+    <h1>Delete my data</h1>
+    <p>Are you sure you want to delete your data?</p>
+    <p>This will delete all ratings and feedback you have written.</p>
+    <form action="/delete" method="post">
+        <button type="submit" class="font-semibold bg-red-50 border border-red-600 text-red-800 rounded-md px-4 py-1">Delete my data</button>
+    </form>
+</section>
+{{ end }}
