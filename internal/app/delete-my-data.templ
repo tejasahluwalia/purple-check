@@ -1,0 +1,56 @@
+package app
+
+import (
+	"database/sql"
+	"log"
+	"net/http"
+
+	"purple-check/internal/config"
+	"purple-check/internal/helpers"
+)
+
+templ DeleteMyData() {
+	<div class="flex w-full justify-center">
+		<section class="px-4 py-8 prose">
+			<h1>Delete my data</h1>
+			<div id="content">
+				<p>Are you sure you want to delete your data?</p>
+				<p>This will delete all feedback you have given.</p>
+				<button hx-delete="/profile" hx-target="#content" class="font-semibold bg-red-50 border border-red-600 text-red-800 rounded-md px-4 py-1">Delete my data</button>
+			</div>
+		</section>
+	</div>
+}
+
+func DeleteAllUserFeedback(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("sqlite3", config.DB_PATH)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer db.Close()
+
+	curr_user := helpers.GetCurrUser(r, db)
+	if curr_user == nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
+
+	stmt, err := db.Prepare("DELETE FROM feedback WHERE giver_id = ?")
+	if err != nil {
+		http.Error(w, "Error deleting data", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	_, err = stmt.Exec(curr_user.ID)
+	if err != nil {
+		http.Error(w, "Error deleting data", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Data deleted"))
+}

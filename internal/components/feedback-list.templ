@@ -1,0 +1,152 @@
+package components
+
+import (
+	"database/sql"
+	"log"
+	"strconv"
+
+	_ "github.com/mattn/go-sqlite3"
+	"purple-check/internal/config"
+	"purple-check/internal/helpers"
+	"purple-check/internal/models"
+)
+
+func getFeedbackList(profile_id string, role string) []models.Feedback {
+	db, err := sql.Open("sqlite3", config.DB_PATH)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer db.Close()
+	var feedbackList []models.Feedback
+
+	stmt, err := db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE " + role + "_id = ? ORDER BY feedback.created_at DESC")
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	rows, err := stmt.Query(profile_id)
+	if err != nil {
+		log.Println(err)
+	}
+
+	for rows.Next() {
+		var feedback models.Feedback
+		err = rows.Scan(&feedback.ID, &feedback.Giver.ID, &feedback.Giver.Username, &feedback.Receiver.ID, &feedback.Receiver.Username, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
+		if err != nil {
+			log.Println(err)
+		}
+		feedbackList = append(feedbackList, feedback)
+	}
+
+	return feedbackList
+}
+
+var dateFormatter = templ.NewOnceHandle()
+
+templ FeedbackList(p *models.Profile) {
+	{{
+		if p == nil {
+			p = helpers.GetProfile(GetRequestContext(ctx))
+		}
+
+		role := "receiver"
+
+		feedbackList := getFeedbackList(p.ID, role)
+	}}
+	<ul class="space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10" hx-confirm="Are you sure?" hx-target="closest .feedback" hx-swap="outerHTML">
+		for _, feedback := range feedbackList {
+			<li class="feedback pt-4 grid">
+				<div class="feedback-rating mt-2 flex items-center justify-between" data-rating={ strconv.Itoa(feedback.Rating) }>
+					<div class="stars flex items-center py-3">
+						<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
+						</svg>
+						<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
+						</svg>
+						<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
+						</svg>
+						<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
+						</svg>
+						<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
+						</svg>
+					</div>
+					<p class="sr-only"><span>{ strconv.Itoa(feedback.Rating) + " out of 5 stars" } </span></p>
+					if feedback.Giver.Username == helpers.GetCurrUser(GetRequestContext(ctx), nil).Username {
+					    <div>
+					        <button hx-delete={"/feedback/" + feedback.ID} class="text-red-400 p-3">
+					            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+					            </svg>
+					            <span class="sr-only">Delete feedback</span>
+					        </button>
+					    </div>
+					}
+				</div>
+				<div class="mt-2 mb-4 text-slate-500">
+					<p>
+						{ feedback.Comment }
+					</p>
+				</div>
+				<div class="flex space-x-2 items-center">
+					<h3 class="font-medium text-slate-900">
+						<a hx-boost="false" href={ templ.URL("/profile/" + feedback.Giver.Username) }>{ feedback.Giver.Username }</a>
+					</h3>
+					<span>
+						.
+					</span>
+					<p class="text-slate-500">
+						<time datetime={ feedback.CreatedAt } class="created-at-datetime">{ feedback.CreatedAt }</time>
+					</p>
+				</div>
+			</li>
+		}
+	</ul>
+	@dateFormatter.Once() {
+		<script>
+        document.querySelectorAll('.created-at-datetime').forEach((datetime) => {
+            const createdAt = datetime.getAttribute('datetime');
+            const date = new Date(createdAt);
+
+            const since = Date.now() - date.getTime();
+            if (since < 1000 * 60) {
+                datetime.innerHTML = 'Just now';
+                return;
+            }
+            if (since < 1000 * 60 * 60) {
+                const minutes = Math.floor(since / (1000 * 60));
+                datetime.innerHTML = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                return;
+            }
+            if (since < 1000 * 60 * 60 * 24) {
+                const hours = Math.floor(since / (1000 * 60 * 60));
+                datetime.innerHTML = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                return;
+            }
+
+            datetime.innerHTML = date.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            });
+        });
+
+        document.querySelectorAll('.feedback').forEach((feedback) => {
+            let rating = feedback.querySelector('.feedback-rating').getAttribute('data-rating');
+            feedback.querySelectorAll('.star').forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('text-slate-300');
+                    star.classList.add('text-purple-500');
+                }
+            });
+        });
+
+    	</script>
+	}
+}
