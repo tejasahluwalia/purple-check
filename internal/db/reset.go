@@ -31,7 +31,6 @@ func main() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
         CREATE UNIQUE INDEX idx_profiles_platform_user_id ON profiles(platform, platform_user_id);
-        CREATE UNIQUE INDEX idx_profiles_username ON profiles(platform, username);
 
 		DROP TABLE IF EXISTS feedback;
 		CREATE TABLE feedback(
