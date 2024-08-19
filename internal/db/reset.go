@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"purple-check/internal/config"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 
-	db, err := sql.Open("sqlite3", "purple-check.db")
+	db, err := sql.Open("sqlite3", config.DB_PATH)
 
 	if err != nil {
 		log.Println(err)
