@@ -30,18 +30,19 @@ func Header() templ.Component {
 		ctx = templ.ClearChildren(ctx)
 
 		profile_username := GetRequestContext(ctx).PathValue("username")
+		r := GetRequestContext(ctx)
 		connect_uri := func() templ.SafeURL {
 			if profile_username != "" {
-				return templ.URL("/connect-account" + profile_username)
+				return templ.URL("/connect-account?redirect_to_profile=" + profile_username)
 			} else {
 				return "/connect-account"
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"flex p-4 justify-between items-center\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><!--<img class=\"h-8 w-8\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\">--><span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div><div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"\"><div class=\"flex py-4 justify-between items-center container mx-auto px-4\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><!--<img class=\"h-8 w-8\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\">--><span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if helpers.IsLoggedIn(GetRequestContext(ctx)) {
+		if helpers.IsLoggedIn(r) {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/disconnect-account\" class=\"rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:bg-slate-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600\">Disconnect account</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -61,7 +62,7 @@ func Header() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></header>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -26,7 +26,7 @@ func Footer() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<footer class=\"bg-purple-900 mt-16\"><div class=\"px-4 py-8\"><nav class=\"grid md:grid-cols-2\"><div class=\"text-purple-100\"><div class=\"font-bold text-lg\">Purple Check</div><div class=\"text-sm\">by Tujux Labs</div><div class=\"mt-4\">Email: <a href=\"mailto:contact@purple-check.org\" class=\"text-purple-50 underline\">contact@purple-check.org </a></div></div><ul class=\"space-y-4 text-sm text-purple-50 font-bold\"><li><a href=\"/privacy-policy\">Privacy Policy</a></li><li><a href=\"/terms-of-service\">Terms of Service</a></li><li><a href=\"/delete-my-data\">Delete my data</a></li></ul></nav></div></footer>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<footer class=\"bg-purple-900 mt-16\"><div class=\"px-4 py-8 container mx-auto\"><nav class=\"grid md:grid-cols-2 gap-8\"><div class=\"text-purple-100\"><div class=\"font-bold text-lg\">Purple Check</div><div class=\"text-sm\">by Tujux Labs</div><div class=\"mt-4\">Email: <a href=\"mailto:contact@purple-check.org\" class=\"text-purple-50 underline\">contact@purple-check.org </a></div></div><ul class=\"space-y-4 text-sm text-purple-50 font-bold\"><li><a href=\"/privacy-policy\">Privacy Policy</a></li><li><a href=\"/terms-of-service\">Terms of Service</a></li><li><a href=\"/delete-my-data\">Delete my data</a></li></ul></nav></div></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

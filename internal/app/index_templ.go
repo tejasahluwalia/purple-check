@@ -28,7 +28,7 @@ func Homepage() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<section class=\"flex-1 p-4 text-slate-600 space-y-4\"><h1 class=\"py-4 text-3xl text-slate-950 font-bold\">Read and write reviews for Instagram pages</h1><p>Never get scammed again. <br><br><span class=\"font-medium text-slate-950\">Search for a username</span> to see feedback left by real people or leave a comment of your own.</p>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<section class=\"flex-1 text-slate-600 space-y-4\"><h1 class=\"py-4 text-3xl text-slate-950 font-bold\">Read and write reviews for online sellers</h1><p>Never get scammed again. <br><br><span class=\"font-medium text-slate-950\">Search for a username</span> to see feedback left by real people or leave a comment of your own.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

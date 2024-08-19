@@ -5,27 +5,30 @@ import "purple-check/internal/helpers"
 templ Header() {
 	{{
 		profile_username := GetRequestContext(ctx).PathValue("username")
+		r := GetRequestContext(ctx)
 		connect_uri := func() templ.SafeURL {
 			if profile_username != "" {
-				return templ.URL("/connect-account" + profile_username)
+				return templ.URL("/connect-account?redirect_to_profile=" + profile_username)
 			} else {
 				return "/connect-account"
 			}
 		}
 	}}
-	<header class="flex p-4 justify-between items-center">
-		<div class="flex items-center h-full">
-			<a class="flex items-center justify-center" href="/">
-				<!--<img class="h-8 w-8" src="/static/purple-check-logo.svg" alt="The Purple Check logo">-->
-				<span class="text-lg font-bold text-purple-700 leading-none">Purple Check</span>
-			</a>
-		</div>
-		<div>
-			if helpers.IsLoggedIn(GetRequestContext(ctx)) {
-				<a href="/disconnect-account" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:bg-slate-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600">Disconnect account</a>
-			} else {
-				<a href={ connect_uri() } class="rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 active:bg-purple-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Connect account</a>
-			}
+	<header class="">
+		<div class="flex py-4 justify-between items-center container mx-auto px-4">
+			<div class="flex items-center h-full">
+				<a class="flex items-center justify-center" href="/">
+					<!--<img class="h-8 w-8" src="/static/purple-check-logo.svg" alt="The Purple Check logo">-->
+					<span class="text-lg font-bold text-purple-700 leading-none">Purple Check</span>
+				</a>
+			</div>
+			<div>
+				if helpers.IsLoggedIn(r) {
+					<a href="/disconnect-account" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:bg-slate-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600">Disconnect account</a>
+				} else {
+					<a href={ connect_uri() } class="rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 active:bg-purple-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Connect account</a>
+				}
+			</div>
 		</div>
 	</header>
 }

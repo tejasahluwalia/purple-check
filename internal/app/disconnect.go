@@ -39,4 +39,5 @@ func Disconnect(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{Name: "platform_user_id", Value: "", HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode, MaxAge: -1})
 	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode, MaxAge: -1})
+	http.Redirect(w, r, "/", http.StatusFound)
 }
