@@ -9,7 +9,7 @@ import (
 	"purple-check/internal/config"
 	"purple-check/internal/models"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func IsLoggedIn(r *http.Request) bool {
@@ -32,7 +32,7 @@ func GetCurrUser(r *http.Request, db *sql.DB) *models.Profile {
 	}
 
 	if db == nil {
-		db, err = sql.Open("sqlite3", config.DB_PATH)
+		db, err = sql.Open("libsql", config.DB_PATH)
 
 		if err != nil {
 			log.Println(err)
@@ -61,7 +61,7 @@ func GetProfile(r *http.Request) *models.Profile {
 		return nil
 	}
 	username = strings.ToLower(username)
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 
     if err != nil {
         log.Println(err)
@@ -90,28 +90,6 @@ func GetProfile(r *http.Request) *models.Profile {
 	if err != nil {
 		log.Println(err)
 	}
-	
-	// var feedbackList []models.Feedback
-
-	// stmt, err = db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE receiver_id = ? ORDER BY feedback.created_at DESC")
-
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// rows, err := stmt.Query(profile.ID)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// for rows.Next() {
-	// 	var feedback models.Feedback
-	// 	err = rows.Scan(&feedback.ID, &feedback.Giver.ID, &feedback.Giver.Username, &feedback.Receiver.ID, &feedback.Receiver.Username, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 	}
-	// 	feedbackList = append(feedbackList, feedback)
-	// }
 
 	return &profile
 }

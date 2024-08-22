@@ -8,7 +8,7 @@ import (
 	"purple-check/internal/config"
 	"purple-check/internal/helpers"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func PutFeedback(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +18,7 @@ func PutFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 
 	if err != nil {
 		log.Println(err)
@@ -94,7 +94,7 @@ func DeleteFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 	if err != nil {
 		log.Println(err)
 	}

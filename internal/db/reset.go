@@ -6,12 +6,12 @@ import (
 	"log"
 	"purple-check/internal/config"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func main() {
 
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 
 	if err != nil {
 		log.Println(err)
@@ -22,44 +22,45 @@ func main() {
 	sts := `
 		DROP TABLE IF EXISTS profiles;
         CREATE TABLE profiles(
-            id INTEGER PRIMARY KEY, 
-            platform TEXT, 
-            platform_user_id TEXT, 
-            username TEXT, 
-            status TEXT DEFAULT 'not-connected', 
-            token TEXT, expires_in INTEGER, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
+            id INTEGER PRIMARY KEY,
+            platform TEXT,
+            platform_user_id TEXT,
+            username TEXT,
+            status TEXT DEFAULT 'not-connected',
+            token TEXT, expires_in INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
         CREATE UNIQUE INDEX idx_profiles_platform_user_id ON profiles(platform, platform_user_id);
+        CREATE UNIQUE INDEX idx_profiles_platform_username ON profiles(platform, username);
 
 		DROP TABLE IF EXISTS feedback;
 		CREATE TABLE feedback(
-            id INTEGER PRIMARY KEY, 
-            giver_id INTEGER, 
-            receiver_id INTEGER, 
-            rating INTEGER, 
-            comment TEXT, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
+            id INTEGER PRIMARY KEY,
+            giver_id INTEGER,
+            receiver_id INTEGER,
+            rating INTEGER,
+            comment TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
         DROP TABLE IF EXISTS logs;
         CREATE TABLE logs(
-            id INTEGER PRIMARY KEY, 
-            level INTEGER, 
-            message TEXT, 
+            id INTEGER PRIMARY KEY,
+            level INTEGER,
+            message TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
         DROP TABLE IF EXISTS tickets;
         CREATE TABLE tickets(
-            id INTEGER PRIMARY KEY, 
-            user_id INTEGER, 
-            user_email TEXT, 
-            message TEXT, 
-            status TEXT DEFAULT 'open', 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            user_email TEXT,
+            message TEXT,
+            status TEXT DEFAULT 'open',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 		`

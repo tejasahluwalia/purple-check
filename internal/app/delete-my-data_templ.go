@@ -44,7 +44,7 @@ func DeleteMyData() templ.Component {
 }
 
 func DeleteAllUserFeedback(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 
 	if err != nil {
 		log.Println(err)

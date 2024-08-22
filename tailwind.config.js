@@ -3,9 +3,7 @@ module.exports = {
   content: ["./**/*.templ"],
   theme: {
     extend: {
-      fontFamily: {
-        sans: 'NotoSans'
-      }
+
     },
   },
   plugins: [

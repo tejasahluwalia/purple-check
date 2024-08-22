@@ -5,14 +5,14 @@ import (
 	"log"
 	"strconv"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"purple-check/internal/config"
 	"purple-check/internal/helpers"
 	"purple-check/internal/models"
 )
 
 func getFeedbackList(profile_id string, role string) []models.Feedback {
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 
 	if err != nil {
 		log.Println(err)

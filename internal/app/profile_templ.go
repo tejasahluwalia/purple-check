@@ -12,7 +12,7 @@ import (
 	"purple-check/internal/components"
 	"purple-check/internal/helpers"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func Profile() templ.Component {

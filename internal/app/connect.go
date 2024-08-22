@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 
 	"purple-check/internal/config"
 )
@@ -123,7 +123,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(resp.Body).Decode(&userNode)
 
-	db, err := sql.Open("sqlite3", config.DB_PATH)
+	db, err := sql.Open("libsql", config.DB_PATH)
 	if err != nil {
 		slog.Error("Error while connecting to db")
 		w.WriteHeader(http.StatusInternalServerError)

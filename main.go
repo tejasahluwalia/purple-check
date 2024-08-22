@@ -6,6 +6,7 @@ import (
 
 	"purple-check/internal/app"
 	"purple-check/internal/components"
+	"purple-check/internal/webhook"
 
 	"github.com/a-h/templ"
 )
@@ -38,6 +39,10 @@ func main() {
 	mux.HandleFunc("GET /disconnect-account", app.Disconnect)
 	mux.HandleFunc("GET /delete-my-data", (&page{components.Layout(app.DeleteMyData())}).handler)
 	mux.HandleFunc("DELETE /profile", app.DeleteAllUserFeedback)
+
+	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
+	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)
+	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
 
 	http.ListenAndServe(":9990", mux)
 }
