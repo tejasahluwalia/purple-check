@@ -1,18 +1,15 @@
 package components
 
-import "purple-check/internal/helpers"
+import (
+	"purple-check/internal/config"	
+	"purple-check/internal/helpers"
+)
 
 templ Header() {
 	{{
 		profile_username := GetRequestContext(ctx).PathValue("username")
 		r := GetRequestContext(ctx)
-		connect_uri := func() templ.SafeURL {
-			if profile_username != "" {
-				return templ.URL("/connect-account?redirect_to_profile=" + profile_username)
-			} else {
-				return "/connect-account"
-			}
-		}
+		connect_uri := templ.URL("https://api.instagram.com/oauth/authorize?client_id=" + config.CLIENT_ID + "&redirect_uri=https%3A%2F%2Fwww.purple-check.org%2Fconnect&scope=user_profile&response_type=code&state=" + profile_username )
 	}}
 	<header class="">
 		<div class="flex py-4 justify-between items-center container mx-auto px-4">
@@ -26,7 +23,7 @@ templ Header() {
 				if helpers.IsLoggedIn(r) {
 					<a href="/disconnect-account" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:bg-slate-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600">Disconnect account</a>
 				} else {
-					<a href={ connect_uri() } class="rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 active:bg-purple-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Connect account</a>
+					<a href={ connect_uri } class="rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 active:bg-purple-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">Connect account</a>
 				}
 			</div>
 		</div>

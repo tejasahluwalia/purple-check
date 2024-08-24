@@ -12,7 +12,7 @@ import (
 	"purple-check/internal/components"
 	"purple-check/internal/helpers"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	_ "modernc.org/sqlite"
 )
 
 func Profile() templ.Component {
@@ -65,7 +65,7 @@ func Profile() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if helpers.IsLoggedIn(components.GetRequestContext(ctx)) {
-			if !helpers.IsProfileCurrUser(components.GetRequestContext(ctx), p.PlatformUserID.String) {
+			if !helpers.IsProfileCurrUser(components.GetRequestContext(ctx), *p) {
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex justify-center my-8 mx-4\"><a class=\"border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

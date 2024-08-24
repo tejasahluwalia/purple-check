@@ -5,14 +5,14 @@ import (
 	"log"
 	"strconv"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	_ "modernc.org/sqlite"
 	"purple-check/internal/config"
 	"purple-check/internal/helpers"
 	"purple-check/internal/models"
 )
 
 func getFeedbackList(profile_id string, role string) []models.Feedback {
-	db, err := sql.Open("libsql", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.DB_PATH)
 
 	if err != nil {
 		log.Println(err)
@@ -55,6 +55,7 @@ templ FeedbackList(p *models.Profile) {
 		role := "receiver"
 
 		feedbackList := getFeedbackList(p.ID, role)
+		currUser := helpers.GetCurrUser(GetRequestContext(ctx), nil)
 	}}
 	if len(feedbackList) == 0 {
 		<p class="text-slate-500">No feedback yet.</p>
@@ -81,7 +82,7 @@ templ FeedbackList(p *models.Profile) {
 							</svg>
 						</div>
 						<p class="sr-only"><span>{ strconv.Itoa(feedback.Rating) + " out of 5 stars" } </span></p>
-						if feedback.Giver.Username == helpers.GetCurrUser(GetRequestContext(ctx), nil).Username {
+						if currUser != nil && (feedback.Giver.Username == currUser.Username) {
 							<div>
 								<button hx-delete={ "/feedback/" + feedback.ID } class="text-red-400 p-3">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">

@@ -7,11 +7,11 @@ import (
 
 	"purple-check/internal/config"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	_ "modernc.org/sqlite"
 )
 
 func Disconnect(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("libsql", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.DB_PATH)
 	if err != nil {
 		log.Println(err)
 	}

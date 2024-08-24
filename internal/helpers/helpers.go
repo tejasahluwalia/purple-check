@@ -9,7 +9,7 @@ import (
 	"purple-check/internal/config"
 	"purple-check/internal/models"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	_ "modernc.org/sqlite"
 )
 
 func IsLoggedIn(r *http.Request) bool {
@@ -32,7 +32,7 @@ func GetCurrUser(r *http.Request, db *sql.DB) *models.Profile {
 	}
 
 	if db == nil {
-		db, err = sql.Open("libsql", config.DB_PATH)
+		db, err = sql.Open("sqlite", config.DB_PATH)
 
 		if err != nil {
 			log.Println(err)
@@ -61,7 +61,7 @@ func GetProfile(r *http.Request) *models.Profile {
 		return nil
 	}
 	username = strings.ToLower(username)
-	db, err := sql.Open("libsql", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.DB_PATH)
 
     if err != nil {
         log.Println(err)
@@ -94,10 +94,15 @@ func GetProfile(r *http.Request) *models.Profile {
 	return &profile
 }
 
-func IsProfileCurrUser(r *http.Request, profile_platform_user_id string) bool {
+func IsProfileCurrUser(r *http.Request, profile_platform_user models.Profile) bool {
 	cookie_platform_user_id, err := r.Cookie("platform_user_id")
 	if err != nil {
 		return false
 	}
-	return cookie_platform_user_id.Value == profile_platform_user_id
+	cookie_platform_username, err := r.Cookie("platform_username")
+	if err != nil {
+		return false
+	}
+
+	return cookie_platform_user_id.Value == profile_platform_user.PlatformUserID.String || cookie_platform_username.Value == profile_platform_user.Username
 }

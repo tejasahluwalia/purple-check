@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	_ "modernc.org/sqlite"
 
 	"purple-check/internal/config"
 )
@@ -123,7 +123,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(resp.Body).Decode(&userNode)
 
-	db, err := sql.Open("libsql", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.DB_PATH)
 	if err != nil {
 		slog.Error("Error while connecting to db")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -146,7 +146,10 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 
 	
 	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: accessToken, HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: int(expiresIn)})
+	http.SetCookie(w, &http.Cookie{Name: "platform", Value: "instagram", HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: int(expiresIn)})
 	http.SetCookie(w, &http.Cookie{Name: "platform_user_id", Value: strconv.Itoa(int(userId)), HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: int(expiresIn)})
+	http.SetCookie(w, &http.Cookie{Name: "platform_username", Value: userNode.Username, HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: int(expiresIn)})
+
 	
 	if redirectToProfile == "" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
