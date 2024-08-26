@@ -35,7 +35,7 @@ func Header() templ.Component {
 		profile_username := GetRequestContext(ctx).PathValue("username")
 		r := GetRequestContext(ctx)
 		connect_uri := templ.URL("https://api.instagram.com/oauth/authorize?client_id=" + config.CLIENT_ID + "&redirect_uri=https%3A%2F%2Fwww.purple-check.org%2Fconnect&scope=user_profile&response_type=code&state=" + profile_username)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"\"><div class=\"flex py-4 justify-between items-center container mx-auto px-4\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><!--<img class=\"h-8 w-8\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\">--><span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div><div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"\"><div class=\"flex py-4 justify-between items-center container mx-auto px-4\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
