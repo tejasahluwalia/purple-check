@@ -123,7 +123,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(resp.Body).Decode(&userNode)
 
-	db, err := sql.Open("sqlite", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
 	if err != nil {
 		slog.Error("Error while connecting to db")
 		w.WriteHeader(http.StatusInternalServerError)

@@ -32,7 +32,7 @@ func GetCurrUser(r *http.Request, db *sql.DB) *models.Profile {
 	}
 
 	if db == nil {
-		db, err = sql.Open("sqlite", config.DB_PATH)
+		db, err = sql.Open("sqlite", config.LOCAL_DB_PATH)
 
 		if err != nil {
 			log.Println(err)
@@ -61,7 +61,7 @@ func GetProfile(r *http.Request) *models.Profile {
 		return nil
 	}
 	username = strings.ToLower(username)
-	db, err := sql.Open("sqlite", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
 
     if err != nil {
         log.Println(err)

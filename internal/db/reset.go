@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"database/sql"
@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	db, err := sql.Open("sqlite", config.DB_PATH)
+	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
 
 	if err != nil {
 		log.Println(err)
