@@ -9,24 +9,18 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"database/sql"
 	"log"
 	"strconv"
 
-	_ "modernc.org/sqlite"
-	"purple-check/internal/config"
+	"purple-check/internal/db"
 	"purple-check/internal/helpers"
 	"purple-check/internal/models"
 )
 
 func getFeedbackList(profile_id string, role string) []models.Feedback {
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
+	db, closer := db.GetDB()
+	defer closer()
 
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
 	var feedbackList []models.Feedback
 
 	stmt, err := db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE " + role + "_id = ? ORDER BY feedback.created_at DESC")
@@ -80,7 +74,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 		role := "receiver"
 
 		feedbackList := getFeedbackList(p.ID, role)
-		currUser := helpers.GetCurrUser(GetRequestContext(ctx), nil)
+		currUser := helpers.GetCurrUser(GetRequestContext(ctx))
 		if len(feedbackList) == 0 {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"text-slate-500\">No feedback yet.</p>")
 			if templ_7745c5c3_Err != nil {
@@ -99,7 +93,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(feedback.Rating))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 66, Col: 116}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 60, Col: 116}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -112,7 +106,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(feedback.Rating) + " out of 5 stars")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 84, Col: 82}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 78, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
@@ -130,7 +124,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 					var templ_7745c5c3_Var4 string
 					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/feedback/" + feedback.ID)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 87, Col: 54}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 81, Col: 54}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 					if templ_7745c5c3_Err != nil {
@@ -148,7 +142,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.Comment)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 98, Col: 25}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 92, Col: 25}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -170,7 +164,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.Giver.Username)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 103, Col: 110}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 97, Col: 110}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -183,7 +177,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.CreatedAt)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 109, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 103, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -196,7 +190,7 @@ func FeedbackList(p *models.Profile) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.CreatedAt)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 109, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 103, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {

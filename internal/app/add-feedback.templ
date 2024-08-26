@@ -8,7 +8,7 @@ import (
 templ AddFeedback() {
     {{ 
         profile := helpers.GetProfile(components.GetRequestContext(ctx))
-        currUser := helpers.GetCurrUser(components.GetRequestContext(ctx), nil)     
+        currUser := helpers.GetCurrUser(components.GetRequestContext(ctx))     
      }}
     <section class="p-4">
         <div class="flex mt-4 mb-8">

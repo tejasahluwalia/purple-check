@@ -33,7 +33,7 @@ func AddFeedback() templ.Component {
 		ctx = templ.ClearChildren(ctx)
 
 		profile := helpers.GetProfile(components.GetRequestContext(ctx))
-		currUser := helpers.GetCurrUser(components.GetRequestContext(ctx), nil)
+		currUser := helpers.GetCurrUser(components.GetRequestContext(ctx))
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<section class=\"p-4\"><div class=\"flex mt-4 mb-8\"><h1 class=\"text-xl font-bold\">Leave feedback for @")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

@@ -1,14 +1,11 @@
 package app
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
-	"purple-check/internal/config"
+	"purple-check/internal/db"
 	"purple-check/internal/helpers"
-
-	_ "modernc.org/sqlite"
 )
 
 func PutFeedback(w http.ResponseWriter, r *http.Request) {
@@ -18,13 +15,8 @@ func PutFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
+	db, closer := db.GetDB()
+	defer closer()
 
 	cookie_platform_user_id, err := r.Cookie("platform_user_id")
 	if err != nil {
@@ -94,14 +86,10 @@ func DeleteFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
-	if err != nil {
-		log.Println(err)
-	}
+	db, closer := db.GetDB()
+	defer closer()
 
-	defer db.Close()
-
-	curr_user := helpers.GetCurrUser(r, db)
+	curr_user := helpers.GetCurrUser(r)
 	if curr_user == nil {
 		log.Println("Current user not found")
 		http.Error(w, "Current user not found", http.StatusNotFound)

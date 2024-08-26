@@ -6,6 +6,7 @@ import (
 
 	"purple-check/internal/app"
 	"purple-check/internal/components"
+	"purple-check/internal/db"
 	"purple-check/internal/webhook"
 
 	"github.com/a-h/templ"
@@ -21,6 +22,7 @@ func (t page) handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	db.SyncDB()
 	mux := http.NewServeMux()
 
 	fs := http.FileServer(http.Dir("static"))

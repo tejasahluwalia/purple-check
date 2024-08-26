@@ -1,12 +1,11 @@
 package app
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
-	"purple-check/internal/config"
 	"purple-check/internal/helpers"
+	"purple-check/internal/db"
 )
 
 templ DeleteMyData() {
@@ -23,15 +22,10 @@ templ DeleteMyData() {
 }
 
 func DeleteAllUserFeedback(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
+	db, closer := db.GetDB()
+	defer closer()
 
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
-
-	curr_user := helpers.GetCurrUser(r, db)
+	curr_user := helpers.GetCurrUser(r)
 	if curr_user == nil {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return

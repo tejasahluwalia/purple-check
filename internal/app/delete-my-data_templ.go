@@ -9,11 +9,10 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
-	"purple-check/internal/config"
+	"purple-check/internal/db"
 	"purple-check/internal/helpers"
 )
 
@@ -44,15 +43,10 @@ func DeleteMyData() templ.Component {
 }
 
 func DeleteAllUserFeedback(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
+	db, closer := db.GetDB()
+	defer closer()
 
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
-
-	curr_user := helpers.GetCurrUser(r, db)
+	curr_user := helpers.GetCurrUser(r)
 	if curr_user == nil {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return

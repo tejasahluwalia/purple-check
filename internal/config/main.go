@@ -13,7 +13,7 @@ func init() {
 
 	for _, key := range expected_keys {
 		config[key] = os.Getenv(key)
-		if _, ok := config[key]; !ok {
+		if config[key] == "" {
 			panic("Missing key in .env file: " + key)
 		}
 	}

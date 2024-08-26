@@ -1,22 +1,15 @@
 package app
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
-	"purple-check/internal/config"
-
-	_ "modernc.org/sqlite"
+	"purple-check/internal/db"
 )
 
 func Disconnect(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
+	db, closer := db.GetDB()
+	defer closer()
 	
 	cookie_platform_user_id, err := r.Cookie("platform_user_id")
 	if err != nil {

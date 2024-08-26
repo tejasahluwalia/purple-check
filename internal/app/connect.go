@@ -1,16 +1,14 @@
 package app
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
 
-	_ "modernc.org/sqlite"
-
 	"purple-check/internal/config"
+	"purple-check/internal/db"
 )
 
 type AccessTokenErrorResponse struct {
@@ -123,13 +121,8 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(resp.Body).Decode(&userNode)
 
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
-	if err != nil {
-		slog.Error("Error while connecting to db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	db, closer := db.GetDB()
+	defer closer()
 
 	stmt, err := db.Prepare("INSERT INTO profiles(platform, platform_user_id, username, status, token) VALUES(?, ?, ?, ?, ?) ON CONFLICT(platform, platform_user_id) DO UPDATE SET username=excluded.username, status=excluded.status, token=excluded.token")
 	if err != nil {

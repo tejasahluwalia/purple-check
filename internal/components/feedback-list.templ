@@ -1,24 +1,18 @@
 package components
 
 import (
-	"database/sql"
 	"log"
 	"strconv"
 
-	_ "modernc.org/sqlite"
-	"purple-check/internal/config"
 	"purple-check/internal/helpers"
 	"purple-check/internal/models"
+	"purple-check/internal/db"
 )
 
 func getFeedbackList(profile_id string, role string) []models.Feedback {
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
+	db, closer := db.GetDB()
+	defer closer()
 
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
 	var feedbackList []models.Feedback
 
 	stmt, err := db.Prepare("SELECT feedback.id, giver.id, giver.username, receiver.id, receiver.username, feedback.rating, feedback.comment, feedback.created_at FROM feedback JOIN profiles AS giver ON feedback.giver_id = giver.id JOIN profiles AS receiver ON feedback.receiver_id = receiver.id WHERE " + role + "_id = ? ORDER BY feedback.created_at DESC")
@@ -55,7 +49,7 @@ templ FeedbackList(p *models.Profile) {
 		role := "receiver"
 
 		feedbackList := getFeedbackList(p.ID, role)
-		currUser := helpers.GetCurrUser(GetRequestContext(ctx), nil)
+		currUser := helpers.GetCurrUser(GetRequestContext(ctx))
 	}}
 	if len(feedbackList) == 0 {
 		<p class="text-slate-500">No feedback yet.</p>

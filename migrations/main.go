@@ -1,24 +1,15 @@
-package db
+package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
-	"purple-check/internal/config"
-
-	_ "modernc.org/sqlite"
+	"purple-check/internal/db"
 )
 
 func main() {
-
-	db, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
-
+	db, closer := db.GetDB()
+	defer closer()
+	
 	sts := `
 		DROP TABLE IF EXISTS profiles;
         CREATE TABLE profiles(
@@ -64,10 +55,11 @@ func main() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 		`
-	_, err = db.Exec(sts)
+	_, err := db.Exec(sts)
 
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	fmt.Println("table profiles, feedback created")
