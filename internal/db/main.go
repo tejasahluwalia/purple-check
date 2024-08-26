@@ -39,8 +39,11 @@ func GetDB() (*sql.DB, func()) {
 }
 
 func SyncDB() {
+	_, err := os.ReadDir("dbs")
+	if err != nil { 
+		os.Mkdir("dbs", 0755)
+	}
+
 	connector := getConnector()
 	connector.Close()	
 }
-
-

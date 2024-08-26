@@ -9,7 +9,7 @@ type Config map[string]string
 func init() {
 	config := make(Config)
 
-	expected_keys := []string{"CLIENT_ID", "CLIENT_SECRET", "APP_ID", "APP_SECRET", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "PAGE_ACCESS_TOKEN", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"}
+	expected_keys := []string{"CLIENT_ID", "CLIENT_SECRET", "APP_ID", "APP_SECRET", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LOCAL_DB_PATH", "PORT"}
 
 	for _, key := range expected_keys {
 		config[key] = os.Getenv(key)
@@ -25,9 +25,10 @@ func init() {
 	WEBHOOK_VERIFY_TOKEN = config["WEBHOOK_VERIFY_TOKEN"]
 	ACCOUNT_TOKEN = config["ACCOUNT_TOKEN"]
 	ACCOUNT_ID = config["ACCOUNT_ID"]
-	PAGE_ACCESS_TOKEN = config["PAGE_ACCESS_TOKEN"]
 	TURSO_DATABASE_URL = config["TURSO_DATABASE_URL"]
 	TURSO_AUTH_TOKEN = config["TURSO_AUTH_TOKEN"]
+	LOCAL_DB_PATH = config["LOCAL_DB_PATH"]
+	PORT = config["PORT"]
 }
 
 var CLIENT_ID string
@@ -37,7 +38,7 @@ var APP_SECRET string
 var WEBHOOK_VERIFY_TOKEN string
 var ACCOUNT_TOKEN string
 var ACCOUNT_ID string
-var PAGE_ACCESS_TOKEN string
 var TURSO_DATABASE_URL string
 var TURSO_AUTH_TOKEN string
-var LOCAL_DB_PATH = "./internal/db/purple-check.db"
+var PORT string
+var LOCAL_DB_PATH string

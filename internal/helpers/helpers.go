@@ -75,6 +75,11 @@ func GetProfile(r *http.Request) *models.Profile {
 			log.Println(err)
 		}
 		
+		stmt, err = db.Prepare("SELECT id, platform, platform_user_id, username, status, token FROM profiles WHERE platform = 'instagram' AND username = ?")
+		if err != nil {
+			log.Println(err)
+		} 
+		
 		err = stmt.QueryRow(username).Scan(&profile.ID, &profile.Platform, &profile.PlatformUserID, &profile.Username, &profile.Status, &profile.Token)
 		if err != nil {
 			log.Println(err)

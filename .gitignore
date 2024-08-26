@@ -1,5 +1,3 @@
 tmp/
-**/*.db
-main
-purple-check
+dbs/
 .env

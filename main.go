@@ -6,6 +6,7 @@ import (
 
 	"purple-check/internal/app"
 	"purple-check/internal/components"
+	"purple-check/internal/config"
 	"purple-check/internal/db"
 	"purple-check/internal/webhook"
 
@@ -22,7 +23,9 @@ func (t page) handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	
 	db.SyncDB()
+
 	mux := http.NewServeMux()
 
 	fs := http.FileServer(http.Dir("static"))
@@ -46,6 +49,6 @@ func main() {
 	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)
 	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
 
-	http.ListenAndServe(":9990", mux)
+	http.ListenAndServe(":"+config.PORT, mux)
 }
 
