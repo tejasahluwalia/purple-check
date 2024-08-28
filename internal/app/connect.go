@@ -51,10 +51,6 @@ func getAccessToken(code string) (userID uint, accessToken string, expiresIn uin
 
 	resp, err := http.PostForm("https://api.instagram.com/oauth/access_token", formData)
 	if err != nil {
-		slog.Error("Error while getting access token", "error", err)
-		return
-	}
-	if resp.StatusCode != 200 {
 		var ErrorResponse AccessTokenErrorResponse
 		json.NewDecoder(resp.Body).Decode(&ErrorResponse)
 		slog.Error("Error while getting access token: ", "error_code", ErrorResponse.Code,
@@ -62,17 +58,16 @@ func getAccessToken(code string) (userID uint, accessToken string, expiresIn uin
 			"error_message", ErrorResponse.ErrorMsg)
 		return
 	}
+
 	var res AccessTokenResponse
 	json.NewDecoder(resp.Body).Decode(&res)
 	resp, err = http.Get("https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=" + config.CLIENT_SECRET + "&access_token=" + res.AccessToken)
+
 	if err != nil {
 		slog.Error("Error while getting long lived access token", "error", err)
 		return
 	}
-	if resp.StatusCode != 200 {
-		slog.Error("Error while getting long lived access token", "error", err)
-		return
-	}
+	
 	var res2 LongLivedAccessTokenResponse
 	json.NewDecoder(resp.Body).Decode(&res2)
 	return res.UserID, res2.AccessToken, res2.ExpiresIn
