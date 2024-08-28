@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"log"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -34,11 +35,13 @@ type UserNode struct {
 }
 
 type ErrorResponse struct {
-	ErrorType    string `json:"type"`
-	Code         uint   `json:"code"`
-	ErrorMsg     string `json:"message"`
-	ErrorSubcode uint   `json:"error_subcode"`
-	FbtraceID    string `json:"fbtrace_id"`
+	Error struct {
+		ErrorType    string `json:"type"`
+		Code         uint   `json:"code"`
+		ErrorMsg     string `json:"message"`
+		ErrorSubcode uint   `json:"error_subcode"`
+		FbtraceID    string `json:"fbtrace_id"`
+	} `json:"error"`
 }
 
 func getAccessToken(code string) (userID uint, accessToken string, expiresIn uint) {
@@ -51,6 +54,10 @@ func getAccessToken(code string) (userID uint, accessToken string, expiresIn uin
 
 	resp, err := http.PostForm("https://api.instagram.com/oauth/access_token", formData)
 	if err != nil {
+		slog.Error("Error executing request: POST /oauth/access_token", "error", err)
+		return
+	}
+	if resp.StatusCode != 200 {
 		var ErrorResponse AccessTokenErrorResponse
 		json.NewDecoder(resp.Body).Decode(&ErrorResponse)
 		slog.Error("Error while getting access token: ", "error_code", ErrorResponse.Code,
@@ -58,16 +65,26 @@ func getAccessToken(code string) (userID uint, accessToken string, expiresIn uin
 			"error_message", ErrorResponse.ErrorMsg)
 		return
 	}
-
 	var res AccessTokenResponse
 	json.NewDecoder(resp.Body).Decode(&res)
-	resp, err = http.Get("https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=" + config.CLIENT_SECRET + "&access_token=" + res.AccessToken)
+	log.Println(config.CLIENT_SECRET, res.AccessToken)
 
+	resp, err = http.Get("https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=" + config.CLIENT_SECRET + "&access_token=" + res.AccessToken)
 	if err != nil {
-		slog.Error("Error while getting long lived access token", "error", err)
+		slog.Error("Error executing request: GET /access_token", "error", err)
 		return
 	}
-	
+	if resp.StatusCode != 200 {
+		var ErrorResponse ErrorResponse
+		json.NewDecoder(resp.Body).Decode(&ErrorResponse)
+		slog.Error("Error while getting long lived access token:",
+			"error_type", ErrorResponse.Error.ErrorType,
+			"error_message", ErrorResponse.Error.ErrorMsg,
+			"error_code", ErrorResponse.Error.Code,
+			"error_subcode", ErrorResponse.Error.ErrorSubcode,
+			"fbtrace_id", ErrorResponse.Error.FbtraceID)
+		return res.UserID, res.AccessToken, 3600
+	}
 	var res2 LongLivedAccessTokenResponse
 	json.NewDecoder(resp.Body).Decode(&res2)
 	return res.UserID, res2.AccessToken, res2.ExpiresIn
@@ -103,15 +120,19 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	var userNode UserNode
 	resp, err := http.Get("https://graph.instagram.com/me?fields=id,username&access_token=" + accessToken)
 	if err != nil {
-		slog.Error("Error while getting user node: ", "error_type", "request_error")
+		slog.Error("Error executing request: GET /me", "error_type", "request_error")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if resp.StatusCode != 200 {
-		var errorResponse ErrorResponse
-		json.NewDecoder(resp.Body).Decode(&errorResponse)
-		slog.Error("Error while getting user node: ", "error_type", errorResponse.ErrorType, "error_message", errorResponse.ErrorMsg,
-			"error_code", errorResponse.Code, "error_subcode", errorResponse.ErrorSubcode, "fbtrace_id", error)
+		var ErrorResponse ErrorResponse
+		json.NewDecoder(resp.Body).Decode(&ErrorResponse)
+		slog.Error("Error while getting user node:",
+			"error_type", ErrorResponse.Error.ErrorType,
+			"error_message", ErrorResponse.Error.ErrorMsg,
+			"error_code", ErrorResponse.Error.Code,
+			"error_subcode", ErrorResponse.Error.ErrorSubcode,
+			"fbtrace_id", ErrorResponse.Error.FbtraceID)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -31,7 +31,7 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
-	mux.HandleFunc("GET /", (&page{components.Layout(app.Homepage())}).handler)
+	mux.HandleFunc("GET /", (&page{components.Layout(app.Index())}).handler)
 	mux.HandleFunc("GET /privacy-policy", (&page{components.Layout(app.PrivacyPolicy())}).handler)
 	mux.HandleFunc("GET /terms-of-service", (&page{components.Layout(app.TermsOfService())}).handler)
 	mux.HandleFunc("GET /connect-account", (&page{components.Layout(app.ConnectAccount())}).handler)
