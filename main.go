@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"purple-check/internal/app"
@@ -23,7 +24,7 @@ func (t page) handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	
+
 	db.SyncDB()
 
 	mux := http.NewServeMux()
@@ -48,7 +49,6 @@ func main() {
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
 	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)
 	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
-
+	log.Println("Starting server")
 	http.ListenAndServe(":"+config.PORT, mux)
 }
-

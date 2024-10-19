@@ -1,10 +1,11 @@
 module purple-check
 
-go 1.23.0
+go 1.23.2
 
 require (
-	github.com/a-h/templ v0.2.771
-	github.com/tursodatabase/go-libsql v0.0.0-20240819180805-a9b092b8bc77
+	github.com/a-h/templ v0.2.778
+	github.com/joho/godotenv v1.5.1
+	github.com/tursodatabase/go-libsql v0.0.0-20241011135853-3effbb6dea5c
 )
 
 require (

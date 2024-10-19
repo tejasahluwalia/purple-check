@@ -1,13 +1,20 @@
 package config
 
 import (
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Config map[string]string
 
 func init() {
 	config := make(Config)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	expected_keys := []string{"CLIENT_ID", "CLIENT_SECRET", "APP_ID", "APP_SECRET", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LOCAL_DB_PATH", "PORT"}
 
