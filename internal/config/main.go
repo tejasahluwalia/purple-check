@@ -35,7 +35,7 @@ func init() {
 	TURSO_DATABASE_URL = config["TURSO_DATABASE_URL"]
 	TURSO_AUTH_TOKEN = config["TURSO_AUTH_TOKEN"]
 	LOCAL_DB_PATH = config["LOCAL_DB_PATH"]
-	HOST = config("HOST")
+	HOST = config["HOST"]
 	PORT = config["PORT"]
 }
 
