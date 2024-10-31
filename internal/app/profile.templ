@@ -1,33 +1,26 @@
 package app
 
-import (
-	"purple-check/internal/components"
-	"purple-check/internal/helpers"
-)
-
+import "purple-check/internal/components"
 
 templ Profile() {
 	<section class="pt-8">
-		{{ p := helpers.GetProfile(components.GetRequestContext(ctx)) }}
+		{{ username := components.GetRequestContext(ctx).PathValue("username") }}
 		<div class="mx-4 flex items-center gap-4">
-			<h1 class="text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-lg break-all text-wrap flex">{ "@" + p.Username }</h1>
-			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href={ templ.URL("https://www.instagram.com/" + p.Username) }>
+			<h1 class="text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-lg break-all text-wrap flex">{ "@" + username }</h1>
+			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href={ templ.URL("https://www.instagram.com/" + username) }>
 				<img class="h-12 w-12 p-3" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo"/>
 			</a>
 		</div>
-		if helpers.IsLoggedIn(components.GetRequestContext(ctx)) {
-			if !helpers.IsProfileCurrUser(components.GetRequestContext(ctx), *p) {
-				<div class="flex justify-center my-8 mx-4">
-					<a
-						class="border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50"
-						href={ templ.URL("/profile/"+p.Username+"/add-feedback") }
-					>Leave feedback for this user</a>
-				</div>
-			}
-		}
+		<div class="flex justify-center my-8 mx-4">
+			/* TODO: Link to DM purple-check-org */
+			<a
+				class="border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50"
+				href={ templ.URL("/profile/" + username + "/add-feedback") }
+			>Leave feedback for this user</a>
+		</div>
 		<div class="my-4 p-4">
 			<h2 class="text-xl mb-8 font-bold tracking-tight">Feedback received</h2>
-			@components.FeedbackList(p)
+			@components.FeedbackList(username)
 		</div>
 	</section>
 }

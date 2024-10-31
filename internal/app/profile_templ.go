@@ -8,10 +8,7 @@ package app
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"purple-check/internal/components"
-	"purple-check/internal/helpers"
-)
+import "purple-check/internal/components"
 
 func Profile() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -38,15 +35,15 @@ func Profile() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		p := helpers.GetProfile(components.GetRequestContext(ctx))
+		username := components.GetRequestContext(ctx).PathValue("username")
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"mx-4 flex items-center gap-4\"><h1 class=\"text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-lg break-all text-wrap flex\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@" + p.Username)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@" + username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 13, Col: 128}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 9, Col: 126}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -56,37 +53,25 @@ func Profile() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 templ.SafeURL = templ.URL("https://www.instagram.com/" + p.Username)
+		var templ_7745c5c3_Var3 templ.SafeURL = templ.URL("https://www.instagram.com/" + username)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var3)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><img class=\"h-12 w-12 p-3\" src=\"/static/Instagram_Glyph_Black.svg\" alt=\"The Instagram logo\"></a></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><img class=\"h-12 w-12 p-3\" src=\"/static/Instagram_Glyph_Black.svg\" alt=\"The Instagram logo\"></a></div><div class=\"flex justify-center my-8 mx-4\"><a class=\"border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if helpers.IsLoggedIn(components.GetRequestContext(ctx)) {
-			if !helpers.IsProfileCurrUser(components.GetRequestContext(ctx), *p) {
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex justify-center my-8 mx-4\"><a class=\"border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50\" href=\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var4 templ.SafeURL = templ.URL("/profile/" + p.Username + "/add-feedback")
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Leave feedback for this user</a></div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"my-4 p-4\"><h2 class=\"text-xl mb-8 font-bold tracking-tight\">Feedback received</h2>")
+		var templ_7745c5c3_Var4 templ.SafeURL = templ.URL("/profile/" + username + "/add-feedback")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.FeedbackList(p).Render(ctx, templ_7745c5c3_Buffer)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Leave feedback for this user</a></div><div class=\"my-4 p-4\"><h2 class=\"text-xl mb-8 font-bold tracking-tight\">Feedback received</h2>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.FeedbackList(username).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

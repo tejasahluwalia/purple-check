@@ -16,7 +16,7 @@ func init() {
 		log.Fatal("Error loading .env file")
 	}
 
-	expected_keys := []string{"CLIENT_ID", "CLIENT_SECRET", "APP_ID", "APP_SECRET", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LOCAL_DB_PATH", "PORT", "HOST"}
+	expected_keys := []string{"APP_ID", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LOCAL_DB_PATH", "PORT", "HOST"}
 
 	for _, key := range expected_keys {
 		config[key] = os.Getenv(key)
@@ -25,10 +25,7 @@ func init() {
 		}
 	}
 
-	CLIENT_ID = config["CLIENT_ID"]
-	CLIENT_SECRET = config["CLIENT_SECRET"]
 	APP_ID = config["APP_ID"]
-	APP_SECRET = config["APP_SECRET"]
 	WEBHOOK_VERIFY_TOKEN = config["WEBHOOK_VERIFY_TOKEN"]
 	ACCOUNT_TOKEN = config["ACCOUNT_TOKEN"]
 	ACCOUNT_ID = config["ACCOUNT_ID"]
@@ -39,10 +36,7 @@ func init() {
 	PORT = config["PORT"]
 }
 
-var CLIENT_ID string
-var CLIENT_SECRET string
 var APP_ID string
-var APP_SECRET string
 var WEBHOOK_VERIFY_TOKEN string
 var ACCOUNT_TOKEN string
 var ACCOUNT_ID string

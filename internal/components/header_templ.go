@@ -8,11 +8,6 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"purple-check/internal/config"
-	"purple-check/internal/helpers"
-)
-
 func Header() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -34,35 +29,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-
-		profile_username := GetRequestContext(ctx).PathValue("username")
-		r := GetRequestContext(ctx)
-		connect_uri := templ.URL("https://api.instagram.com/oauth/authorize?client_id=" + config.CLIENT_ID + "&redirect_uri=https%3A%2F%2Fwww.purple-check.org%2Fconnect&scope=user_profile&response_type=code&state=" + profile_username)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"\"><div class=\"flex py-4 justify-between items-center container mx-auto px-4\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div><div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if helpers.IsLoggedIn(r) {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/disconnect-account\" class=\"rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:bg-slate-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600\">Disconnect account</a>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var2 templ.SafeURL = connect_uri
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var2)))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 active:bg-purple-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600\">Connect account</a>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></header>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"\"><div class=\"flex py-4 justify-between items-center container mx-auto px-4\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

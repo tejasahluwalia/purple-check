@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 	"github.com/tursodatabase/go-libsql"
 )
 
-func getConnector() (*libsql.Connector) {
+func getConnector() *libsql.Connector {
 	primaryUrl := config.TURSO_DATABASE_URL
 	authToken := config.TURSO_AUTH_TOKEN
 	dbPath := config.LOCAL_DB_PATH
@@ -25,7 +25,7 @@ func getConnector() (*libsql.Connector) {
 	}
 
 	return connector
-} 
+}
 
 func GetDB() (*sql.DB, func()) {
 	connector := getConnector()
@@ -40,5 +40,5 @@ func GetDB() (*sql.DB, func()) {
 
 func SyncDB() {
 	connector := getConnector()
-	connector.Close()	
+	connector.Close()
 }
