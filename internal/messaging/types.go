@@ -11,7 +11,8 @@ type MessageText struct {
 type ElementButton struct {
 	Type    string `json:"type"`
 	Title   string `json:"title"`
-	Payload string `json:"payload"`
+	Payload string `json:"payload,omitempty"`
+	URL     string `json:"url,omitempty"`
 }
 
 type PayloadElements struct {
@@ -40,4 +41,23 @@ type Message interface {
 type MessageRequestBody[T Message] struct {
 	Recipient MessageRecipient `json:"recipient"`
 	Message   T                `json:"message"`
+}
+
+type PersistentMenuRequestBody struct {
+	Platform       string           `json:"platform"`
+	PersistentMenu []PersistentMenu `json:"persistent_menu"`
+}
+
+type PersistentMenu struct {
+	Locale                string         `json:"locale"`
+	ComposerInputDisabled bool           `json:"composer_input_disabled"`
+	CallToActions         []CallToAction `json:"call_to_actions"`
+}
+
+type CallToAction struct {
+	Type               string `json:"type"`
+	Title              string `json:"title"`
+	Payload            string `json:"payload,omitempty"`
+	URL                string `json:"url,omitempty"`
+	WebviewHeightRatio string `json:"webview_height_ratio,omitempty"`
 }

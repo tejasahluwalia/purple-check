@@ -40,6 +40,7 @@ func main() {
 	mux.HandleFunc("GET /profile/{username}", (&page{components.Layout(app.Profile())}).handler)
 
 	messaging.InitConversations()
+	messaging.SetPersistentMenu()
 
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
 	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)

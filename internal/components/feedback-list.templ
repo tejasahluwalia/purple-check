@@ -4,7 +4,6 @@ import (
 	"log"
 	"purple-check/internal/database"
 	"purple-check/internal/models"
-	"strconv"
 )
 
 func getFeedbackList(username string, role string) []models.Feedback {
@@ -13,7 +12,7 @@ func getFeedbackList(username string, role string) []models.Feedback {
 
 	var feedbackList []models.Feedback
 
-	stmt, err := db.Prepare("SELECT feedback.id, giver, receiver, feedback.rating, feedback.comment, feedback.created_at FROM feedback WHERE " + role + " = ? ORDER BY feedback.created_at DESC")
+	stmt, err := db.Prepare("SELECT id, giver, receiver, rating, created_at FROM feedback WHERE " + role + " = ? ORDER BY created_at DESC")
 	if err != nil {
 		log.Println(err)
 	}
@@ -26,7 +25,7 @@ func getFeedbackList(username string, role string) []models.Feedback {
 	for rows.Next() {
 		var feedback models.Feedback
 
-		err = rows.Scan(&feedback.ID, &feedback.Giver, &feedback.Receiver, &feedback.Rating, &feedback.Comment, &feedback.CreatedAt)
+		err = rows.Scan(&feedback.ID, &feedback.Giver, &feedback.Receiver, &feedback.Rating, &feedback.CreatedAt)
 		if err != nil {
 			log.Println(err)
 		}
@@ -49,26 +48,6 @@ templ FeedbackList(p string) {
 		<ul class="space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10" hx-confirm="Are you sure?" hx-target="closest .feedback" hx-swap="outerHTML">
 			for _, feedback := range feedbackList {
 				<li class="feedback pt-4 grid">
-					<div class="feedback-rating mt-2 flex items-center justify-between" data-rating={ strconv.Itoa(feedback.Rating) }>
-						<div class="stars flex items-center py-3">
-							<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
-							</svg>
-							<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
-							</svg>
-							<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
-							</svg>
-							<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
-							</svg>
-							<svg xmlns="http://www.w3.org/2000/svg" class="star text-slate-300 h-6 w-6 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd"></path>
-							</svg>
-						</div>
-						<p class="sr-only"><span>{ strconv.Itoa(feedback.Rating) + " out of 5 stars" } </span></p>
-					</div>
 					<div class="mt-2 mb-4 text-slate-500">
 						<p>
 							{ feedback.Comment }

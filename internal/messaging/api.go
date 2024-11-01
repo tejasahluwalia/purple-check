@@ -3,6 +3,7 @@ package messaging
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -91,10 +92,35 @@ func sendMessage(body []byte) {
 }
 
 func saveRating(rating int, giverUserId string, recieverUsername string) {
-	url := "https://" + API_HOST + "/v21.0/" + giverUserId
+	userProfileAPIResponse, err := getUsernameFromUserID(giverUserId)
+
+	db, closer := database.GetDB()
+	defer closer()
+
+	stmt, err := db.Prepare("INSERT INTO feedback (giver, receiver, rating) VALUES (?, ?, ?)")
+	if err != nil {
+		log.Fatal("Error preparing statement.")
+	}
+
+	_, err = stmt.Exec(userProfileAPIResponse.Username, strings.Split(recieverUsername, "@")[1], rating)
+	if err != nil {
+		log.Fatal("Error executing statement.", err)
+	}
+
+	return
+}
+
+type UserProfileAPIResponse struct {
+	Username string `json:"username"`
+	ID       string `json:"id"`
+}
+
+func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
+	url := "https://" + API_HOST + "/v21.0/" + userId
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	q := req.URL.Query()
@@ -106,19 +132,14 @@ func saveRating(rating int, giverUserId string, recieverUsername string) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
-	}
-
-	helpers.PrintRespBody(resp)
-
-	type UserProfileAPIResponse struct {
-		Username string `json:"username"`
-		ID       string `json:"id"`
+		return nil, err
 	}
 
 	var userProfileAPIResponse UserProfileAPIResponse
 
 	if resp.StatusCode != 200 {
 		log.Fatal("Error getting username.")
+		return nil, errors.New("IG_API_Error")
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&userProfileAPIResponse)
@@ -127,19 +148,59 @@ func saveRating(rating int, giverUserId string, recieverUsername string) {
 	}
 
 	defer resp.Body.Close()
+	return &userProfileAPIResponse, nil
+}
 
-	db, closer := database.GetDB()
-	defer closer()
+func SetPersistentMenu() {
+	url := "https://" + API_HOST + "/v21.0/" + config.ACCOUNT_ID + "/messenger_profile"
 
-	stmt, err := db.Prepare("INSERT INTO feedback (giver, receiver, rating) VALUES (?, ?, ?)")
+	body, err := json.Marshal(PersistentMenuRequestBody{
+		Platform: "instagram",
+		PersistentMenu: []PersistentMenu{
+			{
+				Locale:                "default",
+				ComposerInputDisabled: false,
+				CallToActions: []CallToAction{
+					{
+						Title:   "Help",
+						Type:    "postback",
+						Payload: "HELP",
+					},
+				},
+			},
+		},
+	})
 	if err != nil {
-		log.Fatal("Error preparing statement.")
-	}
-	log.Println(userProfileAPIResponse.Username, strings.Split(recieverUsername, "@")[1], rating)
-	_, err = stmt.Exec(userProfileAPIResponse.Username, strings.Split(recieverUsername, "@")[1], rating)
-	if err != nil {
-		log.Fatal("Error executing statement.", err)
+		log.Fatal("Unable to marshall message body.")
+		return
 	}
 
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		log.Println(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+config.ACCOUNT_TOKEN)
+
+	helpers.PrintReqBody(req)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if resp.StatusCode != 200 {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		log.Println(bodyString)
+	}
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyString := string(bodyBytes)
+	log.Println(bodyString)
+
+	defer resp.Body.Close()
 	return
 }
