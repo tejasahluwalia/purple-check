@@ -43,21 +43,32 @@ type MessageRequestBody[T Message] struct {
 	Message   T                `json:"message"`
 }
 
-type PersistentMenuRequestBody struct {
+type MessengerProfileRequestBody struct {
 	Platform       string           `json:"platform"`
 	PersistentMenu []PersistentMenu `json:"persistent_menu"`
+	IceBreakers    []IceBreakers    `json:"ice_breakers"`
 }
 
 type PersistentMenu struct {
-	Locale                string         `json:"locale"`
-	ComposerInputDisabled bool           `json:"composer_input_disabled"`
-	CallToActions         []CallToAction `json:"call_to_actions"`
+	Locale                string                       `json:"locale"`
+	ComposerInputDisabled bool                         `json:"composer_input_disabled"`
+	CallToActions         []PersistentMenuCallToAction `json:"call_to_actions"`
 }
 
-type CallToAction struct {
+type PersistentMenuCallToAction struct {
 	Type               string `json:"type"`
 	Title              string `json:"title"`
 	Payload            string `json:"payload,omitempty"`
 	URL                string `json:"url,omitempty"`
 	WebviewHeightRatio string `json:"webview_height_ratio,omitempty"`
+}
+
+type IceBreakerCallToAction struct {
+	Question string `json:"question"`
+	Payload  string `json:"payload"`
+}
+
+type IceBreakers struct {
+	Locale        string                   `json:"locale"`
+	CallToActions []IceBreakerCallToAction `json:"call_to_actions"`
 }

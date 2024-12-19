@@ -1,6 +1,6 @@
 package messaging
 
-type UserConversations map[string]int
+type UserConversations map[string]string
 
 var conversations UserConversations
 
@@ -9,17 +9,17 @@ func InitConversations() {
 	return
 }
 
-func GetUserConversationStage(userId string) int {
+func GetUserConversationStage(userId string) string {
 	userConversationStage, exists := conversations[userId]
 	if exists {
 		return userConversationStage
 	} else {
-		stage := 1
+		stage := "START"
 		conversations[userId] = stage
 		return stage
 	}
 }
 
-func SetUserConversationStage(userId string, stage int) {
+func SetUserConversationStage(userId string, stage string) {
 	conversations[userId] = stage
 }

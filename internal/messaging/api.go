@@ -154,17 +154,35 @@ func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
 func SetPersistentMenu() {
 	url := "https://" + API_HOST + "/v21.0/" + config.ACCOUNT_ID + "/messenger_profile"
 
-	body, err := json.Marshal(PersistentMenuRequestBody{
+	body, err := json.Marshal(MessengerProfileRequestBody{
 		Platform: "instagram",
 		PersistentMenu: []PersistentMenu{
 			{
 				Locale:                "default",
 				ComposerInputDisabled: false,
-				CallToActions: []CallToAction{
+				CallToActions: []PersistentMenuCallToAction{
 					{
-						Title:   "Help",
+						Title:   "Search for a user",
 						Type:    "postback",
-						Payload: "HELP",
+						Payload: "SEARCH",
+					}, {
+						Title:   "Rate a user",
+						Type:    "postback",
+						Payload: "RATE",
+					},
+				},
+			},
+		},
+		IceBreakers: []IceBreakers{
+			{
+				Locale: "default",
+				CallToActions: []IceBreakerCallToAction{
+					{
+						Question: "Search for a user",
+						Payload:  "SEARCH",
+					}, {
+						Question: "Rate a user",
+						Payload:  "RATE",
 					},
 				},
 			},
