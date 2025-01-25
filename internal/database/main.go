@@ -27,14 +27,23 @@ func getConnector() *libsql.Connector {
 	return connector
 }
 
-func GetDB() (*sql.DB, func()) {
+var getDB = func() (*sql.DB, func()) {
 	connector := getConnector()
-
 	db := sql.OpenDB(connector)
-
 	return db, func() {
 		connector.Close()
 		db.Close()
+	}
+}
+
+func GetDB() (*sql.DB, func()) {
+	return getDB()
+}
+
+// For testing only
+func SetMockDB(mockDB *sql.DB, closer func()) {
+	getDB = func() (*sql.DB, func()) {
+		return mockDB, closer
 	}
 }
 
