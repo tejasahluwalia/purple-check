@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
+	"log/slog"
+
+	"purple-check/internal/logger"
+	"purple-check/internal/middleware"
 
 	"purple-check/internal/app"
 	"purple-check/internal/components"
@@ -26,9 +29,11 @@ func (t page) handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	logger.Setup()
 	database.SyncDB()
 
 	mux := http.NewServeMux()
+	handler := middleware.Logging(mux)
 
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
@@ -45,6 +50,6 @@ func main() {
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
 	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)
 	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
-	log.Println("Starting server")
-	http.ListenAndServe(":"+config.PORT, mux)
+	slog.Info("starting server", "port", config.PORT)
+	http.ListenAndServe(":"+config.PORT, handler)
 }
