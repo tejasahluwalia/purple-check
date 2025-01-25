@@ -1,70 +1,65 @@
 package messaging
 
 import (
-	"log"
-	"strconv"
 	"strings"
+
+	"purple-check/internal/helpers"
 )
 
 func RouteMessage(userId string, message string, payload string) {
-	stage := GetUserConversationStage(userId)
+	stage := getUserConversationStage(userId)
 
 	switch stage {
 	case "START":
-		if payload != "" {
-			switch payload {
-			case "SEARCH":
-				sendTextMessage("Please send a username to search.", userId)
-				SetUserConversationStage(userId, "SEARCH")
-			case "RATE":
-				sendTextMessage("Whom would you like to rate?", userId)
-				SetUserConversationStage(userId, "RATE")
-			}
-		}
-
-		sendTextMessage("Welcome to Purple Check. Select an option below.", userId)
-		return
-
-	case "SEARCH":
-		usernameToSearch, found := detectUsername(message)
+		usernameToSearch, found := helpers.DetectUsername(message)
 		if found {
 			searchForUserAndRespond(usernameToSearch, userId)
 			return
-		} else {
-			sendTextMessage("Please send a valid username.", userId)
-			return
 		}
 
-	case "RATE":
-		usernameToRate, found := detectUsername(message)
-		if found {
-			askForRating(usernameToRate, userId)
-			SetUserConversationStage(userId, "AWAITING_RATING")
-			return
-		} else {
-			sendTextMessage("Please send a valid username.", userId)
-			return
+		if payload != "" {
+			switch strings.Split(payload, ":")[0] {
+			case "RATE":
+				usernameToRate := strings.Split(payload, ":")[1]
+				askForRating(usernameToRate, userId)
+				setUserConversationStage(userId, "AWAITING_RATING")
+				return
+			case "SEARCH":
+				askForUsernameToSearch(userId)
+				return
+			}
 		}
+
+		askForUsernameToSearch(userId)
+		return
 
 	case "AWAITING_RATING":
-		if payload != "" {
-			username := strings.Split(payload, ":")[1]
-			rating, err := strconv.Atoi(strings.Split(payload, ":")[0])
-			if err != nil {
-				log.Fatal("Error parsing rating.")
-			}
-			SetUserConversationStage(userId, "START")
-			saveRating(rating, userId, username)
-			sendTextMessage("Thank you for your rating.", userId)
+		if payload == "CANCEL" {
+			setUserConversationStage(userId, "START")
+			sendTextMessage("Rating cancelled.", userId)
+			askForUsernameToSearch(userId)
 			return
-		} else {
-			sendTextMessage("Please rate the user.", userId)
+		} else if len(strings.Split(payload, ":")) == 2 {
+			usernameToRate := strings.Split(payload, ":")[1]
+			rating := strings.Split(payload, ":")[0]
+			if rating == "POSITIVE" || rating == "NEUTRAL" || rating == "NEGATIVE" {
+				setUserConversationStage(userId, "START")
+				saveRating(rating, userId, usernameToRate)
+				sendTextMessage("Thank you for submitting a rating.", userId)
+				askForUsernameToSearch(userId)
+				return
+			} else {
+				invalidRatingMessage(userId)
+				return
+			}
+		}
+		if strings.ToLower(message) == "cancel" {
+			setUserConversationStage(userId, "START")
+			sendTextMessage("Rating cancelled.", userId)
+			askForUsernameToSearch(userId)
 			return
 		}
-
-	default:
-		SetUserConversationStage(userId, "START")
-		sendTextMessage("Restart", userId)
+		invalidRatingMessage(userId)
 		return
 	}
 }

@@ -20,11 +20,13 @@ func main() {
             id INTEGER PRIMARY KEY,
             giver TEXT,
             receiver TEXT,
-            rating INTEGER,
+            rating TEXT,
             comment TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE UNIQUE INDEX idx_feedback ON feedback(giver, receiver);
 		`
 	_, err := db.Exec(sts)
 

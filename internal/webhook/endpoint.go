@@ -5,14 +5,11 @@ import (
 	"log"
 	"net/http"
 
-	"purple-check/internal/helpers"
 	"purple-check/internal/messaging"
 )
 
 func Instagram(w http.ResponseWriter, r *http.Request) {
 	var webhook InstagramWebhook
-
-	helpers.PrintReqBody(r)
 
 	err := json.NewDecoder(r.Body).Decode(&webhook)
 	if err != nil {

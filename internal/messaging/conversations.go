@@ -9,7 +9,7 @@ func InitConversations() {
 	return
 }
 
-func GetUserConversationStage(userId string) string {
+func getUserConversationStage(userId string) string {
 	userConversationStage, exists := conversations[userId]
 	if exists {
 		return userConversationStage
@@ -20,6 +20,6 @@ func GetUserConversationStage(userId string) string {
 	}
 }
 
-func SetUserConversationStage(userId string, stage string) {
+func setUserConversationStage(userId string, stage string) {
 	conversations[userId] = stage
 }

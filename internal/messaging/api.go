@@ -7,14 +7,14 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 
 	"purple-check/internal/config"
 	"purple-check/internal/database"
-	"purple-check/internal/helpers"
 )
 
 var API_HOST = "graph.instagram.com"
+var API_VERSION = "v22.0"
+var API_URL = "https://" + API_HOST + "/" + API_VERSION
 
 func sendButtonMessage(buttons []ElementButton, text string, userId string) {
 	body, err := json.Marshal(MessageRequestBody[MessageButtons]{
@@ -25,13 +25,9 @@ func sendButtonMessage(buttons []ElementButton, text string, userId string) {
 			Attachment: MessageAttachment{
 				Type: "template",
 				Payload: AttachmentPayload{
-					TemplateType: "generic",
-					Elements: []PayloadElements{
-						{
-							Title:   text,
-							Buttons: buttons,
-						},
-					},
+					TemplateType: "button",
+					Text:         text,
+					Buttons:      buttons,
 				},
 			},
 		},
@@ -62,10 +58,7 @@ func sendTextMessage(text string, userId string) {
 }
 
 func sendMessage(body []byte) {
-	url := "https://" + API_HOST + "/v21.0/me/messages"
-
-	reqBodyString := string(body)
-	log.Println(reqBodyString)
+	url := API_URL + "/me/messages"
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
@@ -91,18 +84,19 @@ func sendMessage(body []byte) {
 	return
 }
 
-func saveRating(rating int, giverUserId string, recieverUsername string) {
+func saveRating(rating string, giverUserId string, recieverUsername string) {
 	userProfileAPIResponse, err := getUsernameFromUserID(giverUserId)
+	giverUsername := userProfileAPIResponse.Username
 
 	db, closer := database.GetDB()
 	defer closer()
 
-	stmt, err := db.Prepare("INSERT INTO feedback (giver, receiver, rating) VALUES (?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO feedback (giver, receiver, rating) VALUES (?, ?, ?) ON CONFLICT(giver, receiver) DO UPDATE SET rating=excluded.rating")
 	if err != nil {
 		log.Fatal("Error preparing statement.")
 	}
 
-	_, err = stmt.Exec(userProfileAPIResponse.Username, strings.Split(recieverUsername, "@")[1], rating)
+	_, err = stmt.Exec(giverUsername, recieverUsername, rating)
 	if err != nil {
 		log.Fatal("Error executing statement.", err)
 	}
@@ -116,7 +110,7 @@ type UserProfileAPIResponse struct {
 }
 
 func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
-	url := "https://" + API_HOST + "/v21.0/" + userId
+	url := API_URL + "/" + userId
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Println(err)
@@ -152,7 +146,7 @@ func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
 }
 
 func SetPersistentMenu() {
-	url := "https://" + API_HOST + "/v21.0/" + config.ACCOUNT_ID + "/messenger_profile"
+	url := API_URL + "/" + config.ACCOUNT_ID + "/messenger_profile"
 
 	body, err := json.Marshal(MessengerProfileRequestBody{
 		Platform: "instagram",
@@ -201,23 +195,11 @@ func SetPersistentMenu() {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+config.ACCOUNT_TOKEN)
 
-	helpers.PrintReqBody(req)
-
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
 	}
-
-	if resp.StatusCode != 200 {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		log.Println(bodyString)
-	}
-
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	bodyString := string(bodyBytes)
-	log.Println(bodyString)
 
 	defer resp.Body.Close()
 	return

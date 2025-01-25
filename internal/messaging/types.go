@@ -21,8 +21,9 @@ type PayloadElements struct {
 }
 
 type AttachmentPayload struct {
-	TemplateType string            `json:"template_type"`
-	Elements     []PayloadElements `json:"elements"`
+	TemplateType string          `json:"template_type"`
+	Text         string          `json:"text,omitempty"`
+	Buttons      []ElementButton `json:"buttons,omitempty"`
 }
 
 type MessageAttachment struct {

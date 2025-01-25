@@ -2,12 +2,13 @@ package app
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 func Search(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		http.Redirect(w, r, "/", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	username := r.FormValue("search-term")
@@ -16,7 +17,8 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	} else {
-		http.Redirect(w, r, "/profile/"+username, http.StatusFound)
+		safeUsername := url.QueryEscape(username) // import "net/url"
+		http.Redirect(w, r, "/profile/"+safeUsername, http.StatusFound)
 		return
 	}
 }
