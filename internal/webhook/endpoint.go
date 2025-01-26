@@ -31,5 +31,4 @@ func Instagram(w http.ResponseWriter, r *http.Request) {
 	} else {
 		messaging.RouteMessage(userId, messageEvent.Message.Text, "")
 	}
-	return
 }

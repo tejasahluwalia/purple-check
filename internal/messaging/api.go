@@ -81,11 +81,14 @@ func sendMessage(body []byte) {
 	}
 
 	defer resp.Body.Close()
-	return
 }
 
 func saveRating(rating string, giverUserId string, recieverUsername string) {
 	userProfileAPIResponse, err := getUsernameFromUserID(giverUserId)
+	if err != nil {
+		log.Fatal("Error getting username:", err)
+		return
+	}
 	giverUsername := userProfileAPIResponse.Username
 
 	db, closer := database.GetDB()
@@ -100,8 +103,6 @@ func saveRating(rating string, giverUserId string, recieverUsername string) {
 	if err != nil {
 		log.Fatal("Error executing statement.", err)
 	}
-
-	return
 }
 
 type UserProfileAPIResponse struct {
@@ -202,5 +203,4 @@ func SetPersistentMenu() {
 	}
 
 	defer resp.Body.Close()
-	return
 }

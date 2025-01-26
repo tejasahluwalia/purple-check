@@ -3,7 +3,6 @@ package webhook
 import (
 	"log"
 	"net/http"
-	"text/template"
 
 	"purple-check/internal/config"
 )
@@ -17,8 +16,7 @@ func VerifyInstagramHook(w http.ResponseWriter, r *http.Request) {
 
 	if mode == "subscribe" && verify_token == config.WEBHOOK_VERIFY_TOKEN {
 		log.Println("WebhookInstagram Verified")
-		tmpl := template.Must(template.New("challenge").Parse("{{.}}"))   /* import ( "html/template" ) */
-		tmpl.Execute(w, challenge)
+		w.Write([]byte(challenge))
 		return
 	}
 }

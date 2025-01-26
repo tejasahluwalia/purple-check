@@ -6,7 +6,6 @@ var conversations UserConversations
 
 func InitConversations() {
 	conversations = make(UserConversations)
-	return
 }
 
 func getUserConversationStage(userId string) string {
