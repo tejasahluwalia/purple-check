@@ -1,13 +1,30 @@
 package messaging
 
 import (
+	"log"
 	"strings"
+	"time"
 
+	"purple-check/internal/database"
 	"purple-check/internal/helpers"
 )
 
 func RouteMessage(userId string, message string, payload string) {
 	stage := getUserConversationStage(userId)
+
+	// Add database logging
+	db, closer := database.GetDB()
+	defer closer()
+	_, err := db.Exec(
+		"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
+		userId,
+		message,  // Logs both regular messages and payloads via message parameter
+		stage,
+		time.Now(),
+	)
+	if err != nil {
+		log.Printf("Failed to log message: %v", err)
+	}
 
 	switch stage {
 	case "START":
