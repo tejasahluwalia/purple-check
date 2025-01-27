@@ -48,7 +48,7 @@ func searchForUserAndRespond(usernameToSearch string, userId string) {
 		return
 	} else {
 		positivePercentage := (rating.Float64 / float64(totalRatings)) * 100
-		sendButtonMessage(buttons, "@"+usernameToSearch+"\nRating: "+strconv.FormatFloat(positivePercentage, 'f', 2, 32)+"% Positive\nTotal Ratings: "+strconv.Itoa(totalRatings)+"\n\nTo search for another user, enter the username.\n\nClick below to leave feedback for @"+usernameToSearch+".", userId)
+		sendButtonMessage(buttons, "@"+usernameToSearch+"\nRating: "+strconv.FormatFloat(positivePercentage, 'f', 2, 32)+"% Positive\nTotal Ratings: "+strconv.Itoa(totalRatings), userId)
 		return
 	}
 }
@@ -58,16 +58,16 @@ func askForRating(usernameToRate string, userId string) {
 		{
 			Type:    "postback",
 			Title:   "Positive",
-			Payload: "POSITIVE:" + usernameToRate,
+			Payload: "RATING:POSITIVE:" + usernameToRate,
 		},
 		{
 			Type:    "postback",
 			Title:   "Negative",
-			Payload: "NEGATIVE:" + usernameToRate,
+			Payload: "RATING:NEGATIVE:" + usernameToRate,
 		},
 		{
 			Type:    "postback",
-			Title:   "Cancel feedback submission",
+			Title:   "Cancel",
 			Payload: "CANCEL",
 		},
 	}
@@ -79,8 +79,8 @@ func askForUsernameToSearch(userId string) {
 	sendTextMessage("Please enter the username (with '@' symbol) of the page you want to check. (e.g. @purplecheck_org)", userId)
 }
 
-func invalidRatingMessage(userId string) {
-	sendTextMessage("Invalid rating. Please select one of the options provided. Or click cancel.", userId)
+func invalidResponseMessage(userId string) {
+	sendTextMessage("Invalid response. Please select one of the options provided. Or click cancel.", userId)
 }
 
 func askForRole(userId string) {

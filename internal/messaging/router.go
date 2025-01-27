@@ -18,7 +18,7 @@ func RouteMessage(userId string, message string, payload string) {
 	_, err := db.Exec(
 		"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
 		userId,
-		message,  // Logs both regular messages and payloads via message parameter
+		message, // Logs both regular messages and payloads via message parameter
 		state.Stage,
 		time.Now(),
 	)
@@ -33,23 +33,19 @@ func RouteMessage(userId string, message string, payload string) {
 			searchForUserAndRespond(usernameToSearch, userId)
 			return
 		}
-
-		if payload != "" {
-			switch strings.Split(payload, ":")[0] {
-			case "RATE":
-				usernameToRate := strings.Split(payload, ":")[1]
-				setUserConversationState(userId, ConversationState{
-					Stage:      "AWAITING_ROLE",
-					TargetUser: usernameToRate,
-				})
-				askForRole(userId)
-				return
-			case "SEARCH":
-				askForUsernameToSearch(userId)
-				return
-			}
+		if strings.HasPrefix(payload, "RATE:") {
+			usernameToRate := strings.Split(payload, ":")[1]
+			setUserConversationState(userId, ConversationState{
+				Stage:      "AWAITING_ROLE",
+				TargetUser: usernameToRate,
+			})
+			askForRole(userId)
+			return
 		}
-
+		if payload == "SEARCH" {
+			askForUsernameToSearch(userId)
+			return
+		}
 		askForUsernameToSearch(userId)
 		return
 
@@ -69,7 +65,7 @@ func RouteMessage(userId string, message string, payload string) {
 			askForDealStage(userId)
 			return
 		}
-		invalidRatingMessage(userId)
+		invalidResponseMessage(userId)
 		return
 
 	case "AWAITING_DEAL_STAGE":
@@ -88,7 +84,7 @@ func RouteMessage(userId string, message string, payload string) {
 			askForRating(state.TargetUser, userId)
 			return
 		}
-		invalidRatingMessage(userId)
+		invalidResponseMessage(userId)
 		return
 
 	case "AWAITING_RATING":
@@ -97,17 +93,16 @@ func RouteMessage(userId string, message string, payload string) {
 			sendTextMessage("Rating cancelled.", userId)
 			askForUsernameToSearch(userId)
 			return
-		} else if len(strings.Split(payload, ":")) == 2 {
-			rating := strings.Split(payload, ":")[0]
-			if rating == "POSITIVE" || rating == "NEUTRAL" || rating == "NEGATIVE" {
-				setUserConversationState(userId, ConversationState{Stage: "START"})
-				saveRating(rating, userId, state.TargetUser, state.Role, state.DealStage)
-				sendTextMessage("Thank you for submitting a rating.", userId)
-				askForUsernameToSearch(userId)
-				return
-			}
 		}
-		invalidRatingMessage(userId)
+		if strings.HasPrefix(payload, "RATING:") {
+			rating := strings.Split(payload, ":")[1]
+			setUserConversationState(userId, ConversationState{Stage: "START"})
+			saveRating(rating, userId, state.TargetUser, state.Role, state.DealStage)
+			sendTextMessage("Thank you for submitting a rating.", userId)
+			askForUsernameToSearch(userId)
+			return
+		}
+		invalidResponseMessage(userId)
 		return
 	}
 }

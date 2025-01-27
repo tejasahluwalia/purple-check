@@ -49,5 +49,7 @@ func SetMockDB(mockDB *sql.DB, closer func()) {
 
 func SyncDB() {
 	connector := getConnector()
-	connector.Close()
+	if _, err := connector.Sync(); err != nil {
+		fmt.Println("Error syncing database:", err)
+	}
 }

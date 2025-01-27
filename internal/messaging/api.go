@@ -90,23 +90,32 @@ func saveRating(rating string, giverUserId string, recieverUsername string, role
 		return
 	}
 	giverUsername := userProfileAPIResponse.Username
+	giverRole := role
 
 	db, closer := database.GetDB()
 	defer closer()
 
-	stmt, err := db.Prepare(`INSERT INTO feedback 
-		(giver, receiver, rating, role, deal_stage) 
-		VALUES (?, ?, ?, ?, ?) 
-		ON CONFLICT(giver, receiver) 
-		DO UPDATE SET 
+	stmt, err := db.Prepare(`INSERT INTO feedback
+		(giver, receiver, rating, giver_role, receiver_role, deal_stage)
+		VALUES (?, ?, ?, ?, ?, ?)
+		ON CONFLICT(giver, receiver)
+		DO UPDATE SET
 			rating=excluded.rating,
-			role=excluded.role,
+			giver_role=excluded.giver_role,
 			deal_stage=excluded.deal_stage`)
 	if err != nil {
 		log.Fatal("Error preparing statement.")
 	}
 
-	_, err = stmt.Exec(giverUsername, recieverUsername, rating, role, dealStage)
+	// Set receiverRole to "seller" if giverRole is "buyer" and vice versa
+	var receiverRole string
+	if giverRole == "buyer" {
+		receiverRole = "seller"
+	} else {
+		receiverRole = "buyer"
+	}
+
+	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
 	if err != nil {
 		log.Fatal("Error executing statement.", err)
 	}

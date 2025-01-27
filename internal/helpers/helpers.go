@@ -8,24 +8,24 @@ import (
 	"strings"
 )
 
-func PrintReqBody(r *http.Request) {
+func GetRequestBody(r *http.Request) string {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 	bodyString := string(bodyBytes)
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	log.Println(bodyString)
+	return bodyString
 }
 
-func PrintRespBody(r *http.Response) {
+func GetResponseBody(r *http.Response) string {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 	bodyString := string(bodyBytes)
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	log.Println(bodyString)
+	return bodyString
 }
 
 func DetectUsername(message string) (string, bool) {

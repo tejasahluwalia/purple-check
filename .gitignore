@@ -1,5 +1,4 @@
 tmp/
-dbs/
+data/
 .env
-purple-check.db*
 .aider*
