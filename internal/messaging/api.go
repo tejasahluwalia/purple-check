@@ -83,7 +83,7 @@ func sendMessage(body []byte) {
 	defer resp.Body.Close()
 }
 
-func saveRating(rating string, giverUserId string, recieverUsername string) {
+func saveRating(rating string, giverUserId string, recieverUsername string, role string, dealStage string) {
 	userProfileAPIResponse, err := getUsernameFromUserID(giverUserId)
 	if err != nil {
 		log.Fatal("Error getting username:", err)
@@ -94,12 +94,19 @@ func saveRating(rating string, giverUserId string, recieverUsername string) {
 	db, closer := database.GetDB()
 	defer closer()
 
-	stmt, err := db.Prepare("INSERT INTO feedback (giver, receiver, rating) VALUES (?, ?, ?) ON CONFLICT(giver, receiver) DO UPDATE SET rating=excluded.rating")
+	stmt, err := db.Prepare(`INSERT INTO feedback 
+		(giver, receiver, rating, role, deal_stage) 
+		VALUES (?, ?, ?, ?, ?) 
+		ON CONFLICT(giver, receiver) 
+		DO UPDATE SET 
+			rating=excluded.rating,
+			role=excluded.role,
+			deal_stage=excluded.deal_stage`)
 	if err != nil {
 		log.Fatal("Error preparing statement.")
 	}
 
-	_, err = stmt.Exec(giverUsername, recieverUsername, rating)
+	_, err = stmt.Exec(giverUsername, recieverUsername, rating, role, dealStage)
 	if err != nil {
 		log.Fatal("Error executing statement.", err)
 	}

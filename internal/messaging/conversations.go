@@ -1,6 +1,13 @@
 package messaging
 
-type UserConversations map[string]string
+type ConversationState struct {
+	Stage      string
+	TargetUser string
+	Role       string
+	DealStage  string
+}
+
+type UserConversations map[string]ConversationState
 
 var conversations UserConversations
 
@@ -8,27 +15,24 @@ func InitConversations() {
 	conversations = make(UserConversations)
 }
 
-func getUserConversationStage(userId string) string {
-	userConversationStage, exists := conversations[userId]
-	if exists {
-		return userConversationStage
-	} else {
-		stage := "START"
-		conversations[userId] = stage
-		return stage
+func getUserConversationState(userId string) ConversationState {
+	state, exists := conversations[userId]
+	if !exists {
+		return ConversationState{Stage: "START"}
 	}
+	return state
 }
 
-func setUserConversationStage(userId string, stage string) {
-	conversations[userId] = stage
+func setUserConversationState(userId string, state ConversationState) {
+	conversations[userId] = state
 }
 
-// GetUserConversationStage exposes the conversation stage for testing
-func GetUserConversationStage(userId string) string {
-	return getUserConversationStage(userId)
+// GetUserConversationState exposes the conversation state for testing
+func GetUserConversationState(userId string) ConversationState {
+	return getUserConversationState(userId)
 }
 
-// SetUserConversationStage exposes the stage setter for testing
-func SetUserConversationStage(userId string, stage string) {
-	setUserConversationStage(userId, stage)
+// SetUserConversationState exposes the state setter for testing
+func SetUserConversationState(userId string, state ConversationState) {
+	setUserConversationState(userId, state)
 }

@@ -82,3 +82,45 @@ func askForUsernameToSearch(userId string) {
 func invalidRatingMessage(userId string) {
 	sendTextMessage("Invalid rating. Please select one of the options provided. Or click cancel.", userId)
 }
+
+func askForRole(userId string) {
+	buttons := []ElementButton{
+		{
+			Type:    "postback",
+			Title:   "Buyer",
+			Payload: "ROLE:BUYER",
+		},
+		{
+			Type:    "postback",
+			Title:   "Seller",
+			Payload: "ROLE:SELLER",
+		},
+		{
+			Type:    "postback",
+			Title:   "Cancel",
+			Payload: "CANCEL",
+		},
+	}
+	sendButtonMessage(buttons, "What was your role in this interaction?", userId)
+}
+
+func askForDealStage(userId string) {
+	buttons := []ElementButton{
+		{
+			Type:    "postback",
+			Title:   "Completed Deal",
+			Payload: "DEAL_STAGE:COMPLETE",
+		},
+		{
+			Type:    "postback",
+			Title:   "Incomplete Deal",
+			Payload: "DEAL_STAGE:INCOMPLETE",
+		},
+		{
+			Type:    "postback",
+			Title:   "Cancel",
+			Payload: "CANCEL",
+		},
+	}
+	sendButtonMessage(buttons, "What was the stage of the deal?", userId)
+}
