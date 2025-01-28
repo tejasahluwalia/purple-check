@@ -35,6 +35,22 @@ func RouteMessage(userId string, message string, payload string) {
 		}
 		if strings.HasPrefix(payload, "RATE:") {
 			usernameToRate := strings.Split(payload, ":")[1]
+			
+			// Get the username of the person trying to leave feedback
+			userProfile, err := getUsernameFromUserID(userId)
+			if err != nil {
+				log.Printf("Failed to get username for user %s: %v", userId, err)
+				sendTextMessage("Sorry, something went wrong. Please try again later.", userId)
+				return
+			}
+
+			// Check if user is trying to rate themselves
+			if strings.EqualFold(userProfile.Username, usernameToRate) {
+				sendTextMessage("Sorry, you cannot leave feedback on your own profile.", userId)
+				askForUsernameToSearch(userId)
+				return
+			}
+
 			setUserConversationState(userId, ConversationState{
 				Stage:      "AWAITING_ROLE",
 				TargetUser: usernameToRate,
