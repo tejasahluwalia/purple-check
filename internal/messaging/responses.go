@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 
+	"purple-check/internal/config"
 	"purple-check/internal/database"
 )
 
@@ -29,7 +30,7 @@ func searchForUserAndRespond(usernameToSearch string, userId string) {
 		{
 			Type:  "web_url",
 			Title: "See all feedback",
-			URL:   "https://dev.purple-check.org/profile/" + usernameToSearch,
+			URL:   "https://" + config.HOST + "/profile/" + usernameToSearch,
 		},
 		{
 			Type:    "postback",
