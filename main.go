@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"net/http"
 	"log/slog"
+	"net/http"
 
 	"purple-check/internal/logger"
 	"purple-check/internal/middleware"
@@ -11,7 +11,6 @@ import (
 	"purple-check/internal/app"
 	"purple-check/internal/components"
 	"purple-check/internal/config"
-	"purple-check/internal/database"
 	"purple-check/internal/messaging"
 	"purple-check/internal/webhook"
 
@@ -30,7 +29,6 @@ func (t page) handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	logger.Setup()
-	database.SyncDB()
 
 	mux := http.NewServeMux()
 	handler := middleware.Logging(mux)

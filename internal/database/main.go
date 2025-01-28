@@ -7,31 +7,19 @@ import (
 
 	"purple-check/internal/config"
 
-	"github.com/tursodatabase/go-libsql"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
-func getConnector() *libsql.Connector {
-	primaryUrl := config.TURSO_DATABASE_URL
-	authToken := config.TURSO_AUTH_TOKEN
-	dbPath := config.LOCAL_DB_PATH
+var getDB = func() (*sql.DB, func()) {
+	url := config.TURSO_DATABASE_URL + "?authToken=" + config.TURSO_AUTH_TOKEN
 
-	connector, err := libsql.NewEmbeddedReplicaConnector(dbPath, primaryUrl,
-		libsql.WithAuthToken(authToken),
-	)
-
+	db, err := sql.Open("libsql", url)
 	if err != nil {
-		fmt.Println("Error creating connector:", err)
+		fmt.Fprintf(os.Stderr, "failed to open db %s: %s", url, err)
 		os.Exit(1)
 	}
 
-	return connector
-}
-
-var getDB = func() (*sql.DB, func()) {
-	connector := getConnector()
-	db := sql.OpenDB(connector)
 	return db, func() {
-		connector.Close()
 		db.Close()
 	}
 }
@@ -44,12 +32,5 @@ func GetDB() (*sql.DB, func()) {
 func SetMockDB(mockDB *sql.DB, closer func()) {
 	getDB = func() (*sql.DB, func()) {
 		return mockDB, closer
-	}
-}
-
-func SyncDB() {
-	connector := getConnector()
-	if _, err := connector.Sync(); err != nil {
-		fmt.Println("Error syncing database:", err)
 	}
 }
