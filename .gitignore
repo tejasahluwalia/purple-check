@@ -1,4 +1,6 @@
 tmp/
 data/
 .env
+.env.prod
+.env.dev
 .aider*

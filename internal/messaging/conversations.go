@@ -1,10 +1,11 @@
 package messaging
 
 type ConversationState struct {
-	Stage      string
-	TargetUser string
-	Role       string
-	DealStage  string
+	Stage       string
+	TargetUser  string
+	Role        string
+	DealStage   string
+	CurrentUser string
 }
 
 type UserConversations map[string]ConversationState
@@ -18,7 +19,9 @@ func InitConversations() {
 func getUserConversationState(userId string) ConversationState {
 	state, exists := conversations[userId]
 	if !exists {
-		return ConversationState{Stage: "START"}
+		newState := ConversationState{Stage: "START"}
+		conversations[userId] = newState
+		return newState
 	}
 	return state
 }

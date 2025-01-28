@@ -83,15 +83,7 @@ func sendMessage(body []byte) {
 	defer resp.Body.Close()
 }
 
-func saveRating(rating string, giverUserId string, recieverUsername string, role string, dealStage string) {
-	userProfileAPIResponse, err := getUsernameFromUserID(giverUserId)
-	if err != nil {
-		log.Fatal("Error getting username:", err)
-		return
-	}
-	giverUsername := userProfileAPIResponse.Username
-	giverRole := role
-
+func saveRating(rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) {
 	db, closer := database.GetDB()
 	defer closer()
 
@@ -107,14 +99,6 @@ func saveRating(rating string, giverUserId string, recieverUsername string, role
 		log.Fatal("Error preparing statement.")
 	}
 
-	// Set receiverRole to "seller" if giverRole is "buyer" and vice versa
-	var receiverRole string
-	if giverRole == "buyer" {
-		receiverRole = "seller"
-	} else {
-		receiverRole = "buyer"
-	}
-
 	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
 	if err != nil {
 		log.Fatal("Error executing statement.", err)
@@ -126,12 +110,17 @@ type UserProfileAPIResponse struct {
 	ID       string `json:"id"`
 }
 
-func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
+func getUsernameFromUserID(userId string) (string, error) {
+	userState := getUserConversationState(userId)
+	if userState.CurrentUser != "" {
+		return userState.CurrentUser, nil
+	}
+
 	url := API_URL + "/" + userId
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return "", err
 	}
 
 	q := req.URL.Query()
@@ -143,14 +132,14 @@ func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return "", err
 	}
 
 	var userProfileAPIResponse UserProfileAPIResponse
 
 	if resp.StatusCode != 200 {
 		log.Fatal("Error getting username.")
-		return nil, errors.New("IG_API_Error")
+		return "", errors.New("IG_API_Error")
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&userProfileAPIResponse)
@@ -158,8 +147,10 @@ func getUsernameFromUserID(userId string) (*UserProfileAPIResponse, error) {
 		log.Fatal("Error decoding response body.")
 	}
 
+	userState.CurrentUser = userProfileAPIResponse.Username
+
 	defer resp.Body.Close()
-	return &userProfileAPIResponse, nil
+	return userProfileAPIResponse.Username, nil
 }
 
 func SetPersistentMenu() {
