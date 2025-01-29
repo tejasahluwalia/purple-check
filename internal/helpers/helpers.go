@@ -39,5 +39,5 @@ func DetectUsername(message string) (string, bool) {
 		}
 	}
 
-	return username, username != ""
+	return strings.ToLower(username), username != ""
 }

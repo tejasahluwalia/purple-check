@@ -18,7 +18,7 @@ func RouteMessage(userId string, message string, payload string) {
 	_, err := db.Exec(
 		"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
 		userId,
-		message, // Logs both regular messages and payloads via message parameter
+		message+payload,
 		state.Stage,
 		time.Now(),
 	)
@@ -121,10 +121,10 @@ func RouteMessage(userId string, message string, payload string) {
 			giverUsername := state.CurrentUser
 			giverRole := state.Role
 			var receiverRole string
-			if giverRole == "buyer" {
-				receiverRole = "seller"
-			} else {
-				receiverRole = "buyer"
+			if strings.EqualFold(giverRole, "BUYER") {
+				receiverRole = "SELLER"
+			} else if strings.EqualFold(giverRole, "SELLER") {
+				receiverRole = "BUYER"
 			}
 			saveRating(rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage)
 			sendTextMessage("Thank you for submitting a rating.", userId)
