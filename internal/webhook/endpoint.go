@@ -21,8 +21,14 @@ func Instagram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	messageEvent := webhook.Entry[0].Messaging[0]
 	userId := messageEvent.Sender.Id
+
+	if userId == "954039343027729" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 
