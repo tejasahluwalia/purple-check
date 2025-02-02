@@ -9,7 +9,7 @@ import (
 	"purple-check/internal/helpers"
 )
 
-func RouteMessage(userId string, message string, payload string) {
+func RouteMessage(userId string, message string, payload string, ref string) {
 	state := getUserConversationState(userId)
 
 	// Add database logging
@@ -18,12 +18,17 @@ func RouteMessage(userId string, message string, payload string) {
 	_, err := db.Exec(
 		"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
 		userId,
-		message+payload,
+		message+payload+ref,
 		state.Stage,
 		time.Now(),
 	)
 	if err != nil {
 		log.Printf("Failed to log message: %v", err)
+	}
+
+	if ref != "" {
+		// Handle referral
+		setUserConversationState(userId, ConversationState{Stage: "START", TargetUser: ref})
 	}
 
 	switch state.Stage {
@@ -36,7 +41,6 @@ func RouteMessage(userId string, message string, payload string) {
 		if strings.HasPrefix(payload, "RATE:") {
 			usernameToRate := strings.Split(payload, ":")[1]
 
-			// Get the username of the person trying to leave feedback
 			username, err := getUsernameFromUserID(userId)
 			if err != nil {
 				log.Printf("Failed to get username for user %s: %v", userId, err)
@@ -63,8 +67,12 @@ func RouteMessage(userId string, message string, payload string) {
 			askForRole(userId)
 			return
 		}
-		if payload == "SEARCH" {
-			askForUsernameToSearch(userId)
+		if payload == "SEARCH" || payload == "LINK" {
+			if state.TargetUser != "" {
+				searchForUserAndRespond(state.TargetUser, userId)
+			} else {
+				askForUsernameToSearch(userId)
+			}
 			return
 		}
 		askForUsernameToSearch(userId)

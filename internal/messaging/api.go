@@ -6,10 +6,12 @@ import (
 	"errors"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"purple-check/internal/config"
 	"purple-check/internal/database"
+	"purple-check/internal/helpers"
 )
 
 var API_HOST = "graph.instagram.com"
@@ -167,10 +169,6 @@ func SetPersistentMenu() {
 						Title:   "Search for a user",
 						Type:    "postback",
 						Payload: "SEARCH",
-					}, {
-						Title:   "Rate a user",
-						Type:    "postback",
-						Payload: "RATE",
 					},
 				},
 			},
@@ -182,9 +180,10 @@ func SetPersistentMenu() {
 					{
 						Question: "Search for a user",
 						Payload:  "SEARCH",
-					}, {
-						Question: "Rate a user",
-						Payload:  "RATE",
+					},
+					{
+						Question: "I was sent a link.",
+						Payload:  "LINK",
 					},
 				},
 			},
@@ -207,6 +206,13 @@ func SetPersistentMenu() {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+	}
+
+	if resp.StatusCode != 200 {
+		respBody := helpers.GetResponseBody(resp)
+		slog.Error("Error setting persistent menu", "response", respBody)
+	} else {
+		slog.Info("Persistent menu set.")
 	}
 
 	defer resp.Body.Close()

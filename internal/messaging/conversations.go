@@ -29,13 +29,3 @@ func getUserConversationState(userId string) ConversationState {
 func setUserConversationState(userId string, state ConversationState) {
 	conversations[userId] = state
 }
-
-// GetUserConversationState exposes the conversation state for testing
-func GetUserConversationState(userId string) ConversationState {
-	return getUserConversationState(userId)
-}
-
-// SetUserConversationState exposes the state setter for testing
-func SetUserConversationState(userId string, state ConversationState) {
-	setUserConversationState(userId, state)
-}
