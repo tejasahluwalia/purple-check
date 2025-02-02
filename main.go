@@ -31,7 +31,7 @@ func main() {
 	logger.Setup()
 
 	mux := http.NewServeMux()
-	handler := middleware.Logging(mux)
+	handler := middleware.Logging(middleware.RedirectNonWWW(mux))
 
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
