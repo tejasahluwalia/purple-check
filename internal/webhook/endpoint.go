@@ -31,5 +31,9 @@ func Instagram(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	messaging.RouteMessage(userId, messageEvent.Message.Text, messageEvent.Postback.Payload, messageEvent.Message.Referral.Ref)
+	if messageEvent.Postback != nil {
+		messaging.RouteMessage(userId, messageEvent.Message.Text, messageEvent.Postback.Payload, "")
+	} else {
+		messaging.RouteMessage(userId, messageEvent.Message.Text, "", "")
+	}
 }
