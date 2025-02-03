@@ -23,11 +23,7 @@ type MessageEvent struct {
 		Quick_reply struct {
 			Payload string `json:"payload"`
 		} `json:"quick_reply"`
-		Referral struct {
-			Ref    string `json:"ref"`
-			Source string `json:"source"`
-			Type   string `json:"type"`
-		} `json:"referral"`
+		Referral *Refferal `json:"referral,omitempty"`
 		Reply_to struct {
 			Mid   string `json:"mid"`
 			Story struct {
@@ -43,13 +39,21 @@ type MessageEvent struct {
 		Emoji    string `json:"emoji"`
 	} `json:"reaction"`
 	Postback *struct {
-		Mid     string `json:"mid"`
-		Title   string `json:"title"`
-		Payload string `json:"payload"`
+		Mid      string    `json:"mid"`
+		Title    string    `json:"title"`
+		Payload  string    `json:"payload"`
+		Refferal *Refferal `json:"refferal,omitempty"`
 	} `json:"postback"`
 	Read struct {
 		Mid string `json:"mid"`
 	} `json:"read"`
+	Refferal *Refferal `json:"refferal,omitempty"`
+}
+
+type Refferal struct {
+	Ref    string `json:"ref"`
+	Source string `json:"source"`
+	Type   string `json:"type"`
 }
 
 type InstagramWebhook struct {

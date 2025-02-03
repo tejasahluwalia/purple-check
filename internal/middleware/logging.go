@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"purple-check/internal/helpers"
 )
 
 func isGetMethod(r *http.Request) bool {
@@ -26,9 +24,6 @@ func Logging(next http.Handler) http.Handler {
 		start := time.Now()
 		next.ServeHTTP(w, r)
 
-		body := helpers.GetRequestBody(r)
-		headers := r.Header
-
 		if isGetMethod(r) && !isInstagramWebhookPath(r.URL.Path) && !isStaticPath(r.URL.Path) {
 			slog.InfoContext(r.Context(), "page_view",
 				"path", r.URL.Path,
@@ -36,7 +31,6 @@ func Logging(next http.Handler) http.Handler {
 				"referrer", r.Referer(),
 				"duration", time.Since(start),
 				"ip", r.RemoteAddr,
-				"headers", headers,
 			)
 		} else if !isStaticPath(r.URL.Path) {
 			slog.InfoContext(r.Context(),
@@ -45,8 +39,6 @@ func Logging(next http.Handler) http.Handler {
 				"path", r.URL.Path,
 				"duration", time.Since(start),
 				"ip", r.RemoteAddr,
-				"body", body,
-				"headers", headers,
 			)
 		}
 	})
