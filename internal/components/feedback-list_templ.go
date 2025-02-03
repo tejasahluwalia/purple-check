@@ -75,7 +75,7 @@ func FeedbackList(p string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<ul class=\"space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10\" hx-confirm=\"Are you sure?\" hx-target=\"closest .feedback\" hx-swap=\"outerHTML\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<ul class=\"space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -93,7 +93,7 @@ func FeedbackList(p string) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><div class=\"flex space-x-2 items-center\"><h3 class=\"font-medium text-slate-900\"><a hx-boost=\"false\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><div class=\"flex space-x-2 items-center\"><h3 class=\"font-medium text-slate-900\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -109,7 +109,7 @@ func FeedbackList(p string) templ.Component {
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.Giver)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 58, Col: 92}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 58, Col: 75}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {

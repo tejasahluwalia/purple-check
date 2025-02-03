@@ -38,6 +38,7 @@ func main() {
 
 	mux.HandleFunc("GET /", (&page{components.Layout(app.Index())}).handler)
 	mux.HandleFunc("GET /privacy-policy", (&page{components.Layout(app.PrivacyPolicy())}).handler)
+	mux.HandleFunc("GET /delete-my-data", (&page{components.Layout(app.DeleteMyData())}).handler)
 	mux.HandleFunc("GET /terms-of-service", (&page{components.Layout(app.TermsOfService())}).handler)
 	mux.HandleFunc("POST /search", app.Search)
 	mux.HandleFunc("GET /profile/{username}", (&page{components.Layout(app.Profile())}).handler)

@@ -29,7 +29,7 @@ func Footer() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<footer class=\"bg-purple-900 mt-16\"><div class=\"px-4 py-8 container mx-auto\"><nav class=\"grid md:grid-cols-2 gap-8\"><div class=\"text-purple-100\"><div class=\"font-bold text-lg\">Purple Check</div><div class=\"text-sm\">by Tujux Labs</div><div class=\"mt-4\">Email: <a href=\"mailto:contact@purple-check.org\" class=\"text-purple-50 underline\">contact@purple-check.org </a></div></div><ul class=\"space-y-4 text-sm text-purple-50 font-bold\"><li><a href=\"/privacy-policy\">Privacy Policy</a></li><li><a href=\"/terms-of-service\">Terms of Service</a></li><li><a href=\"/delete-my-data\">Delete my data</a></li></ul></nav></div></footer>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<footer class=\"bg-purple-950 mt-16\"><div class=\"px-4 py-8 container mx-auto max-w-screen-md\"><nav class=\"flex flex-col gap-8 md:flex-row md:justify-between\"><div class=\"text-purple-100\"><div class=\"font-bold text-lg mb-1\">Purple Check</div><div class=\"text-sm\">by Tujux Labs</div><div class=\"mt-4\">Email: <a href=\"mailto:contact@purple-check.org\" class=\"text-purple-50 underline\">contact@purple-check.org</a></div></div><ul class=\"space-y-4 text-sm text-purple-50 underline\"><li><a href=\"/privacy-policy\">Privacy Policy</a></li><li><a href=\"/terms-of-service\">Terms of Service</a></li><li><a href=\"/delete-my-data\">Delete my data</a></li></ul></nav></div></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

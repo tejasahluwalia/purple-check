@@ -29,12 +29,12 @@ func searchForUserAndRespond(usernameToSearch string, userId string) {
 	buttons := []ElementButton{
 		{
 			Type:  "web_url",
-			Title: "See all feedback",
+			Title: "See all reviews",
 			URL:   "https://" + config.HOST + "/profile/" + usernameToSearch,
 		},
 		{
 			Type:    "postback",
-			Title:   "Leave feedback",
+			Title:   "Leave review",
 			Payload: "RATE:" + usernameToSearch,
 		},
 		{

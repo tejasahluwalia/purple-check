@@ -45,7 +45,7 @@ templ FeedbackList(p string) {
 	if len(feedbackList) == 0 {
 		<p class="text-slate-500">No feedback yet.</p>
 	} else {
-		<ul class="space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10" hx-confirm="Are you sure?" hx-target="closest .feedback" hx-swap="outerHTML">
+		<ul class="space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10">
 			for _, feedback := range feedbackList {
 				<li class="feedback pt-4 grid">
 					<div class="mt-2 mb-4 text-slate-500">
@@ -55,7 +55,7 @@ templ FeedbackList(p string) {
 					</div>
 					<div class="flex space-x-2 items-center">
 						<h3 class="font-medium text-slate-900">
-							<a hx-boost="false" href={ templ.URL("/profile/" + feedback.Giver) }>{ feedback.Giver }</a>
+							<a href={ templ.URL("/profile/" + feedback.Giver) }>{ feedback.Giver }</a>
 						</h3>
 						<span>
 							.

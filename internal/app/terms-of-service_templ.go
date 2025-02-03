@@ -29,7 +29,7 @@ func TermsOfService() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex w-full justify-center\"><section class=\"mx-auto block px-4 py-8 prose\"><h1>Terms of Service</h1><p>By using Purple Check, you agree to the following terms:</p><ul><li>You will not use Purple Check to harass, bully, or intimidate others.</li><li>You will not use Purple Check to spread misinformation or fake news.</li><li>You will not use Purple Check to promote violence or hate speech.</li><li>You will not use Purple Check to violate the privacy of others.</li></ul></section></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex w-full\"><section class=\"block px-4 py-8 prose\"><h1>Terms of Service</h1><p>By using Purple Check, you agree to the following terms:</p><ul><li>You will not use Purple Check to harass, bully, or intimidate others.</li><li>You will not use Purple Check to spread misinformation or fake news.</li><li>You will not use Purple Check to promote violence or hate speech.</li><li>You will not use Purple Check to violate the privacy of others.</li></ul></section></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

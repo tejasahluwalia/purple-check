@@ -13,12 +13,15 @@ templ Index() {
 }
 
 templ homepage() {
-	<section class="flex-1 text-slate-600 space-y-4">
-		<h1 class="py-4 text-3xl text-slate-950 font-bold">Reviews for buyers and sellers on Instagram.</h1>
-		<p>
-			<span class="font-medium text-slate-950">Search for a username</span> to see feedback left by real people.
-		</p>
+	<section class="flex-1 space-y-8">
+		<h1 class="pt-4 text-3xl text-slate-950 leading-relaxed font-bold">Reviews for buyers and sellers on Instagram</h1>
 		@components.Search()
+		<div class="p-6 bg-purple-100 rounded text-lg text-slate-950">
+			To leave a review, send a direct message to <a href="https://ig.me/m/purplecheck_org" class="text-purple-600">{"@purplecheck_org"}</a> on Instagram.
+			<br/>
+			<br/>
+			Please note that the chatbot only works on the Instagram app on mobile.
+		</div>
 	</section>
 }
 
@@ -26,7 +29,7 @@ templ notFound() {
 	<section class="flex-1 text-slate-600 space-y-4">
 		<h1 class="py-4 text-3xl text-slate-950 font-bold">This page does not exist.</h1>
 		<p>
-			<span class="font-medium text-slate-950">Search for a username</span> to see feedback left by real people or leave a comment of your own.
+			<span class="font-medium text-slate-950">Search for a username</span> to see reviews.
 		</p>
 		@components.Search()
 	</section>
