@@ -7,9 +7,18 @@ import (
 
 	"purple-check/internal/database"
 	"purple-check/internal/helpers"
+	"purple-check/internal/models"
 )
 
-func RouteMessage(userId string, message string, payload string, ref string) {
+func RouteMessage(messageEvent models.MessageEvent) {
+	var userId, message, payload, ref string
+
+	userId = messageEvent.Sender.Id
+	message = messageEvent.Message.Text
+	if messageEvent.Postback != nil {
+		payload = messageEvent.Postback.Payload
+	}
+
 	state := getUserConversationState(userId)
 
 	// Add database logging
