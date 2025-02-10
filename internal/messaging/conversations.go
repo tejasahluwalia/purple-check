@@ -1,5 +1,7 @@
 package messaging
 
+import "purple-check/internal/cache"
+
 type ConversationState struct {
 	Stage       string
 	TargetUser  string
@@ -8,24 +10,24 @@ type ConversationState struct {
 	CurrentUser string
 }
 
-type UserConversations map[string]ConversationState
-
-var conversations UserConversations
+var conversations *cache.Cache[string, ConversationState]
 
 func InitConversations() {
-	conversations = make(UserConversations)
+	conversations = cache.New[string, ConversationState]()
 }
 
+type UserConversations map[string]ConversationState
+
 func getUserConversationState(userId string) ConversationState {
-	state, exists := conversations[userId]
+	state, exists := conversations.Get(userId)
 	if !exists {
 		newState := ConversationState{Stage: "START"}
-		conversations[userId] = newState
+		conversations.Set(userId, newState)
 		return newState
 	}
 	return state
 }
 
 func setUserConversationState(userId string, state ConversationState) {
-	conversations[userId] = state
+	conversations.Set(userId, state)
 }

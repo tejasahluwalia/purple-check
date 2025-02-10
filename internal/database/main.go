@@ -27,10 +27,3 @@ var getDB = func() (*sql.DB, func()) {
 func GetDB() (*sql.DB, func()) {
 	return getDB()
 }
-
-// For testing only
-func SetMockDB(mockDB *sql.DB, closer func()) {
-	getDB = func() (*sql.DB, func()) {
-		return mockDB, closer
-	}
-}
