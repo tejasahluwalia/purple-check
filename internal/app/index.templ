@@ -3,20 +3,18 @@ package app
 import "purple-check/internal/components"
 
 templ Index() {
-	<section class="flex-1 text-slate-600 space-y-4">
-		if components.GetRequestContext(ctx).URL.Path == "/" {
-			@homepage()
-		} else {
-			@notFound()
-		}
-	</section>
+	if components.GetRequestContext(ctx).URL.Path == "/" {
+		@homepage()
+	} else {
+		@notFound()
+	}
 }
 
 templ homepage() {
-	<section class="flex-1 space-y-8">
-		<h1 class="pt-4 text-3xl text-slate-950 leading-relaxed font-bold">Reviews for buyers and sellers on Instagram</h1>
+	<section class="flex-1 space-y-8 py-8">
+		<h1 class="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Reviews for buyers and sellers on Instagram</h1>
 		@components.Search()
-		<div class="p-6 bg-purple-100 rounded text-lg text-slate-950">
+		<div class="p-6 bg-purple-100 rounded-sm text-slate-950">
 			To leave a review, send a direct message to <a href="https://ig.me/m/purplecheck_org" class="text-purple-600">{ "@purplecheck_org" }</a> on Instagram.
 			<br/>
 			<br/>

@@ -31,10 +31,6 @@ func Index() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"flex-1 text-slate-600 space-y-4\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		if components.GetRequestContext(ctx).URL.Path == "/" {
 			templ_7745c5c3_Err = homepage().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
@@ -45,10 +41,6 @@ func Index() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</section>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
 		}
 		return nil
 	})
@@ -75,7 +67,7 @@ func homepage() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<section class=\"flex-1 space-y-8\"><h1 class=\"pt-4 text-3xl text-slate-950 leading-relaxed font-bold\">Reviews for buyers and sellers on Instagram</h1>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"flex-1 space-y-8 py-8\"><h1 class=\"text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight\">Reviews for buyers and sellers on Instagram</h1>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -83,20 +75,20 @@ func homepage() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"p-6 bg-purple-100 rounded text-lg text-slate-950\">To leave a review, send a direct message to <a href=\"https://ig.me/m/purplecheck_org\" class=\"text-purple-600\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"p-6 bg-purple-100 rounded-sm text-slate-950\">To leave a review, send a direct message to <a href=\"https://ig.me/m/purplecheck_org\" class=\"text-purple-600\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("@purplecheck_org")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/index.templ`, Line: 20, Col: 133}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/index.templ`, Line: 18, Col: 133}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</a> on Instagram.<br><br>Please note that the chatbot only works on the Instagram app on mobile.</div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</a> on Instagram.<br><br>Please note that the chatbot only works on the Instagram app on mobile.</div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -125,7 +117,7 @@ func notFound() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<section class=\"flex-1 text-slate-600 space-y-4\"><h1 class=\"py-4 text-3xl text-slate-950 font-bold\">This page does not exist.</h1><p><span class=\"font-medium text-slate-950\">Search for a username</span> to see reviews.</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<section class=\"flex-1 text-slate-600 space-y-4\"><h1 class=\"py-4 text-3xl text-slate-950 font-bold\">This page does not exist.</h1><p><span class=\"font-medium text-slate-950\">Search for a username</span> to see reviews.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -133,7 +125,7 @@ func notFound() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

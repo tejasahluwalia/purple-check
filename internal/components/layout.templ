@@ -26,7 +26,7 @@ templ Layout(body templ.Component) {
 		</head>
 		<body class="min-h-svh flex flex-col">
 			@Header()
-			<div class="flex-1 container max-w-screen-md mx-auto px-4">
+			<div class="flex-1 container max-w-(--breakpoint-md) mx-auto px-4">
 				@body
 			</div>
 			@Footer()

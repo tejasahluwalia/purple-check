@@ -2,13 +2,13 @@ package components
 
 templ Search() {
 	<form action="/search" method="post" class="block" id="search-form">
-		<label for="search-term" class="block font-medium text-slate-950 mb-2 text-lg">Search for a user to see reviews.</label>
+		<label for="search-term" class="block text-sm/6 font-medium text-gray-900">Search for a user to see reviews.</label>
 		<div class="flex flex-col w-full space-y-4 mt-1 relative">
 			<div class="relative">
 				<input
 					placeholder="@username"
 					autocapitalize="none"
-					class="flex-1 w-full rounded-lg border-0 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 leading-6 lowercase"
+					class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-purple-600 sm:text-sm/6"
 					type="text"
 					name="search-term"
 					id="search-term"
@@ -17,7 +17,7 @@ templ Search() {
 				<p id="error-message" class="hidden text-red-500 text-sm mt-1"></p>
 			</div>
 			<input
-				class="w-full mx-auto rounded-lg bg-purple-600 px-3 py-2 font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-colors"
+				class="rounded-md bg-purple-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:not-disabled:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-colors"
 				type="submit"
 				id="search-button"
 				value="Search"

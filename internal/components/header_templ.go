@@ -29,7 +29,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header><div class=\"flex py-4 justify-between items-center container mx-auto px-4 max-w-screen-md\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header><div class=\"flex py-4 justify-between items-center container mx-auto px-4 max-w-(--breakpoint-md)\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-purple-700 leading-none\">Purple Check</span></a></div></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
