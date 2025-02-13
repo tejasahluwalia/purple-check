@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,13 +14,24 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	}
 	username := r.FormValue("search-term")
 	username = strings.ToLower(username)
+	username = strings.TrimPrefix(username, "@")
+	// Instagram usernames can only be 30 chars or less
+	if len(username) > 30 {
+		username = username[:30]
+	}
+	// Restrict to letters, numbers, periods and underscores
+	allowed := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._"
+	filtered := ""
+	for _, char := range username {
+		if strings.Contains(allowed, string(char)) {
+			filtered += string(char)
+		}
+	}
+	username = filtered
+	slog.Info("searching for username", "username", username)
 	if username == "" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
+		http.Error(w, "Invalid username", http.StatusBadRequest)
 	} else {
-		username = strings.TrimPrefix(username, "@")
-		safeUsername := url.QueryEscape(username) // import "net/url"
-		http.Redirect(w, r, "/profile/"+safeUsername, http.StatusFound)
-		return
+		http.Redirect(w, r, "/profile/"+url.QueryEscape(username), http.StatusFound)
 	}
 }

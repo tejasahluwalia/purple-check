@@ -20,6 +20,7 @@ func getFeedbackList(username string, role string) []models.Feedback {
 	rows, err := stmt.Query(username)
 	if err != nil {
 		log.Println(err)
+		return []models.Feedback{}
 	}
 
 	for rows.Next() {
