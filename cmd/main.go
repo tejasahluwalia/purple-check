@@ -13,6 +13,7 @@ import (
 	"purple-check/internal/app"
 	"purple-check/internal/components"
 	"purple-check/internal/config"
+	"purple-check/internal/messaging"
 	"purple-check/internal/webhook"
 
 	"github.com/a-h/templ"
@@ -29,8 +30,8 @@ func (t page) handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	logger.Setup()
-	// messaging.InitConversations()
-	// messaging.SetPersistentMenu()
+	messaging.InitConversations()
+	messaging.SetPersistentMenu()
 
 	mux := http.NewServeMux()
 	handler := middleware.RedirectNonWWW(mux)
