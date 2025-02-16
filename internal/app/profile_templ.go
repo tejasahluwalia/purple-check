@@ -58,7 +58,16 @@ func Profile() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"><img class=\"h-12 w-12 p-3\" src=\"/static/Instagram_Glyph_Black.svg\" alt=\"The Instagram logo\"></a></div><div class=\"my-4 p-4\"><h2 class=\"text-xl mb-8 font-bold tracking-tight\">Feedback received</h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"><img class=\"h-12 w-12 p-3\" src=\"/static/Instagram_Glyph_Black.svg\" alt=\"The Instagram logo\"></a></div><div class=\"flex justify-center my-8 mx-4\"><a class=\"border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow-sm px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50\" href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 templ.SafeURL = templ.URL("https://ig.me/m/purplecheck_org?ref=" + username)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" target=\"_blank\">Leave feedback for this user</a></div><div class=\"my-4 p-4\"><h2 class=\"text-xl mb-8 font-bold tracking-tight\">Feedback received</h2>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -66,7 +75,7 @@ func Profile() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

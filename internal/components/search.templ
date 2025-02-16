@@ -41,13 +41,13 @@ templ Search() {
             // 2. Can contain letters, numbers, periods, and underscores
             // 3. Can't start or end with a period
             // 4. Can't have consecutive periods
-            const regex = /^[a-zA-Z0-9][a-zA-Z0-9._]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+            const allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._";
             const hasConsecutivePeriods = /\.{2,}/.test(username);
 
-            return regex.test(username) &&
-                   username.length >= 1 &&
+            return username.length >= 1 &&
                    username.length <= 30 &&
-                   !hasConsecutivePeriods;
+                   !hasConsecutivePeriods &&
+                   [...username].every(char => allowedCharacters.includes(char));
         }
 
         input.addEventListener('input', function(e) {

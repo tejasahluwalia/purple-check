@@ -39,5 +39,36 @@ func DetectUsername(message string) (string, bool) {
 		}
 	}
 
-	return strings.ToLower(username), username != ""
+	if username == "" {
+		return "", false
+	}
+
+	username = strings.ToLower(username)
+	username = strings.TrimPrefix(username, "@")
+
+	if !ValidateUsername(username) {
+		return "", false
+	}
+
+	return username, username != ""
+}
+
+func ValidateUsername(username string) bool {
+	if len(username) < 3 || len(username) > 30 {
+		return false
+	}
+
+	if strings.Contains(username, "..") {
+		return false
+	}
+
+	// Restrict to letters, numbers, periods and underscores
+	allowed := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._"
+	for _, char := range username {
+		if !strings.Contains(allowed, string(char)) {
+			return false
+		}
+	}
+
+	return true
 }

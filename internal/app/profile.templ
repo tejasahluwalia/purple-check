@@ -11,13 +11,13 @@ templ Profile() {
 				<img class="h-12 w-12 p-3" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo"/>
 			</a>
 		</div>
-		// <div class="flex justify-center my-8 mx-4">
-		// 	/* TODO: Link to DM purple-check-org */
-		// 	<a
-		// 		class="border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow-sm px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50"
-		// 		href={ templ.URL("/profile/" + username + "/add-feedback") }
-		// 	>Leave feedback for this user</a>
-		// </div>
+		<div class="flex justify-center my-8 mx-4">
+			<a
+				class="border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow-sm px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50"
+				href={ templ.URL("https://ig.me/m/purplecheck_org?ref=" + username) }
+				target="_blank"
+			>Leave feedback for this user</a>
+		</div>
 		<div class="my-4 p-4">
 			<h2 class="text-xl mb-8 font-bold tracking-tight">Feedback received</h2>
 			@components.FeedbackList(username)

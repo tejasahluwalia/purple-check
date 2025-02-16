@@ -49,7 +49,11 @@ func searchForUserAndRespond(usernameToSearch string, userId string) {
 		return
 	} else {
 		positivePercentage := (rating.Float64 / float64(totalRatings)) * 100
-		sendButtonMessage(buttons, "@"+usernameToSearch+"\nRating: "+strconv.FormatFloat(positivePercentage, 'f', 2, 32)+"% Positive\nTotal Ratings: "+strconv.Itoa(totalRatings), userId)
+		ratingPlural := "ratings"
+		if totalRatings == 1 {
+			ratingPlural = "rating"
+		}
+		sendButtonMessage(buttons, "@"+usernameToSearch+"\n\n"+strconv.FormatFloat(positivePercentage, 'f', 0, 32)+"% positive ("+strconv.Itoa(totalRatings)+" "+ratingPlural+")", userId)
 		return
 	}
 }

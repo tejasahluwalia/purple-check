@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -43,13 +44,38 @@ func main() {
 			return
 		}
 		ctx := context.WithValue(r.Context(), components.RequestContextKey, r)
-		components.Layout(app.Index()).Render(ctx, w)
+		components.Layout(app.Index(), components.Head{
+			Title:       "Purple Check",
+			Description: "Purple Check is a review platform for buyers and sellers on Instagram.",
+			URL:         "https://www.purple-check.org",
+		}).Render(ctx, w)
 	})
-	mux.HandleFunc("GET /privacy-policy", (page{components.Layout(app.PrivacyPolicy())}).handler)
-	mux.HandleFunc("GET /delete-my-data", (page{components.Layout(app.DeleteMyData())}).handler)
-	mux.HandleFunc("GET /terms-of-service", (page{components.Layout(app.TermsOfService())}).handler)
+	mux.HandleFunc("GET /privacy-policy", (page{components.Layout(app.PrivacyPolicy(), components.Head{
+		Title: "Purple Check - Privacy Policy",
+		URL:   "https://www.purple-check.org/privacy-policy",
+	})}).handler)
+	mux.HandleFunc("GET /delete-my-data", (page{components.Layout(app.DeleteMyData(), components.Head{
+		Title:       "Delete My Data",
+		Description: "Delete your reviews from Purple Check.",
+		URL:         "https://www.purple-check.org/delete-my-data",
+	})}).handler)
+	mux.HandleFunc("GET /terms-of-service", (page{components.Layout(app.TermsOfService(), components.Head{
+		Title: "Purple Check - Terms of Service",
+		URL:   "https://www.purple-check.org/terms-of-service",
+	})}).handler)
 	mux.HandleFunc("POST /search", app.Search)
-	mux.HandleFunc("GET /profile/{username}", (page{components.Layout(app.Profile())}).handler)
+	mux.HandleFunc("GET /profile/{username}", func(w http.ResponseWriter, r *http.Request) {
+		username := r.PathValue("username")
+		if username == "" {
+			http.Error(w, "Invalid username", http.StatusBadRequest)
+		}
+		ctx := context.WithValue(r.Context(), components.RequestContextKey, r)
+		components.Layout(app.Profile(), components.Head{
+			Title:       fmt.Sprintf("Reviews for @%s on Instagram", username),
+			Description: fmt.Sprintf("Read and write reviews for @%s on Instagram. See recent feedback left by buyers and sellers.", username),
+			URL:         fmt.Sprintf("https://www.purple-check.org/profile/%s", username),
+		}).Render(ctx, w)
+	})
 
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
 	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)

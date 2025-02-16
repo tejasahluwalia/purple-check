@@ -1,21 +1,51 @@
 package components
 
-import "purple-check/internal/config"
+import (
+	"fmt"
+	"strconv"
 
-templ Layout(body templ.Component) {
+	"purple-check/internal/config"
+)
+
+type Head struct {
+	Title       string
+	Description string
+	URL         string
+}
+
+templ Layout(body templ.Component, head Head) {
+	{{
+		username := GetRequestContext(ctx).PathValue("username")
+		if username != "" {
+			rating, totalRatings := GetProfileRating(username)
+			positivePercentage := (rating / float64(totalRatings)) * 100
+			ratingPlural := "ratings"
+			if totalRatings == 1 {
+				ratingPlural = "rating"
+			}
+			if totalRatings > 0 {
+				head.Title = fmt.Sprintf("%s | %s%% positive (%d %s)", head.Title, strconv.FormatFloat(positivePercentage, 'f', 0, 32), totalRatings, ratingPlural)
+			}
+		}
+	}}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>Purple Check</title>
-			<meta name="description" content="Read and write reviews for Instagram pages and never get scammed again."/>
+			<title>{ head.Title }</title>
+			if head.Description != "" {
+				<meta name="description" content={ head.Description }/>
+			}
 			<meta property="fb:app_id" content={ config.APP_ID }/>
-			<meta property="og:title" content="Purple Check"/>
-			<meta property="og:description" content="Read and write reviews for Instagram pages and never get scammed again."/>
+			<meta property="og:title" content={ head.Title }/>
+			if head.Description != "" {
+				<meta property="og:description" content={ head.Description }/>
+			}
 			<meta property="og:type" content="website"/>
-			<meta property="og:url" content="https://www.purple-check.org"/>
+			<meta property="og:url" content={ head.URL }/>
 			<meta property="og:image" content="https://www.purple-check.org/static/purple-check-logo.png"/>
+			<link rel="canonical" href={ head.URL }/>
 			<link rel="stylesheet" href="/static/styles.css"/>
 			<link rel="icon" href="/static/favicon.ico"/>
 			<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png"/>
