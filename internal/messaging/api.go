@@ -178,12 +178,8 @@ func SetPersistentMenu() {
 				Locale: "default",
 				CallToActions: []IceBreakerCallToAction{
 					{
-						Question: "Search for a user",
+						Question: "Start here",
 						Payload:  "SEARCH",
-					},
-					{
-						Question: "I was sent a link.",
-						Payload:  "LINK",
 					},
 				},
 			},
