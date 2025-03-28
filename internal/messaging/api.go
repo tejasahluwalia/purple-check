@@ -208,7 +208,8 @@ func SetPersistentMenu() {
 		respBody := helpers.GetResponseBody(resp)
 		slog.Error("Error setting persistent menu", "response", respBody)
 	} else {
-		slog.Info("Persistent menu set.")
+		respBody := helpers.GetResponseBody(resp)
+		slog.Info("Persistent menu set.", "response", respBody)
 	}
 
 	defer resp.Body.Close()
