@@ -9,12 +9,16 @@ type Config map[string]string
 func init() {
 	config := make(Config)
 
-	expected_keys := []string{"APP_ID", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LOCAL_DB_PATH", "PORT", "HOST"}
+	expected_keys := []string{"APP_ID", "WEBHOOK_VERIFY_TOKEN", "ACCOUNT_TOKEN", "ACCOUNT_ID", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LOCAL_DB_PATH", "PORT", "HOST", "DEV"}
 
 	for _, key := range expected_keys {
 		config[key] = os.Getenv(key)
 		if config[key] == "" {
-			panic("Missing key in .env file: " + key)
+			if key == "DEV" {
+				config[key] = "false"
+			} else {
+				panic("Missing key in .env file: " + key)
+			}
 		}
 	}
 
@@ -27,6 +31,7 @@ func init() {
 	LOCAL_DB_PATH = config["LOCAL_DB_PATH"]
 	HOST = config["HOST"]
 	PORT = config["PORT"]
+	DEV = config["DEV"] == "true"
 }
 
 var APP_ID string
@@ -38,3 +43,4 @@ var TURSO_AUTH_TOKEN string
 var HOST string
 var PORT string
 var LOCAL_DB_PATH string
+var DEV bool

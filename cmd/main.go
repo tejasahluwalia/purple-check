@@ -19,6 +19,16 @@ import (
 	"github.com/a-h/templ"
 )
 
+func disableCacheInDevMode(next http.Handler) http.Handler {
+	if !config.DEV {
+		return next
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		next.ServeHTTP(w, r)
+	})
+}
+
 type page struct {
 	templ.Component
 }
@@ -37,7 +47,7 @@ func main() {
 	handler := middleware.RedirectNonWWW(mux)
 
 	fs := http.FileServer(http.Dir("static"))
-	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
+	mux.Handle("GET /static/", disableCacheInDevMode(http.StripPrefix("/static/", fs)))
 
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {

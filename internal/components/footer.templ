@@ -1,24 +1,18 @@
 package components
 
 templ Footer() {
-	<footer class="bg-purple-950 mt-16">
+	<footer class="bg-primary text-primary-foreground mt-16">
 		<div class="px-4 py-8 container mx-auto max-w-(--breakpoint-md)">
 			<nav class="flex flex-col gap-8 md:flex-row md:justify-between">
-				<div class="text-purple-100">
-					<div class="font-bold text-lg mb-1">
+				<div class="mb-4">
+					<div class="font-bold text-lg mb-2">
 						Purple Check
 					</div>
-					<div class="text-sm">
-						by Tujux Labs
-					</div>
-					<div class="mt-4">
-                        Email:
-						<a href="mailto:contact@purple-check.org" class="text-purple-50 underline">
-							contact@purple-check.org
-						</a>
-					</div>
+					<a href="mailto:contact@purple-check.org" class="text-sm underline">
+						contact@purple-check.org
+					</a>
 				</div>
-				<ul class="space-y-4 text-sm text-purple-50 underline">
+				<ul class="space-y-4 text-sm font-semibold">
 					<li>
 						<a href="/privacy-policy">Privacy Policy</a>
 					</li>

@@ -4,3 +4,4 @@ data/
 .env.prod
 .env.dev
 .aider*
+node_modules

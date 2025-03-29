@@ -44,24 +44,24 @@ templ FeedbackList(p string) {
 	feedbackList := getFeedbackList(p, "receiver")
 	}}
 	if len(feedbackList) == 0 {
-		<p class="text-slate-500">No feedback yet.</p>
+		<p>No feedback yet.</p>
 	} else {
-		<ul class="space-y-8 divide-y text-slate-500 divide-slate-200 border-b border-t border-slate-200 pb-10">
+		<ul class="divide-y">
 			for _, feedback := range feedbackList {
-				<li class="feedback pt-4 grid">
-					<div class="mt-2 mb-4 text-slate-500">
-						<p>
+				<li class="feedback py-4 grid">
+					<div class="mb-1 text-muted-foreground">
+						<p class="text-sm">
 							{ feedback.Rating }
 						</p>
 					</div>
 					<div class="flex space-x-2 items-center">
-						<h3 class="font-medium text-slate-900">
+						<h3 class="font-medium text-primary">
 							<a href={ templ.URL("/profile/" + feedback.Giver) }>{ feedback.Giver }</a>
 						</h3>
 						<span>
 							.
 						</span>
-						<p class="text-slate-500">
+						<p class="text-muted-foreground">
 							<time datetime={ feedback.CreatedAt } class="created-at-datetime">{ feedback.CreatedAt }</time>
 						</p>
 					</div>

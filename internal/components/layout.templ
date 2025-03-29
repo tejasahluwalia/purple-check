@@ -7,6 +7,30 @@ import (
 	"purple-check/internal/config"
 )
 
+templ ThemeSwitcherScript() {
+	{{ handle := templ.NewOnceHandle() }}
+	@handle.Once() {
+		<script nonce={ templ.GetNonce(ctx) }>
+			// Initial theme setup
+			document.documentElement.classList.toggle('dark', localStorage.getItem('appTheme') === 'dark');
+
+			document.addEventListener('alpine:init', () => {
+				Alpine.data('themeHandler', () => ({
+					isDark: localStorage.getItem('appTheme') === 'dark',
+					themeClasses() {
+						return this.isDark ? 'text-white' : 'bg-white text-black'
+					},
+					toggleTheme() {
+						this.isDark = !this.isDark;
+						localStorage.setItem('appTheme', this.isDark ? 'dark' : 'light');
+						document.documentElement.classList.toggle('dark', this.isDark);
+					}
+				}))
+			})
+		</script>
+	}
+}
+
 type Head struct {
 	Title       string
 	Description string
@@ -46,15 +70,21 @@ templ Layout(body templ.Component, head Head) {
 			<meta property="og:url" content={ head.URL }/>
 			<meta property="og:image" content="https://www.purple-check.org/static/purple-check-logo.png"/>
 			<link rel="canonical" href={ head.URL }/>
-			<link rel="stylesheet" href="/static/styles.css"/>
+			<link rel="stylesheet" href="/static/css/output.css"/>
 			<link rel="icon" href="/static/favicon.ico"/>
 			<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png"/>
 			<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png"/>
 			<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png"/>
 			<link rel="manifest" href="/static/site.webmanifest"/>
-			<script src="/static/htmx.min.js"></script>
+			<script src="/static/js/htmx.min.js"></script>
+			<script defer="" src="/static/js/alpine.min.js"></script>
+			@ThemeSwitcherScript()
 		</head>
-		<body class="min-h-svh flex flex-col">
+		<body
+			class="min-h-svh flex flex-col"
+			x-data="themeHandler"
+			x-bind:class="themeClasses"
+		>
 			@Header()
 			<div class="flex-1 container max-w-(--breakpoint-md) mx-auto px-4">
 				@body
