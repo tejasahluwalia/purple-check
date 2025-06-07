@@ -44,3 +44,8 @@ var HOST string
 var PORT string
 var LOCAL_DB_PATH string
 var DEV bool
+
+// UpdateAccountToken allows runtime updates to the Instagram access token
+func UpdateAccountToken(newToken string) {
+	ACCOUNT_TOKEN = newToken
+}

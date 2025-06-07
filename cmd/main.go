@@ -13,6 +13,7 @@ import (
 	"purple-check/internal/app"
 	"purple-check/internal/components"
 	"purple-check/internal/config"
+	"purple-check/internal/instagram"
 	"purple-check/internal/messaging"
 	"purple-check/internal/webhook"
 
@@ -91,6 +92,7 @@ func main() {
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
 	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)
 	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
+	mux.HandleFunc("GET /instagram/refresh-access-token", instagram.RefreshAccessToken)
 	slog.Info("starting server", "port", config.PORT)
 	err := http.ListenAndServe(":"+config.PORT, handler)
 	log.Fatal(err)
