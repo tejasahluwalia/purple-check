@@ -1,13 +1,18 @@
 package components
 
 import (
+	"context"
 	"log"
 	"purple-check/internal/database"
 	"purple-check/internal/models"
 )
 
-func getFeedbackList(username string, role string) []models.Feedback {
-	db, closer := database.GetDB()
+func getFeedbackList(ctx context.Context, username string, role string) []models.Feedback {
+	if _, err := database.PullDB(ctx); err != nil {
+		log.Println("Error pulling database changes.", err)
+	}
+
+	db, closer := database.GetDB(ctx)
 	defer closer()
 
 	var feedbackList []models.Feedback
@@ -40,9 +45,7 @@ func getFeedbackList(username string, role string) []models.Feedback {
 var dateFormatter = templ.NewOnceHandle()
 
 templ FeedbackList(p string) {
-	{{
-	feedbackList := getFeedbackList(p, "receiver")
-	}}
+	{{ feedbackList := getFeedbackList(ctx, p, "receiver") }}
 	if len(feedbackList) == 0 {
 		<p>No feedback yet.</p>
 	} else {

@@ -41,7 +41,7 @@ templ Layout(body templ.Component, head Head) {
 	{{
 		username := GetRequestContext(ctx).PathValue("username")
 		if username != "" {
-			rating, totalRatings := GetProfileRating(username)
+			rating, totalRatings := GetProfileRating(ctx, username)
 			positivePercentage := (rating / float64(totalRatings)) * 100
 			ratingPlural := "ratings"
 			if totalRatings == 1 {

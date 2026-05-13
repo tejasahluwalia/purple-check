@@ -1,24 +1,32 @@
-templ:
-	templ generate --watch --proxy="http://localhost:9980" --open-browser=false -v
-
 db-up:
-	rm data/dump*
-	turso db shell app .dump > data/dump.sql
-	cat data/dump.sql | sqlite3 data/dump.db
-	turso dev --db-file data/dump.db
+    tursodb ./server.db --sync-server 0.0.0.0:8080
 
-server:
+dev/templ:
+	templ generate --watch --proxy="http://localhost:9980" --open-browser=false -v --proxybind="0.0.0.0"
+
+dev/server:
 	air \
-    --build.cmd "go build -o tmp/bin/main ./cmd/main.go" \
-    --build.bin "tmp/bin/main" \
-    --build.delay "100" \
+    --build.cmd "go build -o tmp/bin/main ./cmd/main.go" --build.bin "tmp/bin/main" --build.delay "100" \
+    --build.entrypoint "./tmp/bin/main" \
     --build.exclude_dir "node_modules" \
     --build.include_ext "go" \
     --build.stop_on_error "false" \
-    --misc.clean_on_exit true
+    --misc.clean_on_exit "true"
 
-tailwind:
+dev/tailwind:
 	tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch
 
+dev/sync_assets:
+	air \
+	--build.cmd "templ generate --notify-proxy" \
+	--build.bin "true" \
+	--build.delay "100" \
+	--build.exclude_dir "" \
+	--build.include_dir "static" \
+	--build.include_ext "js,css"
+
 dev:
-	make -j 3 templ server tailwind
+	make -j4 dev/templ dev/server dev/tailwind dev/sync_assets
+
+build:
+	go build -o tmp/bin/main ./cmd/main.go

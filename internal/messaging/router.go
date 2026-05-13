@@ -1,6 +1,7 @@
 package messaging
 
 import (
+	"context"
 	"log"
 	"strings"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"purple-check/internal/models"
 )
 
-func RouteMessage(messageEvent models.MessageEvent) {
+func RouteMessage(ctx context.Context, messageEvent models.MessageEvent) {
 	var userId, message, payload, ref string
 
 	userId = messageEvent.Sender.Id
@@ -22,7 +23,7 @@ func RouteMessage(messageEvent models.MessageEvent) {
 	state := getUserConversationState(userId)
 
 	// Add database logging
-	db, closer := database.GetDB()
+	db, closer := database.GetDB(ctx)
 	defer closer()
 	_, err := db.Exec(
 		"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
@@ -33,6 +34,8 @@ func RouteMessage(messageEvent models.MessageEvent) {
 	)
 	if err != nil {
 		log.Printf("Failed to log message: %v", err)
+	} else if err := database.PushDB(ctx); err != nil {
+		log.Printf("Failed to sync message log: %v", err)
 	}
 
 	if ref != "" {
@@ -44,7 +47,7 @@ func RouteMessage(messageEvent models.MessageEvent) {
 	case "START":
 		usernameToSearch, found := helpers.DetectUsername(message)
 		if found {
-			searchForUserAndRespond(usernameToSearch, userId)
+			searchForUserAndRespond(ctx, usernameToSearch, userId)
 			return
 		}
 		if strings.HasPrefix(payload, "RATE:") {
@@ -78,7 +81,7 @@ func RouteMessage(messageEvent models.MessageEvent) {
 		}
 		if payload == "SEARCH" || payload == "LINK" {
 			if state.TargetUser != "" {
-				searchForUserAndRespond(state.TargetUser, userId)
+				searchForUserAndRespond(ctx, state.TargetUser, userId)
 			} else {
 				askForUsernameToSearch(userId)
 			}
@@ -143,7 +146,7 @@ func RouteMessage(messageEvent models.MessageEvent) {
 			} else if strings.EqualFold(giverRole, "SELLER") {
 				receiverRole = "BUYER"
 			}
-			saveRating(rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage)
+			saveRating(ctx, rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage)
 			sendTextMessage("Thank you for submitting a rating.", userId)
 
 			setUserConversationState(userId, ConversationState{Stage: "START"})

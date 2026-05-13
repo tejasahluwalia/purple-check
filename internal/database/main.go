@@ -1,29 +1,87 @@
 package database
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
-	"os"
+	"log"
+	"sync"
 
 	"purple-check/internal/config"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	turso "turso.tech/database/tursogo"
 )
 
-var getDB = func() (*sql.DB, func()) {
-	url := config.TURSO_DATABASE_URL + "?authToken=" + config.TURSO_AUTH_TOKEN
+var (
+	dbOnce sync.Once
+	db     *turso.TursoSyncDb
+	dbErr  error
+)
 
-	db, err := sql.Open("libsql", url)
+func syncDB(ctx context.Context) (*turso.TursoSyncDb, error) {
+	dbOnce.Do(func() {
+		db, dbErr = turso.NewTursoSyncDb(ctx, turso.TursoSyncDbConfig{
+			Path:      config.LOCAL_DB_PATH,
+			RemoteUrl: config.TURSO_DATABASE_URL,
+			AuthToken: config.TURSO_AUTH_TOKEN,
+		})
+	})
+
+	return db, dbErr
+}
+
+func GetDB(ctx context.Context) (*sql.DB, func()) {
+	db, err := syncDB(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to open db %s: %s", url, err)
-		os.Exit(1)
+		log.Fatal("Error opening database.", err)
 	}
 
-	return db, func() {
-		db.Close()
+	conn, err := db.Connect(ctx)
+	if err != nil {
+		log.Fatal("Error connecting to database.", err)
+	}
+
+	return conn, func() {
+		if err := conn.Close(); err != nil {
+			log.Println("Error closing database connection.", err)
+		}
 	}
 }
 
-func GetDB() (*sql.DB, func()) {
-	return getDB()
+func PullDB(ctx context.Context) (bool, error) {
+	db, err := syncDB(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return db.Pull(ctx)
+}
+
+func PushDB(ctx context.Context) error {
+	db, err := syncDB(ctx)
+	if err != nil {
+		return err
+	}
+
+	return db.Push(ctx)
+}
+
+func StatsDB(ctx context.Context) (turso.TursoSyncDbStats, error) {
+	db, err := syncDB(ctx)
+	if err != nil {
+		return turso.TursoSyncDbStats{}, err
+	}
+
+	return db.Stats(ctx)
+}
+
+func CheckpointDB(ctx context.Context) {
+	db, err := syncDB(ctx)
+	if err != nil {
+		log.Println("Error opening database.", err)
+		return
+	}
+
+	if err := db.Checkpoint(ctx); err != nil {
+		log.Println("Error checkpointing database.", err)
+	}
 }

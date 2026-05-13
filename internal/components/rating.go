@@ -1,14 +1,19 @@
 package components
 
 import (
+	"context"
 	"database/sql"
 	"log"
 
 	"purple-check/internal/database"
 )
 
-func GetProfileRating(username string) (float64, int) {
-	db, closer := database.GetDB()
+func GetProfileRating(ctx context.Context, username string) (float64, int) {
+	if _, err := database.PullDB(ctx); err != nil {
+		log.Println("Error pulling database changes.", err)
+	}
+
+	db, closer := database.GetDB(ctx)
 	defer closer()
 
 	var rating sql.NullFloat64

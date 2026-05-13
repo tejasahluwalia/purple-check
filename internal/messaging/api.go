@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -85,8 +86,8 @@ func sendMessage(body []byte) {
 	defer resp.Body.Close()
 }
 
-func saveRating(rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) {
-	db, closer := database.GetDB()
+func saveRating(ctx context.Context, rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) {
+	db, closer := database.GetDB(ctx)
 	defer closer()
 
 	stmt, err := db.Prepare(`INSERT INTO feedback
@@ -104,6 +105,10 @@ func saveRating(rating string, giverUsername string, recieverUsername string, gi
 	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
 	if err != nil {
 		log.Fatal("Error executing statement.", err)
+	}
+
+	if err := database.PushDB(ctx); err != nil {
+		log.Println("Error pushing database changes.", err)
 	}
 }
 

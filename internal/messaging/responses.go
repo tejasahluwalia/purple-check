@@ -1,6 +1,7 @@
 package messaging
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"strconv"
@@ -9,8 +10,12 @@ import (
 	"purple-check/internal/database"
 )
 
-func searchForUserAndRespond(usernameToSearch string, userId string) {
-	db, closer := database.GetDB()
+func searchForUserAndRespond(ctx context.Context, usernameToSearch string, userId string) {
+	if _, err := database.PullDB(ctx); err != nil {
+		log.Println("Error pulling database changes.", err)
+	}
+
+	db, closer := database.GetDB(ctx)
 	defer closer()
 
 	var rating sql.NullFloat64

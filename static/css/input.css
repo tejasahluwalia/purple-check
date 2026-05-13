@@ -2,28 +2,22 @@
 @plugin "@tailwindcss/typography";
 @source "../../internal/**/*.{go,templ}";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:is(.dark *));
 
 @font-face {
-	font-family: "Geist";
+	font-family: "Onest";
 	font-stretch: 100%; /* Note that font-stretch is a % of normal width */
 	font-weight: 100 900;
-	src: url("/static/fonts/Geist.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "Geist Mono";
-	font-stretch: 100%; /* Note that font-stretch is a % of normal width */
-	font-weight: 100 900;
-	src: url("/static/fonts/GeistMono.woff2") format("woff2");
+	src: url("/static/fonts/Onest.woff2") format("woff2"),
+	url("/static/fonts/Onest.ttf");
 }
 
 @theme {
 	--font-sans:
-		"Geist", Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans",
+		"Onest", Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans",
 		Arial, sans-serif;
 	--font-mono:
-		"Geist Mono", "Fira Code", "Fira Mono", "Menlo", "Monaco", "Consolas",
+		"Fira Code", "Fira Mono", "Menlo", "Monaco", "Consolas",
 		"Courier New", "DejaVu Sans Mono", monospace;
 }
 

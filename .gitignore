@@ -1,7 +1,3 @@
 tmp/
 data/
-.env
-.env.prod
-.env.dev
-.aider*
-node_modules
+.env*
