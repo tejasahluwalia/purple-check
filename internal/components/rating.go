@@ -2,32 +2,34 @@ package components
 
 import (
 	"context"
-	"database/sql"
 	"log"
 
 	"purple-check/internal/database"
 )
 
-func GetProfileRating(ctx context.Context, username string) (float64, int) {
+func GetProfileRating(ctx context.Context, username string) (float64, int, error) {
 	if _, err := database.PullDB(ctx); err != nil {
 		log.Println("Error pulling database changes.", err)
 	}
 
-	db, closer := database.GetDB(ctx)
+	db, closer, err := database.GetDB(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
 	defer closer()
 
-	var rating sql.NullFloat64
+	var positiveRatings int
 	var totalRatings int
 
-	err := db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", username).Scan(&rating)
+	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", username).Scan(&positiveRatings)
 	if err != nil {
-		log.Fatal("Error querying database.", err)
+		return 0, 0, err
 	}
 
 	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ?", username).Scan(&totalRatings)
 	if err != nil {
-		log.Fatal("Error querying database.", err)
+		return 0, 0, err
 	}
 
-	return rating.Float64, totalRatings
+	return float64(positiveRatings), totalRatings, nil
 }

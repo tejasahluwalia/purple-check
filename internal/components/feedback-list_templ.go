@@ -10,31 +10,45 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"purple-check/internal/database"
 	"purple-check/internal/models"
 )
 
 func getFeedbackList(ctx context.Context, username string, role string) []models.Feedback {
+	column, err := feedbackRoleColumn(role)
+	if err != nil {
+		log.Println(err)
+		return []models.Feedback{}
+	}
+
 	if _, err := database.PullDB(ctx); err != nil {
 		log.Println("Error pulling database changes.", err)
 	}
 
-	db, closer := database.GetDB(ctx)
+	db, closer, err := database.GetDB(ctx)
+	if err != nil {
+		log.Println(err)
+		return []models.Feedback{}
+	}
 	defer closer()
 
 	var feedbackList []models.Feedback
 
-	stmt, err := db.Prepare("SELECT id, giver, receiver, rating, created_at FROM feedback WHERE " + role + " = ? ORDER BY created_at DESC")
+	stmt, err := db.Prepare("SELECT id, giver, receiver, rating, created_at FROM feedback WHERE " + column + " = ? ORDER BY created_at DESC")
 	if err != nil {
 		log.Println(err)
+		return []models.Feedback{}
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.Query(username)
 	if err != nil {
 		log.Println(err)
 		return []models.Feedback{}
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var feedback models.Feedback
@@ -46,8 +60,21 @@ func getFeedbackList(ctx context.Context, username string, role string) []models
 
 		feedbackList = append(feedbackList, feedback)
 	}
+	if err := rows.Err(); err != nil {
+		log.Println(err)
+		return []models.Feedback{}
+	}
 
 	return feedbackList
+}
+
+func feedbackRoleColumn(role string) (string, error) {
+	switch role {
+	case "receiver", "giver":
+		return role, nil
+	default:
+		return "", fmt.Errorf("invalid feedback role: %s", role)
+	}
 }
 
 var dateFormatter = templ.NewOnceHandle()
@@ -92,7 +119,7 @@ func FeedbackList(p string) templ.Component {
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.Rating)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 57, Col: 24}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 84, Col: 24}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -105,7 +132,7 @@ func FeedbackList(p string) templ.Component {
 				var templ_7745c5c3_Var3 templ.SafeURL
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/profile/" + feedback.Giver))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 62, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 89, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
@@ -118,7 +145,7 @@ func FeedbackList(p string) templ.Component {
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.Giver)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 62, Col: 75}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 89, Col: 75}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -131,7 +158,7 @@ func FeedbackList(p string) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(feedback.CreatedAt)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 68, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 95, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 				if templ_7745c5c3_Err != nil {
@@ -144,7 +171,7 @@ func FeedbackList(p string) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(feedback.CreatedAt)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 68, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 95, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -172,7 +199,20 @@ func FeedbackList(p string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<script>\n        document.querySelectorAll('.created-at-datetime').forEach((datetime) => {\n            const createdAt = datetime.getAttribute('datetime');\n            const date = new Date(createdAt);\n\n            const since = Date.now() - date.getTime();\n            if (since < 1000 * 60) {\n                datetime.innerHTML = 'Just now';\n                return;\n            }\n            if (since < 1000 * 60 * 60) {\n                const minutes = Math.floor(since / (1000 * 60));\n                datetime.innerHTML = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;\n                return;\n            }\n            if (since < 1000 * 60 * 60 * 24) {\n                const hours = Math.floor(since / (1000 * 60 * 60));\n                datetime.innerHTML = `${hours} hour${hours > 1 ? 's' : ''} ago`;\n                return;\n            }\n\n            datetime.innerHTML = date.toLocaleDateString(undefined, {\n                month: 'short',\n                day: 'numeric',\n                year: 'numeric',\n            });\n        });\n    \t</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<script nonce=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.GetNonce(ctx))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/feedback-list.templ`, Line: 103, Col: 37}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\">\n        document.querySelectorAll('.created-at-datetime').forEach((datetime) => {\n            const createdAt = datetime.getAttribute('datetime');\n            const date = new Date(createdAt);\n\n            const since = Date.now() - date.getTime();\n            if (since < 1000 * 60) {\n                datetime.textContent = 'Just now';\n                return;\n            }\n            if (since < 1000 * 60 * 60) {\n                const minutes = Math.floor(since / (1000 * 60));\n                datetime.textContent = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;\n                return;\n            }\n            if (since < 1000 * 60 * 60 * 24) {\n                const hours = Math.floor(since / (1000 * 60 * 60));\n                datetime.textContent = `${hours} hour${hours > 1 ? 's' : ''} ago`;\n                return;\n            }\n\n            datetime.textContent = date.toLocaleDateString(undefined, {\n                month: 'short',\n                day: 'numeric',\n                year: 'numeric',\n            });\n        });\n    \t</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

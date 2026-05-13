@@ -3,29 +3,29 @@ package helpers
 import (
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 	"strings"
+	"unicode"
 )
 
-func GetRequestBody(r *http.Request) string {
+func GetRequestBody(r *http.Request) (string, error) {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	bodyString := string(bodyBytes)
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return bodyString
+	return bodyString, nil
 }
 
-func GetResponseBody(r *http.Response) string {
+func GetResponseBody(r *http.Response) (string, error) {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	bodyString := string(bodyBytes)
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return bodyString
+	return bodyString, nil
 }
 
 func DetectUsername(message string) (string, bool) {
@@ -43,14 +43,19 @@ func DetectUsername(message string) (string, bool) {
 		return "", false
 	}
 
-	username = strings.ToLower(username)
-	username = strings.TrimPrefix(username, "@")
-
-	if !ValidateUsername(username) {
+	username, ok := NormalizeUsername(username)
+	if !ok {
 		return "", false
 	}
 
 	return username, username != ""
+}
+
+func NormalizeUsername(username string) (string, bool) {
+	username = strings.TrimSpace(username)
+	username = strings.ToLower(username)
+	username = strings.TrimPrefix(username, "@")
+	return username, ValidateUsername(username)
 }
 
 func ValidateUsername(username string) bool {
@@ -58,14 +63,13 @@ func ValidateUsername(username string) bool {
 		return false
 	}
 
-	if strings.Contains(username, "..") {
+	if strings.HasPrefix(username, ".") || strings.HasSuffix(username, ".") || strings.Contains(username, "..") {
 		return false
 	}
 
 	// Restrict to letters, numbers, periods and underscores
-	allowed := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._"
 	for _, char := range username {
-		if !strings.Contains(allowed, string(char)) {
+		if char > unicode.MaxASCII || !(unicode.IsLetter(char) || unicode.IsDigit(char) || char == '.' || char == '_') {
 			return false
 		}
 	}

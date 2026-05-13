@@ -2,40 +2,44 @@ package messaging
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"log"
+	"net/url"
 	"strconv"
 
 	"purple-check/internal/config"
 	"purple-check/internal/database"
 )
 
-func searchForUserAndRespond(ctx context.Context, usernameToSearch string, userId string) {
+func searchForUserAndRespond(ctx context.Context, usernameToSearch string, userId string) error {
 	if _, err := database.PullDB(ctx); err != nil {
 		log.Println("Error pulling database changes.", err)
 	}
 
-	db, closer := database.GetDB(ctx)
+	db, closer, err := database.GetDB(ctx)
+	if err != nil {
+		return err
+	}
 	defer closer()
 
-	var rating sql.NullFloat64
+	var positiveRatings int
 	var totalRatings int
 
-	err := db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", usernameToSearch).Scan(&rating)
+	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", usernameToSearch).Scan(&positiveRatings)
 	if err != nil {
-		log.Fatal("Error querying database.", err)
+		return fmt.Errorf("query positive ratings: %w", err)
 	}
 
 	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ?", usernameToSearch).Scan(&totalRatings)
 	if err != nil {
-		log.Fatal("Error querying database.", err)
+		return fmt.Errorf("query total ratings: %w", err)
 	}
 
 	buttons := []ElementButton{
 		{
 			Type:  "web_url",
 			Title: "See all reviews",
-			URL:   "https://" + config.HOST + "/profile/" + usernameToSearch,
+			URL:   "https://" + config.HOST + "/profile/" + url.PathEscape(usernameToSearch),
 		},
 		{
 			Type:    "postback",
@@ -50,20 +54,18 @@ func searchForUserAndRespond(ctx context.Context, usernameToSearch string, userI
 	}
 
 	if totalRatings == 0 {
-		sendButtonMessage(buttons, "No ratings found for @"+usernameToSearch, userId)
-		return
+		return sendButtonMessage(buttons, "No ratings found for @"+usernameToSearch, userId)
 	} else {
-		positivePercentage := (rating.Float64 / float64(totalRatings)) * 100
+		positivePercentage := (float64(positiveRatings) / float64(totalRatings)) * 100
 		ratingPlural := "ratings"
 		if totalRatings == 1 {
 			ratingPlural = "rating"
 		}
-		sendButtonMessage(buttons, "@"+usernameToSearch+"\n\n"+strconv.FormatFloat(positivePercentage, 'f', 0, 32)+"% positive ("+strconv.Itoa(totalRatings)+" "+ratingPlural+")", userId)
-		return
+		return sendButtonMessage(buttons, "@"+usernameToSearch+"\n\n"+strconv.FormatFloat(positivePercentage, 'f', 0, 32)+"% positive ("+strconv.Itoa(totalRatings)+" "+ratingPlural+")", userId)
 	}
 }
 
-func askForRating(usernameToRate string, userId string) {
+func askForRating(usernameToRate string, userId string) error {
 	buttons := []ElementButton{
 		{
 			Type:    "postback",
@@ -82,18 +84,18 @@ func askForRating(usernameToRate string, userId string) {
 		},
 	}
 
-	sendButtonMessage(buttons, "How was your interaction with @"+usernameToRate+"?", userId)
+	return sendButtonMessage(buttons, "How was your interaction with @"+usernameToRate+"?", userId)
 }
 
-func askForUsernameToSearch(userId string) {
-	sendTextMessage("Please enter the username (with '@' symbol) of the page you want to check. (e.g. @purplecheck_org)", userId)
+func askForUsernameToSearch(userId string) error {
+	return sendTextMessage("Please enter the username (with '@' symbol) of the page you want to check. (e.g. @purplecheck_org)", userId)
 }
 
-func invalidResponseMessage(userId string) {
-	sendTextMessage("Invalid response. Please select one of the options provided. Or click cancel.", userId)
+func invalidResponseMessage(userId string) error {
+	return sendTextMessage("Invalid response. Please select one of the options provided. Or click cancel.", userId)
 }
 
-func askForRole(userId string) {
+func askForRole(userId string) error {
 	buttons := []ElementButton{
 		{
 			Type:    "postback",
@@ -111,10 +113,10 @@ func askForRole(userId string) {
 			Payload: "CANCEL",
 		},
 	}
-	sendButtonMessage(buttons, "What was your role in this interaction?", userId)
+	return sendButtonMessage(buttons, "What was your role in this interaction?", userId)
 }
 
-func askForDealStage(userId string) {
+func askForDealStage(userId string) error {
 	buttons := []ElementButton{
 		{
 			Type:    "postback",
@@ -132,5 +134,5 @@ func askForDealStage(userId string) {
 			Payload: "CANCEL",
 		},
 	}
-	sendButtonMessage(buttons, "What was the stage of the deal?", userId)
+	return sendButtonMessage(buttons, "What was the stage of the deal?", userId)
 }

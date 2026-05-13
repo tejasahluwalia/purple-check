@@ -2,6 +2,26 @@ package messaging
 
 import "purple-check/internal/cache"
 
+const (
+	stageStart             = "START"
+	stageAwaitingRole      = "AWAITING_ROLE"
+	stageAwaitingDealStage = "AWAITING_DEAL_STAGE"
+	stageAwaitingRating    = "AWAITING_RATING"
+
+	payloadSearch = "SEARCH"
+	payloadLink   = "LINK"
+	payloadCancel = "CANCEL"
+
+	roleBuyer  = "BUYER"
+	roleSeller = "SELLER"
+
+	dealStageComplete   = "COMPLETE"
+	dealStageIncomplete = "INCOMPLETE"
+
+	ratingPositive = "POSITIVE"
+	ratingNegative = "NEGATIVE"
+)
+
 type ConversationState struct {
 	Stage       string
 	TargetUser  string
@@ -21,7 +41,7 @@ type UserConversations map[string]ConversationState
 func getUserConversationState(userId string) ConversationState {
 	state, exists := conversations.Get(userId)
 	if !exists {
-		newState := ConversationState{Stage: "START"}
+		newState := ConversationState{Stage: stageStart}
 		conversations.Set(userId, newState)
 		return newState
 	}

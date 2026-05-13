@@ -12,148 +12,265 @@ import (
 )
 
 func RouteMessage(ctx context.Context, messageEvent models.MessageEvent) {
-	var userId, message, payload, ref string
-
-	userId = messageEvent.Sender.Id
-	message = messageEvent.Message.Text
-	if messageEvent.Postback != nil {
-		payload = messageEvent.Postback.Payload
+	userId := messageEvent.Sender.Id
+	if userId == "" {
+		return
 	}
+	message := strings.TrimSpace(messageEvent.Message.Text)
+	payload := getPayload(messageEvent)
+	ref := getReferral(messageEvent)
 
 	state := getUserConversationState(userId)
+	if ref != "" {
+		username, ok := helpers.NormalizeUsername(ref)
+		if !ok {
+			log.Printf("Ignoring invalid referral %q for user %s", ref, userId)
+		} else {
+			state = ConversationState{Stage: stageStart, TargetUser: username, CurrentUser: state.CurrentUser}
+			setUserConversationState(userId, state)
+			ref = username
+		}
+	}
 
 	// Add database logging
-	db, closer := database.GetDB(ctx)
-	defer closer()
-	_, err := db.Exec(
-		"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
-		userId,
-		message+payload+ref,
-		state.Stage,
-		time.Now(),
-	)
+	db, closer, err := database.GetDB(ctx)
 	if err != nil {
-		log.Printf("Failed to log message: %v", err)
-	} else if err := database.PushDB(ctx); err != nil {
-		log.Printf("Failed to sync message log: %v", err)
+		log.Printf("Failed to open database for message log: %v", err)
+	} else {
+		defer closer()
+		_, err = db.Exec(
+			"INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, ?)",
+			userId,
+			message+payload+ref,
+			state.Stage,
+			time.Now(),
+		)
+		if err != nil {
+			log.Printf("Failed to log message: %v", err)
+		} else if err := database.PushDB(ctx); err != nil {
+			log.Printf("Failed to sync message log: %v", err)
+		}
 	}
 
 	if ref != "" {
-		// Handle referral
-		setUserConversationState(userId, ConversationState{Stage: "START", TargetUser: ref})
+		beginRatingFlow(ctx, userId, ref)
+		return
+	}
+
+	if payload == payloadSearch || payload == payloadLink {
+		if state.TargetUser != "" {
+			if err := searchForUserAndRespond(ctx, state.TargetUser, userId); err != nil {
+				log.Printf("Failed to search for user %s: %v", state.TargetUser, err)
+				logSend(sendTextMessage("Sorry, something went wrong. Please try again later.", userId))
+			}
+		} else {
+			logSend(askForUsernameToSearch(userId))
+		}
+		return
+	}
+
+	if payload == payloadCancel {
+		setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: state.CurrentUser})
+		logSend(sendTextMessage("Feedback cancelled.", userId))
+		logSend(askForUsernameToSearch(userId))
+		return
 	}
 
 	switch state.Stage {
-	case "START":
+	case stageStart:
 		usernameToSearch, found := helpers.DetectUsername(message)
 		if found {
-			searchForUserAndRespond(ctx, usernameToSearch, userId)
-			return
-		}
-		if strings.HasPrefix(payload, "RATE:") {
-			usernameToRate := strings.Split(payload, ":")[1]
-
-			username, err := getUsernameFromUserID(userId)
-			if err != nil {
-				log.Printf("Failed to get username for user %s: %v", userId, err)
-				sendTextMessage("Sorry, something went wrong. Please try again later.", userId)
-				return
-			}
-
-			// Check if user is trying to rate themselves
-			if strings.EqualFold(username, usernameToRate) {
-				sendTextMessage("Sorry, you cannot leave feedback on your own profile.", userId)
-				askForUsernameToSearch(userId)
-				setUserConversationState(userId, ConversationState{
-					Stage:       "START",
-					CurrentUser: username,
-				})
-				return
-			}
-
-			setUserConversationState(userId, ConversationState{
-				Stage:       "AWAITING_ROLE",
-				TargetUser:  usernameToRate,
-				CurrentUser: username,
-			})
-			askForRole(userId)
-			return
-		}
-		if payload == "SEARCH" || payload == "LINK" {
-			if state.TargetUser != "" {
-				searchForUserAndRespond(ctx, state.TargetUser, userId)
-			} else {
-				askForUsernameToSearch(userId)
+			if err := searchForUserAndRespond(ctx, usernameToSearch, userId); err != nil {
+				log.Printf("Failed to search for user %s: %v", usernameToSearch, err)
+				logSend(sendTextMessage("Sorry, something went wrong. Please try again later.", userId))
 			}
 			return
 		}
-		askForUsernameToSearch(userId)
+		if usernameToRate, ok := parseRatePayload(payload); ok {
+			beginRatingFlow(ctx, userId, usernameToRate)
+			return
+		}
+		logSend(askForUsernameToSearch(userId))
 		return
 
-	case "AWAITING_ROLE":
-		if payload == "CANCEL" {
-			setUserConversationState(userId, ConversationState{Stage: "START"})
-			sendTextMessage("Feedback cancelled.", userId)
-			askForUsernameToSearch(userId)
-			return
-		}
-		if strings.HasPrefix(payload, "ROLE:") {
-			role := strings.Split(payload, ":")[1]
+	case stageAwaitingRole:
+		if role, ok := parseRolePayload(payload); ok {
 			newState := state
-			newState.Stage = "AWAITING_DEAL_STAGE"
+			newState.Stage = stageAwaitingDealStage
 			newState.Role = role
+			if err := askForDealStage(userId); err != nil {
+				logSend(err)
+				return
+			}
 			setUserConversationState(userId, newState)
-			askForDealStage(userId)
 			return
 		}
-		invalidResponseMessage(userId)
+		logSend(invalidResponseMessage(userId))
 		return
 
-	case "AWAITING_DEAL_STAGE":
-		if payload == "CANCEL" {
-			setUserConversationState(userId, ConversationState{Stage: "START"})
-			sendTextMessage("Feedback cancelled.", userId)
-			askForUsernameToSearch(userId)
-			return
-		}
-		if strings.HasPrefix(payload, "DEAL_STAGE:") {
-			dealStage := strings.Split(payload, ":")[1]
+	case stageAwaitingDealStage:
+		if dealStage, ok := parseDealStagePayload(payload); ok {
 			newState := state
-			newState.Stage = "AWAITING_RATING"
+			newState.Stage = stageAwaitingRating
 			newState.DealStage = dealStage
+			if err := askForRating(state.TargetUser, userId); err != nil {
+				logSend(err)
+				return
+			}
 			setUserConversationState(userId, newState)
-			askForRating(state.TargetUser, userId)
 			return
 		}
-		invalidResponseMessage(userId)
+		logSend(invalidResponseMessage(userId))
 		return
 
-	case "AWAITING_RATING":
-		if payload == "CANCEL" {
-			setUserConversationState(userId, ConversationState{Stage: "START"})
-			sendTextMessage("Rating cancelled.", userId)
-			askForUsernameToSearch(userId)
-			return
-		}
-		if strings.HasPrefix(payload, "RATING:") {
-			rating := strings.Split(payload, ":")[1]
-			receiverUsername := state.TargetUser
+	case stageAwaitingRating:
+		if rating, payloadTarget, ok := parseRatingPayload(payload); ok {
+			if !strings.EqualFold(payloadTarget, state.TargetUser) {
+				logSend(sendTextMessage("That rating option is stale. Please start again.", userId))
+				setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: state.CurrentUser})
+				logSend(askForUsernameToSearch(userId))
+				return
+			}
+			receiverUsername := payloadTarget
 			giverUsername := state.CurrentUser
 			giverRole := state.Role
-			var receiverRole string
-			if strings.EqualFold(giverRole, "BUYER") {
-				receiverRole = "SELLER"
-			} else if strings.EqualFold(giverRole, "SELLER") {
-				receiverRole = "BUYER"
+			if strings.EqualFold(giverUsername, receiverUsername) {
+				logSend(sendTextMessage("Sorry, you cannot leave feedback on your own profile.", userId))
+				setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: giverUsername})
+				logSend(askForUsernameToSearch(userId))
+				return
 			}
-			saveRating(ctx, rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage)
-			sendTextMessage("Thank you for submitting a rating.", userId)
+			receiverRole, ok := receiverRoleFor(giverRole)
+			if !ok {
+				logSend(invalidResponseMessage(userId))
+				return
+			}
+			if err := saveRating(ctx, rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage); err != nil {
+				log.Printf("Failed to save rating: %v", err)
+				logSend(sendTextMessage("Sorry, something went wrong while saving your rating. Please try again later.", userId))
+				return
+			}
+			logSend(sendTextMessage("Thank you for submitting a rating.", userId))
 
-			setUserConversationState(userId, ConversationState{Stage: "START"})
-			askForUsernameToSearch(userId)
+			setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: giverUsername})
+			logSend(askForUsernameToSearch(userId))
 			return
 		}
-		invalidResponseMessage(userId)
+		logSend(invalidResponseMessage(userId))
 		return
+	}
+}
+
+func beginRatingFlow(ctx context.Context, userId string, usernameToRate string) {
+	usernameToRate, ok := helpers.NormalizeUsername(usernameToRate)
+	if !ok {
+		logSend(invalidResponseMessage(userId))
+		return
+	}
+
+	username, err := getUsernameFromUserID(userId)
+	if err != nil {
+		log.Printf("Failed to get username for user %s: %v", userId, err)
+		logSend(sendTextMessage("Sorry, something went wrong. Please try again later.", userId))
+		return
+	}
+
+	if strings.EqualFold(username, usernameToRate) {
+		logSend(sendTextMessage("Sorry, you cannot leave feedback on your own profile.", userId))
+		setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: username})
+		logSend(askForUsernameToSearch(userId))
+		return
+	}
+
+	if err := askForRole(userId); err != nil {
+		logSend(err)
+		return
+	}
+	setUserConversationState(userId, ConversationState{
+		Stage:       stageAwaitingRole,
+		TargetUser:  usernameToRate,
+		CurrentUser: username,
+	})
+}
+
+func getPayload(messageEvent models.MessageEvent) string {
+	if messageEvent.Postback != nil {
+		return messageEvent.Postback.Payload
+	}
+	return messageEvent.Message.Quick_reply.Payload
+}
+
+func getReferral(messageEvent models.MessageEvent) string {
+	if messageEvent.Referral != nil {
+		return messageEvent.Referral.Ref
+	}
+	if messageEvent.Message.Referral != nil {
+		return messageEvent.Message.Referral.Ref
+	}
+	if messageEvent.Postback != nil && messageEvent.Postback.Referral != nil {
+		return messageEvent.Postback.Referral.Ref
+	}
+	return ""
+}
+
+func parseRatePayload(payload string) (string, bool) {
+	command, value, ok := strings.Cut(payload, ":")
+	if !ok || command != "RATE" {
+		return "", false
+	}
+	return helpers.NormalizeUsername(value)
+}
+
+func parseRolePayload(payload string) (string, bool) {
+	command, value, ok := strings.Cut(payload, ":")
+	if !ok || command != "ROLE" {
+		return "", false
+	}
+	if value != roleBuyer && value != roleSeller {
+		return "", false
+	}
+	return value, true
+}
+
+func parseDealStagePayload(payload string) (string, bool) {
+	command, value, ok := strings.Cut(payload, ":")
+	if !ok || command != "DEAL_STAGE" {
+		return "", false
+	}
+	if value != dealStageComplete && value != dealStageIncomplete {
+		return "", false
+	}
+	return value, true
+}
+
+func parseRatingPayload(payload string) (string, string, bool) {
+	parts := strings.Split(payload, ":")
+	if len(parts) != 3 || parts[0] != "RATING" {
+		return "", "", false
+	}
+	if parts[1] != ratingPositive && parts[1] != ratingNegative {
+		return "", "", false
+	}
+	username, ok := helpers.NormalizeUsername(parts[2])
+	if !ok {
+		return "", "", false
+	}
+	return parts[1], username, true
+}
+
+func receiverRoleFor(giverRole string) (string, bool) {
+	switch giverRole {
+	case roleBuyer:
+		return roleSeller, true
+	case roleSeller:
+		return roleBuyer, true
+	default:
+		return "", false
+	}
+}
+
+func logSend(err error) {
+	if err != nil {
+		log.Printf("Failed to send message: %v", err)
 	}
 }

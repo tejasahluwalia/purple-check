@@ -3,11 +3,14 @@ package webhook
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"purple-check/internal/config"
 )
 
 var API_HOST = "graph.instagram.com"
+
+var webhookHTTPClient = &http.Client{Timeout: 10 * time.Second}
 
 func VerifyInstagramHook(w http.ResponseWriter, r *http.Request) {
 	mode := r.URL.Query().Get("hub.mode")
@@ -26,6 +29,7 @@ func subscribeAccountToWebhooks(userId string) {
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	q := req.URL.Query()
@@ -33,16 +37,16 @@ func subscribeAccountToWebhooks(userId string) {
 	q.Add("subscribed_fields", "messages,messaging_postbacks")
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := webhookHTTPClient.Do(req)
 	if err != nil {
 		log.Println(err)
+		return
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == 200 {
 		log.Println("Subscribed to webhooks.")
 	}
-	defer resp.Body.Close()
 }
 
 func SetupWebhooks(w http.ResponseWriter, r *http.Request) {

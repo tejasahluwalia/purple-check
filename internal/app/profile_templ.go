@@ -8,7 +8,10 @@ package app
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "purple-check/internal/components"
+import (
+	"net/url"
+	"purple-check/internal/components"
+)
 
 func Profile() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -35,7 +38,13 @@ func Profile() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		username := components.GetRequestContext(ctx).PathValue("username")
+		var username string
+		if request := components.GetRequestContext(ctx); request != nil {
+			username = request.PathValue("username")
+		}
+		instagramURL := "https://www.instagram.com/" + url.PathEscape(username)
+		refValues := url.Values{"ref": []string{username}}
+		feedbackURL := "https://ig.me/m/purplecheck_org?" + refValues.Encode()
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex items-center gap-4\"><h1 class=\"text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-lg break-all text-wrap flex\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -43,7 +52,7 @@ func Profile() templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@" + username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 9, Col: 126}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 20, Col: 126}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -54,9 +63,9 @@ func Profile() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 templ.SafeURL
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("https://www.instagram.com/" + username))
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(instagramURL))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 10, Col: 146}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 21, Col: 119}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -67,9 +76,9 @@ func Profile() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 templ.SafeURL
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("https://ig.me/m/purplecheck_org?ref=" + username))
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(feedbackURL))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 17, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/app/profile.templ`, Line: 28, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {

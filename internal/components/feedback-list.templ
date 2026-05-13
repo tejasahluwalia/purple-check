@@ -2,31 +2,45 @@ package components
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"purple-check/internal/database"
 	"purple-check/internal/models"
 )
 
 func getFeedbackList(ctx context.Context, username string, role string) []models.Feedback {
+	column, err := feedbackRoleColumn(role)
+	if err != nil {
+		log.Println(err)
+		return []models.Feedback{}
+	}
+
 	if _, err := database.PullDB(ctx); err != nil {
 		log.Println("Error pulling database changes.", err)
 	}
 
-	db, closer := database.GetDB(ctx)
+	db, closer, err := database.GetDB(ctx)
+	if err != nil {
+		log.Println(err)
+		return []models.Feedback{}
+	}
 	defer closer()
 
 	var feedbackList []models.Feedback
 
-	stmt, err := db.Prepare("SELECT id, giver, receiver, rating, created_at FROM feedback WHERE " + role + " = ? ORDER BY created_at DESC")
+	stmt, err := db.Prepare("SELECT id, giver, receiver, rating, created_at FROM feedback WHERE " + column + " = ? ORDER BY created_at DESC")
 	if err != nil {
 		log.Println(err)
+		return []models.Feedback{}
 	}
+	defer stmt.Close()
 
 	rows, err := stmt.Query(username)
 	if err != nil {
 		log.Println(err)
 		return []models.Feedback{}
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var feedback models.Feedback
@@ -38,8 +52,21 @@ func getFeedbackList(ctx context.Context, username string, role string) []models
 
 		feedbackList = append(feedbackList, feedback)
 	}
+	if err := rows.Err(); err != nil {
+		log.Println(err)
+		return []models.Feedback{}
+	}
 
 	return feedbackList
+}
+
+func feedbackRoleColumn(role string) (string, error) {
+	switch role {
+	case "receiver", "giver":
+		return role, nil
+	default:
+		return "", fmt.Errorf("invalid feedback role: %s", role)
+	}
 }
 
 var dateFormatter = templ.NewOnceHandle()
@@ -73,28 +100,28 @@ templ FeedbackList(p string) {
 		</ul>
 	}
 	@dateFormatter.Once() {
-		<script>
+		<script nonce={ templ.GetNonce(ctx) }>
         document.querySelectorAll('.created-at-datetime').forEach((datetime) => {
             const createdAt = datetime.getAttribute('datetime');
             const date = new Date(createdAt);
 
             const since = Date.now() - date.getTime();
             if (since < 1000 * 60) {
-                datetime.innerHTML = 'Just now';
+                datetime.textContent = 'Just now';
                 return;
             }
             if (since < 1000 * 60 * 60) {
                 const minutes = Math.floor(since / (1000 * 60));
-                datetime.innerHTML = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                datetime.textContent = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
                 return;
             }
             if (since < 1000 * 60 * 60 * 24) {
                 const hours = Math.floor(since / (1000 * 60 * 60));
-                datetime.innerHTML = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                datetime.textContent = `${hours} hour${hours > 1 ? 's' : ''} ago`;
                 return;
             }
 
-            datetime.innerHTML = date.toLocaleDateString(undefined, {
+            datetime.textContent = date.toLocaleDateString(undefined, {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',

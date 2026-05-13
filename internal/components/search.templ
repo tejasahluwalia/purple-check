@@ -28,7 +28,7 @@ templ Search() {
 			/>
 		</div>
 	</form>
-	<script>
+	<script nonce={ templ.GetNonce(ctx) }>
         const form = document.getElementById('search-form');
         const input = document.getElementById('search-term');
         const button = document.getElementById('search-button');
@@ -68,9 +68,5 @@ templ Search() {
                 button.disabled = false;
             }
         });
-
-        button.addEventListener('click', function(e) {
-						form.submit();
-				});
     </script>
 }

@@ -39,16 +39,21 @@ type Head struct {
 
 templ Layout(body templ.Component, head Head) {
 	{{
-		username := GetRequestContext(ctx).PathValue("username")
+		var username string
+		if request := GetRequestContext(ctx); request != nil {
+			username = request.PathValue("username")
+		}
 		if username != "" {
-			rating, totalRatings := GetProfileRating(ctx, username)
-			positivePercentage := (rating / float64(totalRatings)) * 100
-			ratingPlural := "ratings"
-			if totalRatings == 1 {
-				ratingPlural = "rating"
-			}
-			if totalRatings > 0 {
-				head.Title = fmt.Sprintf("%s | %s%% positive (%d %s)", head.Title, strconv.FormatFloat(positivePercentage, 'f', 0, 32), totalRatings, ratingPlural)
+			rating, totalRatings, err := GetProfileRating(ctx, username)
+			if err == nil {
+				positivePercentage := (rating / float64(totalRatings)) * 100
+				ratingPlural := "ratings"
+				if totalRatings == 1 {
+					ratingPlural = "rating"
+				}
+				if totalRatings > 0 {
+					head.Title = fmt.Sprintf("%s | %s%% positive (%d %s)", head.Title, strconv.FormatFloat(positivePercentage, 'f', 0, 32), totalRatings, ratingPlural)
+				}
 			}
 		}
 	}}
@@ -91,7 +96,7 @@ templ Layout(body templ.Component, head Head) {
 			</div>
 			@Footer()
 		</body>
-		<script>
+		<script nonce={ templ.GetNonce(ctx) }>
 			if (window.location.hash && window.location.hash == "#_") {
 				history.replaceState({}, "", window.location.pathname);
 			};

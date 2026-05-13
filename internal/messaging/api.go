@@ -5,10 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"purple-check/internal/config"
 	"purple-check/internal/database"
@@ -19,7 +21,9 @@ var API_HOST = "graph.instagram.com"
 var API_VERSION = "v22.0"
 var API_URL = "https://" + API_HOST + "/" + API_VERSION
 
-func sendButtonMessage(buttons []ElementButton, text string, userId string) {
+var httpClient = &http.Client{Timeout: 10 * time.Second}
+
+func sendButtonMessage(buttons []ElementButton, text string, userId string) error {
 	body, err := json.Marshal(MessageRequestBody[MessageButtons]{
 		MessageRecipient{
 			ID: userId,
@@ -36,14 +40,13 @@ func sendButtonMessage(buttons []ElementButton, text string, userId string) {
 		},
 	})
 	if err != nil {
-		log.Fatal("Unable to marshall message body.")
-		return
+		return fmt.Errorf("marshal button message: %w", err)
 	}
 
-	sendMessage(body)
+	return sendMessage(body)
 }
 
-func sendTextMessage(text string, userId string) {
+func sendTextMessage(text string, userId string) error {
 	body, err := json.Marshal(MessageRequestBody[MessageText]{
 		MessageRecipient{
 			ID: userId,
@@ -53,41 +56,42 @@ func sendTextMessage(text string, userId string) {
 		},
 	})
 	if err != nil {
-		log.Fatal("Unable to marshall message body.")
-		return
+		return fmt.Errorf("marshal text message: %w", err)
 	}
 
-	sendMessage(body)
+	return sendMessage(body)
 }
 
-func sendMessage(body []byte) {
+func sendMessage(body []byte) error {
 	url := API_URL + "/me/messages"
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		log.Println(err)
+		return fmt.Errorf("create message request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+config.ACCOUNT_TOKEN)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Println(err)
+		return fmt.Errorf("send message request: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		log.Println(bodyString)
+		return fmt.Errorf("send message returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	defer resp.Body.Close()
+	return nil
 }
 
-func saveRating(ctx context.Context, rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) {
-	db, closer := database.GetDB(ctx)
+func saveRating(ctx context.Context, rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) error {
+	db, closer, err := database.GetDB(ctx)
+	if err != nil {
+		return err
+	}
 	defer closer()
 
 	stmt, err := db.Prepare(`INSERT INTO feedback
@@ -97,19 +101,23 @@ func saveRating(ctx context.Context, rating string, giverUsername string, reciev
 		DO UPDATE SET
 			rating=excluded.rating,
 			giver_role=excluded.giver_role,
+			receiver_role=excluded.receiver_role,
 			deal_stage=excluded.deal_stage`)
 	if err != nil {
-		log.Fatal("Error preparing statement.")
+		return fmt.Errorf("prepare save rating: %w", err)
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
 	if err != nil {
-		log.Fatal("Error executing statement.", err)
+		return fmt.Errorf("execute save rating: %w", err)
 	}
 
 	if err := database.PushDB(ctx); err != nil {
-		log.Println("Error pushing database changes.", err)
+		return fmt.Errorf("push save rating: %w", err)
 	}
+
+	return nil
 }
 
 type UserProfileAPIResponse struct {
@@ -135,28 +143,27 @@ func getUsernameFromUserID(userId string) (string, error) {
 	q.Add("fields", "username")
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	var userProfileAPIResponse UserProfileAPIResponse
 
 	if resp.StatusCode != 200 {
-		log.Fatal("Error getting username.")
 		return "", errors.New("IG_API_Error")
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&userProfileAPIResponse)
 	if err != nil {
-		log.Fatal("Error decoding response body.")
+		return "", fmt.Errorf("decode user profile response: %w", err)
 	}
 
 	userState.CurrentUser = userProfileAPIResponse.Username
+	setUserConversationState(userId, userState)
 
-	defer resp.Body.Close()
 	return userProfileAPIResponse.Username, nil
 }
 
@@ -191,31 +198,32 @@ func SetPersistentMenu() {
 		},
 	})
 	if err != nil {
-		log.Fatal("Unable to marshall message body.")
+		log.Println("Unable to marshal message body.", err)
 		return
 	}
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+config.ACCOUNT_TOKEN)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		log.Println(err)
+		return
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		respBody := helpers.GetResponseBody(resp)
-		slog.Error("Error setting persistent menu", "response", respBody)
+		respBody, err := helpers.GetResponseBody(resp)
+		slog.Error("Error setting persistent menu", "response", respBody, "readError", err)
 	} else {
-		respBody := helpers.GetResponseBody(resp)
-		slog.Info("Persistent menu set.", "response", respBody)
+		respBody, err := helpers.GetResponseBody(resp)
+		slog.Info("Persistent menu set.", "response", respBody, "readError", err)
 	}
 
-	defer resp.Body.Close()
 }

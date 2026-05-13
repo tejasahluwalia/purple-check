@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 
+	"purple-check/internal/helpers"
 	"purple-check/internal/logger"
 	"purple-check/internal/middleware"
 
@@ -36,7 +39,19 @@ type page struct {
 
 func (t page) handler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), components.RequestContextKey, r)
-	t.Render(ctx, w)
+	renderComponent(ctx, w, t)
+}
+
+func renderComponent(ctx context.Context, w http.ResponseWriter, component templ.Component) {
+	var buf bytes.Buffer
+	if err := component.Render(ctx, &buf); err != nil {
+		slog.Error("render failed", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if _, err := buf.WriteTo(w); err != nil {
+		slog.Error("write response failed", "error", err)
+	}
 }
 
 func main() {
@@ -56,11 +71,11 @@ func main() {
 			return
 		}
 		ctx := context.WithValue(r.Context(), components.RequestContextKey, r)
-		components.Layout(app.Index(), components.Head{
+		renderComponent(ctx, w, components.Layout(app.Index(), components.Head{
 			Title:       "Purple Check",
 			Description: "Purple Check is a review platform for buyers and sellers on Instagram.",
 			URL:         "https://www.purple-check.org",
-		}).Render(ctx, w)
+		}))
 	})
 	mux.HandleFunc("GET /privacy-policy", (page{components.Layout(app.PrivacyPolicy(), components.Head{
 		Title: "Purple Check - Privacy Policy",
@@ -77,16 +92,19 @@ func main() {
 	})}).handler)
 	mux.HandleFunc("POST /search", app.Search)
 	mux.HandleFunc("GET /profile/{username}", func(w http.ResponseWriter, r *http.Request) {
-		username := r.PathValue("username")
-		if username == "" {
+		username, ok := helpers.NormalizeUsername(r.PathValue("username"))
+		if !ok {
 			http.Error(w, "Invalid username", http.StatusBadRequest)
+			return
 		}
+		r.SetPathValue("username", username)
 		ctx := context.WithValue(r.Context(), components.RequestContextKey, r)
-		components.Layout(app.Profile(), components.Head{
+		escapedUsername := url.PathEscape(username)
+		renderComponent(ctx, w, components.Layout(app.Profile(), components.Head{
 			Title:       fmt.Sprintf("Reviews for @%s on Instagram", username),
 			Description: fmt.Sprintf("Read and write reviews for @%s on Instagram. See recent feedback left by buyers and sellers.", username),
-			URL:         fmt.Sprintf("https://www.purple-check.org/profile/%s", username),
-		}).Render(ctx, w)
+			URL:         fmt.Sprintf("https://www.purple-check.org/profile/%s", escapedUsername),
+		}))
 	})
 
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)

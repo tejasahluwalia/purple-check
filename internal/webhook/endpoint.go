@@ -14,21 +14,36 @@ func Instagram(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&webhook)
 	if err != nil {
 		log.Println(err)
-	}
-
-	if len(webhook.Entry) == 0 || len(webhook.Entry[0].Messaging) == 0 || webhook.Entry[0].Messaging[0].Message.Is_echo {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	messageEvent := webhook.Entry[0].Messaging[0]
-	userId := messageEvent.Sender.Id
-
-	if userId == "954039343027729" {
-		w.WriteHeader(http.StatusOK)
+		http.Error(w, "Invalid webhook payload", http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	messaging.RouteMessage(r.Context(), messageEvent)
+	for _, entry := range webhook.Entry {
+		for _, messageEvent := range entry.Messaging {
+			if !shouldRouteMessageEvent(messageEvent) {
+				continue
+			}
+			messaging.RouteMessage(r.Context(), messageEvent)
+		}
+	}
+}
+
+func shouldRouteMessageEvent(messageEvent models.MessageEvent) bool {
+	if messageEvent.Sender.Id == "" || messageEvent.Sender.Id == "954039343027729" {
+		return false
+	}
+	if messageEvent.Message.Is_echo || messageEvent.Message.Is_deleted || messageEvent.Message.Is_unsupported {
+		return false
+	}
+	if messageEvent.Message.Text != "" || messageEvent.Message.Quick_reply.Payload != "" {
+		return true
+	}
+	if messageEvent.Postback != nil && messageEvent.Postback.Payload != "" {
+		return true
+	}
+	if messageEvent.Referral != nil || messageEvent.Message.Referral != nil {
+		return true
+	}
+	return messageEvent.Postback != nil && messageEvent.Postback.Referral != nil
 }

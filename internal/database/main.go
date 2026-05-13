@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"sync"
 
@@ -29,22 +30,22 @@ func syncDB(ctx context.Context) (*turso.TursoSyncDb, error) {
 	return db, dbErr
 }
 
-func GetDB(ctx context.Context) (*sql.DB, func()) {
+func GetDB(ctx context.Context) (*sql.DB, func(), error) {
 	db, err := syncDB(ctx)
 	if err != nil {
-		log.Fatal("Error opening database.", err)
+		return nil, func() {}, fmt.Errorf("open database: %w", err)
 	}
 
 	conn, err := db.Connect(ctx)
 	if err != nil {
-		log.Fatal("Error connecting to database.", err)
+		return nil, func() {}, fmt.Errorf("connect database: %w", err)
 	}
 
 	return conn, func() {
 		if err := conn.Close(); err != nil {
 			log.Println("Error closing database connection.", err)
 		}
-	}
+	}, nil
 }
 
 func PullDB(ctx context.Context) (bool, error) {
