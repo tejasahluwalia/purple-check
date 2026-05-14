@@ -1,29 +1,21 @@
 package profile
 
 import (
-	"database/sql"
 	"log/slog"
 	"net/http"
 	"purple-check/internal/helpers"
 	"purple-check/internal/layout"
 	"purple-check/internal/models"
-
-	turso "turso.tech/database/tursogo"
 )
 
-func NewHandler(db *turso.TursoSyncDb, conn *sql.DB) http.Handler {
-	feedbackModel := models.FeedbackModel{
-		Conn: conn,
-	}
+func NewHandler(feedbacks models.FeedbackRepository) http.Handler {
 	return &Handler{
-		DB:            db,
-		FeedbackModel: feedbackModel,
+		Feedbacks: feedbacks,
 	}
 }
 
 type Handler struct {
-	DB *turso.TursoSyncDb
-	models.FeedbackModel
+	Feedbacks models.FeedbackRepository
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -38,9 +30,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	username := helpers.NormalizeUsername(r.PathValue("username"))
 	err := helpers.ValidateUsername(username)
-	feedbackList, err := h.FeedbackModel.GetAllForUser(r.Context(), username)
 	if err != nil {
-		slog.Error("Error retreiving user feedback", err)
+		http.Error(w, "Invalid username", http.StatusBadRequest)
+		return
+	}
+	feedbackList, err := h.Feedbacks.GetAllForUser(r.Context(), username)
+	if err != nil {
+		slog.Error("Error retrieving user feedback", "error", err)
 	}
 	viewModel := ViewModel{
 		Username:     username,

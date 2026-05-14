@@ -1,13 +1,31 @@
 package webhook
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"purple-check/internal/messaging"
 	"purple-check/internal/models"
 )
 
+type MessageRouter interface {
+	RouteMessage(ctx context.Context, messageEvent models.MessageEvent)
+}
+
+func NewInstagramHandler(router MessageRouter) http.Handler {
+	return &InstagramHandler{Router: router}
+}
+
+type InstagramHandler struct {
+	Router MessageRouter
+}
+
 func Instagram(w http.ResponseWriter, r *http.Request) {
+	NewInstagramHandler(nil).ServeHTTP(w, r)
+}
+
+func (h *InstagramHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var webhook models.InstagramWebhook
 
 	err := json.NewDecoder(r.Body).Decode(&webhook)
@@ -18,15 +36,20 @@ func Instagram(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	ctx := context.WithoutCancel(r.Context())
 	for _, entry := range webhook.Entry {
 		for _, messageEvent := range entry.Messaging {
 			if !shouldRouteMessageEvent(messageEvent) {
 				continue
 			}
-			// messaging.RouteMessage(r.Context(), messageEvent)
+			if h.Router != nil {
+				h.Router.RouteMessage(ctx, messageEvent)
+			}
 		}
 	}
 }
+
+var _ MessageRouter = (*messaging.Router)(nil)
 
 func shouldRouteMessageEvent(messageEvent models.MessageEvent) bool {
 	if messageEvent.Sender.Id == "" || messageEvent.Sender.Id == "954039343027729" {

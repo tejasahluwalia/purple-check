@@ -150,7 +150,7 @@ func getUsernameFromUserID(userId string) (string, error) {
 	var userProfileAPIResponse UserProfileAPIResponse
 
 	if resp.StatusCode != 200 {
-		return "", errors.New("IG_API_Error")
+		return "", errors.New("IG_API_Error: Unable to retrieve username")
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&userProfileAPIResponse)

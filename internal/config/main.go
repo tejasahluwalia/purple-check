@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -10,8 +11,9 @@ import (
 type Config map[string]string
 
 func init() {
+	runningTests := strings.HasSuffix(os.Args[0], ".test")
 	err := godotenv.Load()
-	if err != nil {
+	if err != nil && !runningTests {
 		log.Fatal("Error loading .env file")
 	}
 
@@ -35,6 +37,8 @@ func init() {
 		if config[key] == "" {
 			if key == "DEV" {
 				config[key] = "false"
+			} else if runningTests {
+				config[key] = "test"
 			} else {
 				panic("Missing key in .env file: " + key)
 			}

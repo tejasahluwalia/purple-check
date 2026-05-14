@@ -12,6 +12,7 @@ import (
 	"purple-check/internal/layout"
 	"purple-check/internal/messaging"
 	"purple-check/internal/middleware"
+	"purple-check/internal/models"
 	"purple-check/internal/routes"
 	"purple-check/internal/routes/home"
 	"purple-check/internal/routes/instagram"
@@ -31,17 +32,26 @@ func main() {
 	messaging.InitConversations()
 	messaging.SetPersistentMenu()
 
-	db, conn, err := database.InitDb(context.Background())
+	appDB, err := database.InitDb(context.Background())
 	if err != nil {
 		log.Fatal("Failed to connect to database.\n", err)
 	}
+	defer func() {
+		if err := appDB.Close(); err != nil {
+			slog.Error("error closing database", "error", err)
+		}
+	}()
+
+	feedbacks := &models.FeedbackModel{DB: appDB}
+	messageLogs := &models.MessageLogModel{DB: appDB}
+	messageRouter := messaging.NewRouter(feedbacks, messageLogs)
 
 	mux := http.NewServeMux()
 
 	mux.Handle("/", home.NewHandler())
 	mux.Handle("POST /search", search.NewHandler())
 
-	mux.Handle("/profile/{username}", profile.NewHandler(db, conn))
+	mux.Handle("/profile/{username}", profile.NewHandler(feedbacks))
 	mux.Handle("GET /privacy-policy", layout.Handler(routes.PrivacyPolicy(), layout.Head{
 		Title: "Purple Check - Privacy Policy",
 		URL:   "https://www.purple-check.org/privacy-policy",
@@ -57,7 +67,7 @@ func main() {
 	}))
 
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
-	mux.HandleFunc("POST /webhook/instagram", webhook.Instagram)
+	mux.Handle("POST /webhook/instagram", webhook.NewInstagramHandler(messageRouter))
 	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
 	mux.HandleFunc("GET /instagram/refresh-access-token", instagram.RefreshAccessToken)
 	mux.Handle("GET /static/", disableCacheInDevMode(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
