@@ -30,7 +30,7 @@ func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	// Make request to Instagram API
 	refreshURL := fmt.Sprintf("https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=%s", currentToken)
-	
+
 	resp, err := http.Get(refreshURL)
 	if err != nil {
 		slog.Error("Failed to refresh token", "error", err)
@@ -58,14 +58,14 @@ func RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	// Write new token to environment (optional - depends on your setup)
 	// You might want to update a .env file or use another persistence method
-	
-	slog.Info("Access token refreshed successfully", 
+
+	slog.Info("Access token refreshed successfully",
 		"expires_in", refreshResponse.ExpiresIn,
 		"token_type", refreshResponse.TokenType)
 
 	// Return success response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"success":    true,
 		"expires_in": refreshResponse.ExpiresIn,
 		"message":    "Token refreshed successfully",

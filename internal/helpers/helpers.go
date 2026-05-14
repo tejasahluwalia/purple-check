@@ -1,32 +1,10 @@
 package helpers
 
 import (
-	"bytes"
-	"io"
-	"net/http"
+	"errors"
 	"strings"
 	"unicode"
 )
-
-func GetRequestBody(r *http.Request) (string, error) {
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		return "", err
-	}
-	bodyString := string(bodyBytes)
-	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return bodyString, nil
-}
-
-func GetResponseBody(r *http.Response) (string, error) {
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		return "", err
-	}
-	bodyString := string(bodyBytes)
-	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return bodyString, nil
-}
 
 func DetectUsername(message string) (string, bool) {
 	username := ""
@@ -43,36 +21,37 @@ func DetectUsername(message string) (string, bool) {
 		return "", false
 	}
 
-	username, ok := NormalizeUsername(username)
-	if !ok {
+	username = NormalizeUsername(username)
+	err := ValidateUsername(username)
+	if err != nil {
 		return "", false
 	}
 
 	return username, username != ""
 }
 
-func NormalizeUsername(username string) (string, bool) {
+func NormalizeUsername(username string) string {
 	username = strings.TrimSpace(username)
 	username = strings.ToLower(username)
 	username = strings.TrimPrefix(username, "@")
-	return username, ValidateUsername(username)
+	return username
 }
 
-func ValidateUsername(username string) bool {
+func ValidateUsername(username string) error {
 	if len(username) < 3 || len(username) > 30 {
-		return false
+		return errors.New("Invalid username.")
 	}
 
 	if strings.HasPrefix(username, ".") || strings.HasSuffix(username, ".") || strings.Contains(username, "..") {
-		return false
+		return errors.New("Invalid username.")
 	}
 
 	// Restrict to letters, numbers, periods and underscores
 	for _, char := range username {
 		if char > unicode.MaxASCII || !(unicode.IsLetter(char) || unicode.IsDigit(char) || char == '.' || char == '_') {
-			return false
+			return errors.New("Invalid username.")
 		}
 	}
 
-	return true
+	return nil
 }

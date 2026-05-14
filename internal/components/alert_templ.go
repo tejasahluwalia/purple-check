@@ -8,8 +8,6 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "purple-check/internal/utils"
-
 type AlertVariant string
 
 const (
@@ -61,7 +59,7 @@ func Alert(props ...AlertProps) templ.Component {
 		if len(props) > 0 {
 			p = props[0]
 		}
-		var templ_7745c5c3_Var2 = []any{utils.TwMerge(
+		var templ_7745c5c3_Var2 = []any{twMerge(
 			"relative w-full p-4",
 			"[&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
 			"[&>svg+div]:translate-y-[-3px] [&:has(svg)]:pl-11",
@@ -86,7 +84,7 @@ func Alert(props ...AlertProps) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 38, Col: 12}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 36, Col: 12}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 			if templ_7745c5c3_Err != nil {
@@ -159,7 +157,7 @@ func AlertTitle(props ...AlertTitleProps) templ.Component {
 		if len(props) > 0 {
 			p = props[0]
 		}
-		var templ_7745c5c3_Var6 = []any{utils.TwMerge(
+		var templ_7745c5c3_Var6 = []any{twMerge(
 			"mb-2 font-medium leading-none tracking-tight",
 			p.Class,
 		),
@@ -180,7 +178,7 @@ func AlertTitle(props ...AlertTitleProps) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 64, Col: 12}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 62, Col: 12}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 			if templ_7745c5c3_Err != nil {
@@ -253,7 +251,7 @@ func AlertDescription(props ...AlertDescriptionProps) templ.Component {
 		if len(props) > 0 {
 			p = props[0]
 		}
-		var templ_7745c5c3_Var10 = []any{utils.TwMerge(
+		var templ_7745c5c3_Var10 = []any{twMerge(
 			"[&_p]:leading-relaxed text-sm",
 			p.Class,
 		),
@@ -274,7 +272,7 @@ func AlertDescription(props ...AlertDescriptionProps) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 85, Col: 12}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 83, Col: 12}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 			if templ_7745c5c3_Err != nil {

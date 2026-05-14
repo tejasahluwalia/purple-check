@@ -1,69 +1,58 @@
 package messaging
 
-import (
-	"context"
-	"fmt"
-	"log"
-	"net/url"
-	"strconv"
+// func searchForUserAndRespond(ctx context.Context, usernameToSearch string, userId string) error {
+// 	if _, err := database.PullDB(ctx); err != nil {
+// 		log.Println("Error pulling database changes.", err)
+// 	}
 
-	"purple-check/internal/config"
-	"purple-check/internal/database"
-)
+// 	db, closer, err := database.GetDB(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer closer()
 
-func searchForUserAndRespond(ctx context.Context, usernameToSearch string, userId string) error {
-	if _, err := database.PullDB(ctx); err != nil {
-		log.Println("Error pulling database changes.", err)
-	}
+// 	var positiveRatings int
+// 	var totalRatings int
 
-	db, closer, err := database.GetDB(ctx)
-	if err != nil {
-		return err
-	}
-	defer closer()
+// 	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", usernameToSearch).Scan(&positiveRatings)
+// 	if err != nil {
+// 		return fmt.Errorf("query positive ratings: %w", err)
+// 	}
 
-	var positiveRatings int
-	var totalRatings int
+// 	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ?", usernameToSearch).Scan(&totalRatings)
+// 	if err != nil {
+// 		return fmt.Errorf("query total ratings: %w", err)
+// 	}
 
-	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", usernameToSearch).Scan(&positiveRatings)
-	if err != nil {
-		return fmt.Errorf("query positive ratings: %w", err)
-	}
+// 	buttons := []ElementButton{
+// 		{
+// 			Type:  "web_url",
+// 			Title: "See all reviews",
+// 			URL:   "https://" + config.HOST + "/profile/" + url.PathEscape(usernameToSearch),
+// 		},
+// 		{
+// 			Type:    "postback",
+// 			Title:   "Leave review",
+// 			Payload: "RATE:" + usernameToSearch,
+// 		},
+// 		{
+// 			Type:    "postback",
+// 			Title:   "Search for another user",
+// 			Payload: "SEARCH",
+// 		},
+// 	}
 
-	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ?", usernameToSearch).Scan(&totalRatings)
-	if err != nil {
-		return fmt.Errorf("query total ratings: %w", err)
-	}
-
-	buttons := []ElementButton{
-		{
-			Type:  "web_url",
-			Title: "See all reviews",
-			URL:   "https://" + config.HOST + "/profile/" + url.PathEscape(usernameToSearch),
-		},
-		{
-			Type:    "postback",
-			Title:   "Leave review",
-			Payload: "RATE:" + usernameToSearch,
-		},
-		{
-			Type:    "postback",
-			Title:   "Search for another user",
-			Payload: "SEARCH",
-		},
-	}
-
-	if totalRatings == 0 {
-		return sendButtonMessage(buttons, "No ratings found for @"+usernameToSearch, userId)
-	} else {
-		positivePercentage := (float64(positiveRatings) / float64(totalRatings)) * 100
-		ratingPlural := "ratings"
-		if totalRatings == 1 {
-			ratingPlural = "rating"
-		}
-		return sendButtonMessage(buttons, "@"+usernameToSearch+"\n\n"+strconv.FormatFloat(positivePercentage, 'f', 0, 32)+"% positive ("+strconv.Itoa(totalRatings)+" "+ratingPlural+")", userId)
-	}
-}
+// 	if totalRatings == 0 {
+// 		return sendButtonMessage(buttons, "No ratings found for @"+usernameToSearch, userId)
+// 	} else {
+// 		positivePercentage := (float64(positiveRatings) / float64(totalRatings)) * 100
+// 		ratingPlural := "ratings"
+// 		if totalRatings == 1 {
+// 			ratingPlural = "rating"
+// 		}
+// 		return sendButtonMessage(buttons, "@"+usernameToSearch+"\n\n"+strconv.FormatFloat(positivePercentage, 'f', 0, 32)+"% positive ("+strconv.Itoa(totalRatings)+" "+ratingPlural+")", userId)
+// 	}
+// }
 
 func askForRating(usernameToRate string, userId string) error {
 	buttons := []ElementButton{

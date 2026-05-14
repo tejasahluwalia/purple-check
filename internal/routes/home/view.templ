@@ -1,21 +1,12 @@
-package app
+package home
 
 import "purple-check/internal/components"
 
-templ Index() {
-	if components.GetRequestContext(ctx).URL.Path == "/" {
-		@homepage()
-	} else {
-		@notFound()
-	}
-}
-
-templ homepage() {
+templ View() {
 	<section class="flex-1 space-y-8 py-8">
 		<h1 class="text-2xl/7 font-bold sm:truncate sm:text-3xl sm:tracking-tight">Reviews for buyers and sellers on Instagram</h1>
-		@components.Search()
+		@components.SearchBox()
 		@components.Alert() {
-			// @icons.Rocket(icons.IconProps{Size: 16})
 			@components.AlertTitle() {
 				Writing Reviews
 			}
@@ -31,12 +22,12 @@ templ homepage() {
 	</section>
 }
 
-templ notFound() {
+templ NotFound() {
 	<section class="flex-1 text-slate-600 space-y-4">
 		<h1 class="py-4 text-3xl text-slate-950 font-bold">This page does not exist.</h1>
 		<p>
 			<span class="font-medium text-slate-950">Search for a username</span> to see reviews.
 		</p>
-		@components.Search()
+		@components.SearchBox()
 	</section>
 }

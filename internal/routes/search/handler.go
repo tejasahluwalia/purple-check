@@ -1,4 +1,4 @@
-package app
+package search
 
 import (
 	"net/http"
@@ -6,13 +6,21 @@ import (
 	"purple-check/internal/helpers"
 )
 
-func Search(w http.ResponseWriter, r *http.Request) {
+func NewHandler() http.Handler {
+	return &Handler{}
+}
+
+type Handler struct {
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	username, ok := helpers.NormalizeUsername(r.FormValue("search-term"))
-	if !ok {
+	username := helpers.NormalizeUsername(r.FormValue("search-term"))
+	err := helpers.ValidateUsername(username)
+	if err != nil {
 		http.Error(w, "Invalid username", http.StatusBadRequest)
 	} else {
 		http.Redirect(w, r, "/profile/"+url.PathEscape(username), http.StatusFound)

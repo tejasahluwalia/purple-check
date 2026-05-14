@@ -1,78 +1,12 @@
 package components
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"purple-check/internal/database"
 	"purple-check/internal/models"
 )
 
-func getFeedbackList(ctx context.Context, username string, role string) []models.Feedback {
-	column, err := feedbackRoleColumn(role)
-	if err != nil {
-		log.Println(err)
-		return []models.Feedback{}
-	}
-
-	if _, err := database.PullDB(ctx); err != nil {
-		log.Println("Error pulling database changes.", err)
-	}
-
-	db, closer, err := database.GetDB(ctx)
-	if err != nil {
-		log.Println(err)
-		return []models.Feedback{}
-	}
-	defer closer()
-
-	var feedbackList []models.Feedback
-
-	stmt, err := db.Prepare("SELECT id, giver, receiver, rating, created_at FROM feedback WHERE " + column + " = ? ORDER BY created_at DESC")
-	if err != nil {
-		log.Println(err)
-		return []models.Feedback{}
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.Query(username)
-	if err != nil {
-		log.Println(err)
-		return []models.Feedback{}
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var feedback models.Feedback
-
-		err = rows.Scan(&feedback.ID, &feedback.Giver, &feedback.Receiver, &feedback.Rating, &feedback.CreatedAt)
-		if err != nil {
-			log.Println(err)
-		}
-
-		feedbackList = append(feedbackList, feedback)
-	}
-	if err := rows.Err(); err != nil {
-		log.Println(err)
-		return []models.Feedback{}
-	}
-
-	return feedbackList
-}
-
-func feedbackRoleColumn(role string) (string, error) {
-	switch role {
-	case "receiver", "giver":
-		return role, nil
-	default:
-		return "", fmt.Errorf("invalid feedback role: %s", role)
-	}
-}
-
 var dateFormatter = templ.NewOnceHandle()
 
-templ FeedbackList(p string) {
-	{{ feedbackList := getFeedbackList(ctx, p, "receiver") }}
+templ FeedbackList(feedbackList []models.Feedback) {
 	if len(feedbackList) == 0 {
 		<p>No feedback yet.</p>
 	} else {

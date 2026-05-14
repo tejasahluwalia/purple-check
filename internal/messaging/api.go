@@ -2,7 +2,6 @@ package messaging
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,12 +12,10 @@ import (
 	"time"
 
 	"purple-check/internal/config"
-	"purple-check/internal/database"
-	"purple-check/internal/helpers"
 )
 
 var API_HOST = "graph.instagram.com"
-var API_VERSION = "v22.0"
+var API_VERSION = "v25.0"
 var API_URL = "https://" + API_HOST + "/" + API_VERSION
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
@@ -87,38 +84,38 @@ func sendMessage(body []byte) error {
 	return nil
 }
 
-func saveRating(ctx context.Context, rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) error {
-	db, closer, err := database.GetDB(ctx)
-	if err != nil {
-		return err
-	}
-	defer closer()
+// func saveRating(ctx context.Context, rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) error {
+// 	db, closer, err := database.GetDB(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer closer()
 
-	stmt, err := db.Prepare(`INSERT INTO feedback
-		(giver, receiver, rating, giver_role, receiver_role, deal_stage)
-		VALUES (?, ?, ?, ?, ?, ?)
-		ON CONFLICT(giver, receiver)
-		DO UPDATE SET
-			rating=excluded.rating,
-			giver_role=excluded.giver_role,
-			receiver_role=excluded.receiver_role,
-			deal_stage=excluded.deal_stage`)
-	if err != nil {
-		return fmt.Errorf("prepare save rating: %w", err)
-	}
-	defer stmt.Close()
+// 	stmt, err := db.Prepare(`INSERT INTO feedback
+// 		(giver, receiver, rating, giver_role, receiver_role, deal_stage)
+// 		VALUES (?, ?, ?, ?, ?, ?)
+// 		ON CONFLICT(giver, receiver)
+// 		DO UPDATE SET
+// 			rating=excluded.rating,
+// 			giver_role=excluded.giver_role,
+// 			receiver_role=excluded.receiver_role,
+// 			deal_stage=excluded.deal_stage`)
+// 	if err != nil {
+// 		return fmt.Errorf("prepare save rating: %w", err)
+// 	}
+// 	defer stmt.Close()
 
-	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
-	if err != nil {
-		return fmt.Errorf("execute save rating: %w", err)
-	}
+// 	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
+// 	if err != nil {
+// 		return fmt.Errorf("execute save rating: %w", err)
+// 	}
 
-	if err := database.PushDB(ctx); err != nil {
-		return fmt.Errorf("push save rating: %w", err)
-	}
+// 	if err := database.PushDB(ctx); err != nil {
+// 		return fmt.Errorf("push save rating: %w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 type UserProfileAPIResponse struct {
 	Username string `json:"username"`
@@ -219,11 +216,9 @@ func SetPersistentMenu() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		respBody, err := helpers.GetResponseBody(resp)
-		slog.Error("Error setting persistent menu", "response", respBody, "readError", err)
+		slog.Error("Error setting persistent menu")
 	} else {
-		respBody, err := helpers.GetResponseBody(resp)
-		slog.Info("Persistent menu set.", "response", respBody, "readError", err)
+		slog.Info("Persistent menu set.")
 	}
 
 }

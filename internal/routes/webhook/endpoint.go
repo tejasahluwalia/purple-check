@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"purple-check/internal/messaging"
 	"purple-check/internal/models"
 )
 
@@ -24,7 +23,7 @@ func Instagram(w http.ResponseWriter, r *http.Request) {
 			if !shouldRouteMessageEvent(messageEvent) {
 				continue
 			}
-			messaging.RouteMessage(r.Context(), messageEvent)
+			// messaging.RouteMessage(r.Context(), messageEvent)
 		}
 	}
 }

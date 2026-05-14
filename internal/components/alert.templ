@@ -1,7 +1,5 @@
 package components
 
-import "purple-check/internal/utils"
-
 type AlertVariant string
 
 const (
@@ -38,7 +36,7 @@ templ Alert(props ...AlertProps) {
 			id={ p.ID }
 		}
 		class={
-			utils.TwMerge(
+			twMerge(
 				"relative w-full p-4",
 				"[&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
 				"[&>svg+div]:translate-y-[-3px] [&:has(svg)]:pl-11",
@@ -64,7 +62,7 @@ templ AlertTitle(props ...AlertTitleProps) {
 			id={ p.ID }
 		}
 		class={
-			utils.TwMerge(
+			twMerge(
 				"mb-2 font-medium leading-none tracking-tight",
 				p.Class,
 			),
@@ -85,7 +83,7 @@ templ AlertDescription(props ...AlertDescriptionProps) {
 			id={ p.ID }
 		}
 		class={
-			utils.TwMerge(
+			twMerge(
 				"[&_p]:leading-relaxed text-sm",
 				p.Class,
 			),

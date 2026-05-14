@@ -1,17 +1,20 @@
-package app
+package profile
 
 import (
 	"net/url"
 	"purple-check/internal/components"
+	"purple-check/internal/models"
 )
 
-templ Profile() {
+type ViewModel struct {
+	Username string
+	FeedbackList []models.Feedback
+}
+
+templ View(vm ViewModel) {
 	<section class="pt-8">
 		{{
-			var username string
-			if request := components.GetRequestContext(ctx); request != nil {
-				username = request.PathValue("username")
-			}
+			username := vm.Username
 			instagramURL := "https://www.instagram.com/" + url.PathEscape(username)
 			refValues := url.Values{"ref": []string{username}}
 			feedbackURL := "https://ig.me/m/purplecheck_org?" + refValues.Encode()
@@ -31,7 +34,7 @@ templ Profile() {
 		</div>
 		<div class="my-4">
 			<h2 class="text-xl mb-4 font-bold tracking-tight">Feedback received</h2>
-			@components.FeedbackList(username)
+			@components.FeedbackList(vm.FeedbackList)
 		</div>
 	</section>
 }

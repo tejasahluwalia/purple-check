@@ -1,35 +1,28 @@
 package components
 
-import (
-	"context"
-	"log"
+// func GetProfileRating(ctx context.Context, username string) (float64, int, error) {
+// 	if _, err := database.PullDB(ctx); err != nil {
+// 		log.Println("Error pulling database changes.", err)
+// 	}
 
-	"purple-check/internal/database"
-)
+// 	db, closer, err := database.GetDB(ctx)
+// 	if err != nil {
+// 		return 0, 0, err
+// 	}
+// 	defer closer()
 
-func GetProfileRating(ctx context.Context, username string) (float64, int, error) {
-	if _, err := database.PullDB(ctx); err != nil {
-		log.Println("Error pulling database changes.", err)
-	}
+// 	var positiveRatings int
+// 	var totalRatings int
 
-	db, closer, err := database.GetDB(ctx)
-	if err != nil {
-		return 0, 0, err
-	}
-	defer closer()
+// 	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", username).Scan(&positiveRatings)
+// 	if err != nil {
+// 		return 0, 0, err
+// 	}
 
-	var positiveRatings int
-	var totalRatings int
+// 	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ?", username).Scan(&totalRatings)
+// 	if err != nil {
+// 		return 0, 0, err
+// 	}
 
-	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ? AND rating = 'POSITIVE'", username).Scan(&positiveRatings)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	err = db.QueryRow("SELECT COUNT(*) FROM feedback WHERE receiver = ?", username).Scan(&totalRatings)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return float64(positiveRatings), totalRatings, nil
-}
+// 	return float64(positiveRatings), totalRatings, nil
+// }
