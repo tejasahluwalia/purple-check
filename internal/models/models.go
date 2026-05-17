@@ -106,7 +106,7 @@ func (m *FeedbackModel) GetAllForUser(ctx context.Context, username string) ([]F
 	}
 	var feedbackList []Feedback
 
-	stmt, err := conn.PrepareContext(ctx, "SELECT id, giver, receiver, rating, giver_role, receiver_role, comment, created_at FROM feedback WHERE receiver = ? ORDER BY created_at DESC")
+	stmt, err := conn.PrepareContext(ctx, "SELECT id, giver, receiver, rating, giver_role, receiver_role, COALESCE(comment, ''), created_at FROM feedback WHERE receiver = ? ORDER BY created_at DESC")
 	if err != nil {
 		return []Feedback{}, err
 	}
