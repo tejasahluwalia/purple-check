@@ -77,7 +77,7 @@ func main() {
 	mux.Handle("GET /instagram/refresh-access-token", instagram.NewRefreshAccessTokenHandler(tokenStore))
 	mux.Handle("GET /static/", disableCacheInDevMode(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 
-	handler := middleware.RedirectNonWWW(middleware.ConfigureCSP(mux))
+	handler := middleware.ConfigureCSP(mux)
 
 	slog.Info("starting server", "port", config.PORT)
 	err = http.ListenAndServe(":"+config.PORT, handler)
