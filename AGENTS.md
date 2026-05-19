@@ -29,9 +29,10 @@ Startup sequence:
 2. `messaging.SetPersistentMenu()` calls the Instagram Graph API to configure the persistent menu and ice breaker.
 3. `database.InitDb()` opens the local Turso sync database.
 4. `FeedbackModel` and `MessageLogModel` are created around the DB.
-5. `messaging.NewRouter()` receives the repositories.
-6. Routes are registered on `http.ServeMux`.
-7. Middleware wraps the mux with CSP and non-www redirect.
+5. `AppSettingModel` is created around the DB and wrapped in a 24-hour in-memory Instagram token cache.
+6. `messaging.NewRouter()` receives the repositories and token store.
+7. Routes are registered on `http.ServeMux`.
+8. Middleware wraps the mux with CSP and non-www redirect.
 
 Important implication: starting the server with real credentials performs an outbound Instagram API call before listening.
 
@@ -46,7 +47,7 @@ Important implication: starting the server with real credentials performs an out
 - `GET /webhook/instagram`: Instagram webhook verification endpoint.
 - `POST /webhook/instagram`: Instagram webhook receiver.
 - `GET /webhook/instagram/setup`: subscribes the configured Instagram account to `messages,messaging_postbacks`.
-- `GET /instagram/refresh-access-token`: refreshes the current account token in memory.
+- `GET /instagram/refresh-access-token`: requires `Authorization: Bearer <ADMIN_TOKEN>`, refreshes the current account token, and persists it to `app_settings`.
 - `GET /static/*`: static files from `static/`; cache disabled when `DEV=true`.
 
 ## Instagram Messaging Flow
@@ -87,8 +88,11 @@ Expected schema from `internal/models/models.go`:
 - `feedback(id, giver, receiver, rating, giver_role, receiver_role, deal_stage, comment, created_at)`
 - unique constraint on `feedback(giver, receiver)`
 - `user_message_logs(user_id, message, stage, created_at)`
+- `app_settings(key, value, updated_at)`
 
 Read paths call `Pull` before querying feedback. Write paths call `Push` after inserting/updating/deleting feedback or inserting message logs.
+
+The Instagram account token is stored in `app_settings` at key `instagram_account_token`. Runtime API calls use `instagram.TokenStore`, which caches that value in memory for 24 hours and updates the cache immediately after refresh writes.
 
 ## Configuration
 
@@ -97,7 +101,7 @@ Recognized `.env` keys:
 - `APP_ID`
 - `WEBHOOK_VERIFY_TOKEN`
 - `ACCOUNT_ID`
-- `ACCOUNT_TOKEN`
+- `ADMIN_TOKEN`
 - `TURSO_DATABASE_URL`
 - `TURSO_AUTH_TOKEN`
 - `LOCAL_DB_PATH`
@@ -106,7 +110,7 @@ Recognized `.env` keys:
 - `DEV`
 - `INSTAGRAM_API_VERSION`
 
-`DEV` defaults to `false` if omitted. `INSTAGRAM_API_VERSION` defaults to `v25.0` if omitted. During tests, missing keys use `"test"` except for those defaults.
+`DEV` defaults to `false` if omitted. `INSTAGRAM_API_VERSION` defaults to `v25.0` if omitted. `ADMIN_TOKEN` defaults to empty, but the refresh endpoint returns unauthorized unless it is configured. During tests, missing keys use `"test"` except for those defaults.
 
 Do not commit real `.env` or `.env.prod` values. They are ignored.
 
@@ -152,6 +156,7 @@ Add focused tests when changing:
 - `internal/routes/webhook/endpoint.go`: test filtering and routing behavior.
 - `internal/routes/profile/handler.go`: test validation and repository interactions.
 - `internal/helpers/helpers.go`: test normalization and validation edge cases.
+- `internal/models/settings.go`: test app setting/token persistence with a local SQL connection.
 
 Avoid tests that require real Instagram or Turso credentials. The existing code is structured around interfaces for router dependencies; prefer fakes.
 
@@ -159,11 +164,12 @@ Avoid tests that require real Instagram or Turso credentials. The existing code 
 
 - `internal/messaging.Router` has an exported `Sender` field for tests, but most code should use `router.sender()` to get the fallback sender.
 - `RouteMessage` logs messages before handling them. The logged message value is `message + payload + ref`.
+- Instagram API calls read `instagram_account_token` through `messaging.AccountTokenReader` and `instagram.TokenStore`; do not reintroduce `config.ACCOUNT_TOKEN` for runtime API calls.
 - `shouldRouteMessageEvent` ignores sender ID `config.ACCOUNT_ID` so the bot does not route its own messages.
 - Profile pages return HTTP 500 when feedback retrieval fails.
 - Server-side username validation requires 3-30 ASCII letters, digits, periods, or underscores; no leading/trailing/consecutive periods.
 - The client-side search validation in `SearchBox` mirrors the server validation rules, but server validation remains authoritative.
-- `RefreshAccessToken` only updates the global process variable. Persisting refreshed tokens requires a separate secret-store or deployment change.
+- `RefreshAccessToken` requires `Authorization: Bearer <ADMIN_TOKEN>` and persists the refreshed token to `app_settings`.
 - Instagram Graph API routes use `config.INSTAGRAM_API_VERSION`.
 - The CSP middleware sets default, script, style, image, font, connect, base-uri, form-action, frame-ancestor, and object directives.
 - Local database files under `data/`, build output under `tmp/`, env files, and the `purple-check` binary should stay untracked.

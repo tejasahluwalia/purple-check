@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,7 +21,7 @@ var API_URL = "https://" + API_HOST + "/" + API_VERSION
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
-func sendButtonMessage(buttons []ElementButton, text string, userId string) error {
+func sendButtonMessage(ctx context.Context, tokens AccountTokenReader, buttons []ElementButton, text string, userId string) error {
 	body, err := json.Marshal(MessageRequestBody[MessageButtons]{
 		MessageRecipient{
 			ID: userId,
@@ -40,10 +41,10 @@ func sendButtonMessage(buttons []ElementButton, text string, userId string) erro
 		return fmt.Errorf("marshal button message: %w", err)
 	}
 
-	return sendMessage(body)
+	return sendMessage(ctx, tokens, body)
 }
 
-func sendTextMessage(text string, userId string) error {
+func sendTextMessage(ctx context.Context, tokens AccountTokenReader, text string, userId string) error {
 	body, err := json.Marshal(MessageRequestBody[MessageText]{
 		MessageRecipient{
 			ID: userId,
@@ -56,19 +57,23 @@ func sendTextMessage(text string, userId string) error {
 		return fmt.Errorf("marshal text message: %w", err)
 	}
 
-	return sendMessage(body)
+	return sendMessage(ctx, tokens, body)
 }
 
-func sendMessage(body []byte) error {
+func sendMessage(ctx context.Context, tokens AccountTokenReader, body []byte) error {
+	token, err := accountToken(ctx, tokens)
+	if err != nil {
+		return err
+	}
 	url := API_URL + "/me/messages"
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create message request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+config.ACCOUNT_TOKEN)
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -84,59 +89,31 @@ func sendMessage(body []byte) error {
 	return nil
 }
 
-// func saveRating(ctx context.Context, rating string, giverUsername string, recieverUsername string, giverRole string, receiverRole string, dealStage string) error {
-// 	db, closer, err := database.GetDB(ctx)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer closer()
-
-// 	stmt, err := db.Prepare(`INSERT INTO feedback
-// 		(giver, receiver, rating, giver_role, receiver_role, deal_stage)
-// 		VALUES (?, ?, ?, ?, ?, ?)
-// 		ON CONFLICT(giver, receiver)
-// 		DO UPDATE SET
-// 			rating=excluded.rating,
-// 			giver_role=excluded.giver_role,
-// 			receiver_role=excluded.receiver_role,
-// 			deal_stage=excluded.deal_stage`)
-// 	if err != nil {
-// 		return fmt.Errorf("prepare save rating: %w", err)
-// 	}
-// 	defer stmt.Close()
-
-// 	_, err = stmt.Exec(giverUsername, recieverUsername, rating, giverRole, receiverRole, dealStage)
-// 	if err != nil {
-// 		return fmt.Errorf("execute save rating: %w", err)
-// 	}
-
-// 	if err := database.PushDB(ctx); err != nil {
-// 		return fmt.Errorf("push save rating: %w", err)
-// 	}
-
-// 	return nil
-// }
-
 type UserProfileAPIResponse struct {
 	Username string `json:"username"`
 	ID       string `json:"id"`
 }
 
-func getUsernameFromUserID(userId string) (string, error) {
+func getUsernameFromUserID(ctx context.Context, tokens AccountTokenReader, userId string) (string, error) {
 	userState := getUserConversationState(userId)
 	if userState.CurrentUser != "" {
 		return userState.CurrentUser, nil
 	}
 
+	token, err := accountToken(ctx, tokens)
+	if err != nil {
+		return "", err
+	}
+
 	url := API_URL + "/" + userId
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
 
 	q := req.URL.Query()
-	q.Add("access_token", config.ACCOUNT_TOKEN)
+	q.Add("access_token", token)
 	q.Add("fields", "username")
 	req.URL.RawQuery = q.Encode()
 
@@ -164,7 +141,11 @@ func getUsernameFromUserID(userId string) (string, error) {
 	return userProfileAPIResponse.Username, nil
 }
 
-func SetPersistentMenu() {
+func SetPersistentMenu(ctx context.Context, tokens AccountTokenReader) error {
+	token, err := accountToken(ctx, tokens)
+	if err != nil {
+		return err
+	}
 	url := API_URL + "/" + config.ACCOUNT_ID + "/messenger_profile"
 
 	body, err := json.Marshal(MessengerProfileRequestBody{
@@ -195,30 +176,42 @@ func SetPersistentMenu() {
 		},
 	})
 	if err != nil {
-		log.Println("Unable to marshal message body.", err)
-		return
+		return fmt.Errorf("marshal messenger profile body: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		log.Println(err)
-		return
+		return fmt.Errorf("create messenger profile request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+config.ACCOUNT_TOKEN)
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Println(err)
-		return
+		return fmt.Errorf("set persistent menu request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		slog.Error("Error setting persistent menu")
-	} else {
-		slog.Info("Persistent menu set.")
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("set persistent menu returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
+	slog.Info("Persistent menu set.")
+	return nil
+}
+
+func accountToken(ctx context.Context, tokens AccountTokenReader) (string, error) {
+	if tokens == nil {
+		return "", errors.New("account token store is nil")
+	}
+	token, err := tokens.GetAccountToken(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get account token: %w", err)
+	}
+	if token == "" {
+		return "", errors.New("account token is empty")
+	}
+	return token, nil
 }

@@ -6,16 +6,17 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"purple-check/internal/config"
 	"purple-check/internal/database"
+	"purple-check/internal/instagram"
 	"purple-check/internal/layout"
 	"purple-check/internal/messaging"
 	"purple-check/internal/middleware"
 	"purple-check/internal/models"
 	"purple-check/internal/routes"
 	"purple-check/internal/routes/home"
-	"purple-check/internal/routes/instagram"
 	"purple-check/internal/routes/profile"
 	"purple-check/internal/routes/search"
 	"purple-check/internal/routes/webhook"
@@ -30,7 +31,6 @@ var origins = []string{
 
 func main() {
 	messaging.InitConversations()
-	messaging.SetPersistentMenu()
 
 	appDB, err := database.InitDb(context.Background())
 	if err != nil {
@@ -44,7 +44,12 @@ func main() {
 
 	feedbacks := &models.FeedbackModel{DB: appDB}
 	messageLogs := &models.MessageLogModel{DB: appDB}
-	messageRouter := messaging.NewRouter(feedbacks, messageLogs)
+	appSettings := &models.AppSettingModel{DB: appDB}
+	tokenStore := instagram.NewTokenStore(appSettings, 24*time.Hour)
+	if err := messaging.SetPersistentMenu(context.Background(), tokenStore); err != nil {
+		slog.Error("error setting persistent menu", "error", err)
+	}
+	messageRouter := messaging.NewRouter(feedbacks, messageLogs, tokenStore)
 
 	mux := http.NewServeMux()
 
@@ -68,8 +73,8 @@ func main() {
 
 	mux.HandleFunc("GET /webhook/instagram", webhook.VerifyInstagramHook)
 	mux.Handle("POST /webhook/instagram", webhook.NewInstagramHandler(messageRouter))
-	mux.HandleFunc("GET /webhook/instagram/setup", webhook.SetupWebhooks)
-	mux.HandleFunc("GET /instagram/refresh-access-token", instagram.RefreshAccessToken)
+	mux.Handle("GET /webhook/instagram/setup", webhook.NewSetupHandler(tokenStore))
+	mux.Handle("GET /instagram/refresh-access-token", instagram.NewRefreshAccessTokenHandler(tokenStore))
 	mux.Handle("GET /static/", disableCacheInDevMode(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 
 	handler := middleware.RedirectNonWWW(middleware.ConfigureCSP(mux))

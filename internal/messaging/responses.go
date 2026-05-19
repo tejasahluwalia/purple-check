@@ -1,6 +1,8 @@
 package messaging
 
-func (router *Router) askForRating(usernameToRate string, userId string) error {
+import "context"
+
+func (router *Router) askForRating(ctx context.Context, usernameToRate string, userId string) error {
 	buttons := []ElementButton{
 		{
 			Type:    "postback",
@@ -19,18 +21,18 @@ func (router *Router) askForRating(usernameToRate string, userId string) error {
 		},
 	}
 
-	return router.sendButtonMessage(buttons, "How was your interaction with @"+usernameToRate+"?", userId)
+	return router.sendButtonMessage(ctx, buttons, "How was your interaction with @"+usernameToRate+"?", userId)
 }
 
-func (router *Router) askForUsernameToSearch(userId string) error {
-	return router.sendTextMessage("Please enter the username (with '@' symbol) of the page you want to check. (e.g. @purplecheck_org)", userId)
+func (router *Router) askForUsernameToSearch(ctx context.Context, userId string) error {
+	return router.sendTextMessage(ctx, "Please enter the username (with '@' symbol) of the page you want to check. (e.g. @purplecheck_org)", userId)
 }
 
-func (router *Router) invalidResponseMessage(userId string) error {
-	return router.sendTextMessage("Invalid response. Please select one of the options provided. Or click cancel.", userId)
+func (router *Router) invalidResponseMessage(ctx context.Context, userId string) error {
+	return router.sendTextMessage(ctx, "Invalid response. Please select one of the options provided. Or click cancel.", userId)
 }
 
-func (router *Router) askForRole(userId string) error {
+func (router *Router) askForRole(ctx context.Context, userId string) error {
 	buttons := []ElementButton{
 		{
 			Type:    "postback",
@@ -48,10 +50,10 @@ func (router *Router) askForRole(userId string) error {
 			Payload: "CANCEL",
 		},
 	}
-	return router.sendButtonMessage(buttons, "What was your role in this interaction?", userId)
+	return router.sendButtonMessage(ctx, buttons, "What was your role in this interaction?", userId)
 }
 
-func (router *Router) askForDealStage(userId string) error {
+func (router *Router) askForDealStage(ctx context.Context, userId string) error {
 	buttons := []ElementButton{
 		{
 			Type:    "postback",
@@ -69,5 +71,5 @@ func (router *Router) askForDealStage(userId string) error {
 			Payload: "CANCEL",
 		},
 	}
-	return router.sendButtonMessage(buttons, "What was the stage of the deal?", userId)
+	return router.sendButtonMessage(ctx, buttons, "What was the stage of the deal?", userId)
 }

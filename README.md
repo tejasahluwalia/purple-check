@@ -83,7 +83,7 @@ Files ending in `_templ.go` are generated from `.templ` files. Edit the `.templ`
 | `/webhook/instagram` | `GET` | Instagram webhook verification challenge |
 | `/webhook/instagram` | `POST` | Instagram webhook event receiver |
 | `/webhook/instagram/setup` | `GET` | Subscribe the configured Instagram account to webhook fields |
-| `/instagram/refresh-access-token` | `GET` | Refresh the configured Instagram access token in memory |
+| `/instagram/refresh-access-token` | `GET` | Protected endpoint that refreshes and persists the configured Instagram access token |
 | `/static/*` | `GET` | Static assets |
 
 ## Configuration
@@ -94,7 +94,7 @@ The app loads `.env` at startup, except during tests. Recognized variables:
 APP_ID=
 WEBHOOK_VERIFY_TOKEN=
 ACCOUNT_ID=
-ACCOUNT_TOKEN=
+ADMIN_TOKEN=
 TURSO_DATABASE_URL=
 TURSO_AUTH_TOKEN=
 LOCAL_DB_PATH=
@@ -109,8 +109,9 @@ Notes:
 - `HOST` is used when generating public profile links in Instagram button responses.
 - `DEV=true` disables static asset caching.
 - `INSTAGRAM_API_VERSION` defaults to `v25.0` when omitted.
+- `ADMIN_TOKEN` is required to call `GET /instagram/refresh-access-token`.
 - Tests use placeholder values when the test binary is running.
-- `GET /instagram/refresh-access-token` updates `ACCOUNT_TOKEN` only for the running process. It does not write the new token back to `.env` or any secret store.
+- The Instagram account token is loaded from the `app_settings` database table, not from `.env`, and cached in memory for 24 hours.
 
 ## Database
 
@@ -121,8 +122,19 @@ Expected tables:
 - `feedback` with at least `id`, `giver`, `receiver`, `rating`, `giver_role`, `receiver_role`, `deal_stage`, `comment`, and `created_at`.
 - `feedback` must have a unique constraint on `(giver, receiver)` for the upsert path.
 - `user_message_logs` with `user_id`, `message`, `stage`, and `created_at`.
+- `app_settings` with `key`, `value`, and `updated_at`; the Instagram token is stored at key `instagram_account_token`.
 
 `internal/database.AppDB` wraps a local Turso sync database. Reads pull remote changes before querying. Writes update the local database and push changes afterward.
+
+Seed the Instagram token with:
+
+```sql
+INSERT INTO app_settings (key, value)
+VALUES ('instagram_account_token', '<CURRENT_ACCOUNT_TOKEN>')
+ON CONFLICT(key) DO UPDATE SET
+    value = excluded.value,
+    updated_at = datetime('now');
+```
 
 ## Development
 
@@ -177,7 +189,8 @@ Current tests cover:
 
 ## Operational Notes
 
-- `main` calls `messaging.SetPersistentMenu()` on startup. This makes an Instagram Graph API request using `ACCOUNT_TOKEN`.
+- `main` calls `messaging.SetPersistentMenu()` on startup. This loads the token from `app_settings` and makes an Instagram Graph API request.
+- Instagram API calls use an in-memory token cache with a 24-hour TTL. Refreshing the token updates both `app_settings` and the in-memory cache.
 - `RedirectNonWWW` redirects `purple-check.org` to `https://www.purple-check.org`.
 - The CSP middleware adds a per-request nonce and sets default, script, style, image, font, connect, base-uri, form-action, frame-ancestor, and object directives.
 - Conversation state is in memory. Restarting the process clears in-progress DM flows.

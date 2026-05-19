@@ -15,39 +15,47 @@ import (
 )
 
 type Sender interface {
-	SendTextMessage(text string, userID string) error
-	SendButtonMessage(buttons []ElementButton, text string, userID string) error
-	UsernameFromUserID(userID string) (string, error)
+	SendTextMessage(ctx context.Context, text string, userID string) error
+	SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error
+	UsernameFromUserID(ctx context.Context, userID string) (string, error)
 }
 
-type InstagramSender struct{}
-
-func (InstagramSender) SendTextMessage(text string, userID string) error {
-	return sendTextMessage(text, userID)
+type AccountTokenReader interface {
+	GetAccountToken(ctx context.Context) (string, error)
 }
 
-func (InstagramSender) SendButtonMessage(buttons []ElementButton, text string, userID string) error {
-	return sendButtonMessage(buttons, text, userID)
+type InstagramSender struct {
+	Tokens AccountTokenReader
 }
 
-func (InstagramSender) UsernameFromUserID(userID string) (string, error) {
-	return getUsernameFromUserID(userID)
+func (sender InstagramSender) SendTextMessage(ctx context.Context, text string, userID string) error {
+	return sendTextMessage(ctx, sender.Tokens, text, userID)
+}
+
+func (sender InstagramSender) SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error {
+	return sendButtonMessage(ctx, sender.Tokens, buttons, text, userID)
+}
+
+func (sender InstagramSender) UsernameFromUserID(ctx context.Context, userID string) (string, error) {
+	return getUsernameFromUserID(ctx, sender.Tokens, userID)
 }
 
 type Router struct {
 	Feedbacks   models.FeedbackRepository
 	MessageLogs models.MessageLogRepository
 	Sender      Sender
+	Tokens      AccountTokenReader
 }
 
-func NewRouter(feedbacks models.FeedbackRepository, messageLogs models.MessageLogRepository) *Router {
+func NewRouter(feedbacks models.FeedbackRepository, messageLogs models.MessageLogRepository, tokens AccountTokenReader) *Router {
 	if conversations == nil {
 		InitConversations()
 	}
 	return &Router{
 		Feedbacks:   feedbacks,
 		MessageLogs: messageLogs,
-		Sender:      InstagramSender{},
+		Sender:      InstagramSender{Tokens: tokens},
+		Tokens:      tokens,
 	}
 }
 
@@ -88,18 +96,18 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 		if state.TargetUser != "" {
 			if err := router.searchForUserAndRespond(ctx, state.TargetUser, userId); err != nil {
 				log.Printf("Failed to search for user %s: %v", state.TargetUser, err)
-				logSend(router.sendTextMessage("Sorry, something went wrong. Please try again later.", userId))
+				logSend(router.sendTextMessage(ctx, "Sorry, something went wrong. Please try again later.", userId))
 			}
 		} else {
-			logSend(router.askForUsernameToSearch(userId))
+			logSend(router.askForUsernameToSearch(ctx, userId))
 		}
 		return
 	}
 
 	if payload == payloadCancel {
 		setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: state.CurrentUser})
-		logSend(router.sendTextMessage("Feedback cancelled.", userId))
-		logSend(router.askForUsernameToSearch(userId))
+		logSend(router.sendTextMessage(ctx, "Feedback cancelled.", userId))
+		logSend(router.askForUsernameToSearch(ctx, userId))
 		return
 	}
 
@@ -109,7 +117,7 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 		if found {
 			if err := router.searchForUserAndRespond(ctx, usernameToSearch, userId); err != nil {
 				log.Printf("Failed to search for user %s: %v", usernameToSearch, err)
-				logSend(router.sendTextMessage("Sorry, something went wrong. Please try again later.", userId))
+				logSend(router.sendTextMessage(ctx, "Sorry, something went wrong. Please try again later.", userId))
 			}
 			return
 		}
@@ -117,7 +125,7 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 			router.beginRatingFlow(ctx, userId, usernameToRate)
 			return
 		}
-		logSend(router.askForUsernameToSearch(userId))
+		logSend(router.askForUsernameToSearch(ctx, userId))
 		return
 
 	case stageAwaitingRole:
@@ -125,14 +133,14 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 			newState := state
 			newState.Stage = stageAwaitingDealStage
 			newState.Role = role
-			if err := router.askForDealStage(userId); err != nil {
+			if err := router.askForDealStage(ctx, userId); err != nil {
 				logSend(err)
 				return
 			}
 			setUserConversationState(userId, newState)
 			return
 		}
-		logSend(router.invalidResponseMessage(userId))
+		logSend(router.invalidResponseMessage(ctx, userId))
 		return
 
 	case stageAwaitingDealStage:
@@ -140,51 +148,51 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 			newState := state
 			newState.Stage = stageAwaitingRating
 			newState.DealStage = dealStage
-			if err := router.askForRating(state.TargetUser, userId); err != nil {
+			if err := router.askForRating(ctx, state.TargetUser, userId); err != nil {
 				logSend(err)
 				return
 			}
 			setUserConversationState(userId, newState)
 			return
 		}
-		logSend(router.invalidResponseMessage(userId))
+		logSend(router.invalidResponseMessage(ctx, userId))
 		return
 
 	case stageAwaitingRating:
 		rating, payloadTarget, err := parseRatingPayload(payload)
 		if err != nil {
-			logSend(router.invalidResponseMessage(userId))
+			logSend(router.invalidResponseMessage(ctx, userId))
 			return
 		}
 		if !strings.EqualFold(payloadTarget, state.TargetUser) {
-			logSend(router.sendTextMessage("That rating option is stale. Please start again.", userId))
+			logSend(router.sendTextMessage(ctx, "That rating option is stale. Please start again.", userId))
 			setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: state.CurrentUser})
-			logSend(router.askForUsernameToSearch(userId))
+			logSend(router.askForUsernameToSearch(ctx, userId))
 			return
 		}
 		receiverUsername := payloadTarget
 		giverUsername := state.CurrentUser
 		giverRole := state.Role
 		if strings.EqualFold(giverUsername, receiverUsername) {
-			logSend(router.sendTextMessage("Sorry, you cannot leave feedback on your own profile.", userId))
+			logSend(router.sendTextMessage(ctx, "Sorry, you cannot leave feedback on your own profile.", userId))
 			setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: giverUsername})
-			logSend(router.askForUsernameToSearch(userId))
+			logSend(router.askForUsernameToSearch(ctx, userId))
 			return
 		}
 		receiverRole, ok := receiverRoleFor(giverRole)
 		if !ok {
-			logSend(router.invalidResponseMessage(userId))
+			logSend(router.invalidResponseMessage(ctx, userId))
 			return
 		}
 		if err := router.saveRating(ctx, rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage); err != nil {
 			log.Printf("Failed to save rating: %v", err)
-			logSend(router.sendTextMessage("Sorry, something went wrong while saving your rating. Please try again later.", userId))
+			logSend(router.sendTextMessage(ctx, "Sorry, something went wrong while saving your rating. Please try again later.", userId))
 			return
 		}
-		logSend(router.sendTextMessage("Thank you for submitting a rating.", userId))
+		logSend(router.sendTextMessage(ctx, "Thank you for submitting a rating.", userId))
 
 		setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: giverUsername})
-		logSend(router.askForUsernameToSearch(userId))
+		logSend(router.askForUsernameToSearch(ctx, userId))
 	}
 }
 
@@ -192,25 +200,25 @@ func (router *Router) beginRatingFlow(ctx context.Context, userId string, userna
 	usernameToRate = helpers.NormalizeUsername(usernameToRate)
 	err := helpers.ValidateUsername(usernameToRate)
 	if err != nil {
-		logSend(router.invalidResponseMessage(userId))
+		logSend(router.invalidResponseMessage(ctx, userId))
 		return
 	}
 
-	username, err := router.sender().UsernameFromUserID(userId)
+	username, err := router.sender().UsernameFromUserID(ctx, userId)
 	if err != nil {
 		log.Printf("Failed to get username for user %s: %v", userId, err)
-		logSend(router.sendTextMessage("Sorry, something went wrong. Please try again later.", userId))
+		logSend(router.sendTextMessage(ctx, "Sorry, something went wrong. Please try again later.", userId))
 		return
 	}
 
 	if strings.EqualFold(username, usernameToRate) {
-		logSend(router.sendTextMessage("Sorry, you cannot leave feedback on your own profile.", userId))
+		logSend(router.sendTextMessage(ctx, "Sorry, you cannot leave feedback on your own profile.", userId))
 		setUserConversationState(userId, ConversationState{Stage: stageStart, CurrentUser: username})
-		logSend(router.askForUsernameToSearch(userId))
+		logSend(router.askForUsernameToSearch(ctx, userId))
 		return
 	}
 
-	if err := router.askForRole(userId); err != nil {
+	if err := router.askForRole(ctx, userId); err != nil {
 		logSend(err)
 		return
 	}
@@ -253,7 +261,7 @@ func (router *Router) searchForUserAndRespond(ctx context.Context, usernameToSea
 	}
 
 	if totalRatings == 0 {
-		return router.sendButtonMessage(buttons, "No ratings found for @"+usernameToSearch, userId)
+		return router.sendButtonMessage(ctx, buttons, "No ratings found for @"+usernameToSearch, userId)
 	}
 	positivePercentage := (float64(positiveRatings) / float64(totalRatings)) * 100
 	ratingPlural := "ratings"
@@ -261,7 +269,7 @@ func (router *Router) searchForUserAndRespond(ctx context.Context, usernameToSea
 		ratingPlural = "rating"
 	}
 	text := "@" + usernameToSearch + "\n\n" + strconv.FormatFloat(positivePercentage, 'f', 0, 64) + "% positive (" + strconv.Itoa(totalRatings) + " " + ratingPlural + ")"
-	return router.sendButtonMessage(buttons, text, userId)
+	return router.sendButtonMessage(ctx, buttons, text, userId)
 }
 
 func (router *Router) saveRating(ctx context.Context, rating string, giverUsername string, receiverUsername string, giverRole string, receiverRole string, dealStage string) error {
@@ -282,15 +290,15 @@ func (router *Router) sender() Sender {
 	if router.Sender != nil {
 		return router.Sender
 	}
-	return InstagramSender{}
+	return InstagramSender{Tokens: router.Tokens}
 }
 
-func (router *Router) sendTextMessage(text string, userId string) error {
-	return router.sender().SendTextMessage(text, userId)
+func (router *Router) sendTextMessage(ctx context.Context, text string, userId string) error {
+	return router.sender().SendTextMessage(ctx, text, userId)
 }
 
-func (router *Router) sendButtonMessage(buttons []ElementButton, text string, userId string) error {
-	return router.sender().SendButtonMessage(buttons, text, userId)
+func (router *Router) sendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userId string) error {
+	return router.sender().SendButtonMessage(ctx, buttons, text, userId)
 }
 
 func getPayload(messageEvent models.MessageEvent) string {

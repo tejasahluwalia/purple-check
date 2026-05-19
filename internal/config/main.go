@@ -23,7 +23,7 @@ func init() {
 		"APP_ID",
 		"WEBHOOK_VERIFY_TOKEN",
 		"ACCOUNT_ID",
-		"ACCOUNT_TOKEN",
+		"ADMIN_TOKEN",
 		"TURSO_DATABASE_URL",
 		"TURSO_AUTH_TOKEN",
 		"LOCAL_DB_PATH",
@@ -40,6 +40,8 @@ func init() {
 				config[key] = "false"
 			} else if key == "INSTAGRAM_API_VERSION" {
 				config[key] = "v25.0"
+			} else if key == "ADMIN_TOKEN" {
+				config[key] = ""
 			} else if runningTests {
 				config[key] = "test"
 			} else {
@@ -50,7 +52,7 @@ func init() {
 
 	APP_ID = config["APP_ID"]
 	WEBHOOK_VERIFY_TOKEN = config["WEBHOOK_VERIFY_TOKEN"]
-	ACCOUNT_TOKEN = config["ACCOUNT_TOKEN"]
+	ADMIN_TOKEN = config["ADMIN_TOKEN"]
 	ACCOUNT_ID = config["ACCOUNT_ID"]
 	TURSO_DATABASE_URL = config["TURSO_DATABASE_URL"]
 	TURSO_AUTH_TOKEN = config["TURSO_AUTH_TOKEN"]
@@ -63,7 +65,7 @@ func init() {
 
 var APP_ID string
 var WEBHOOK_VERIFY_TOKEN string
-var ACCOUNT_TOKEN string
+var ADMIN_TOKEN string
 var ACCOUNT_ID string
 var TURSO_DATABASE_URL string
 var TURSO_AUTH_TOKEN string
@@ -72,8 +74,3 @@ var PORT string
 var LOCAL_DB_PATH string
 var DEV bool
 var INSTAGRAM_API_VERSION string
-
-// UpdateAccountToken allows runtime updates to the Instagram access token
-func UpdateAccountToken(newToken string) {
-	ACCOUNT_TOKEN = newToken
-}
