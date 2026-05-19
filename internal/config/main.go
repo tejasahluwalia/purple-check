@@ -24,8 +24,6 @@ func init() {
 		"WEBHOOK_VERIFY_TOKEN",
 		"ACCOUNT_ID",
 		"ADMIN_TOKEN",
-		"TURSO_DATABASE_URL",
-		"TURSO_AUTH_TOKEN",
 		"LOCAL_DB_PATH",
 		"PORT",
 		"HOST",
@@ -54,8 +52,6 @@ func init() {
 	WEBHOOK_VERIFY_TOKEN = config["WEBHOOK_VERIFY_TOKEN"]
 	ADMIN_TOKEN = config["ADMIN_TOKEN"]
 	ACCOUNT_ID = config["ACCOUNT_ID"]
-	TURSO_DATABASE_URL = config["TURSO_DATABASE_URL"]
-	TURSO_AUTH_TOKEN = config["TURSO_AUTH_TOKEN"]
 	LOCAL_DB_PATH = config["LOCAL_DB_PATH"]
 	HOST = config["HOST"]
 	PORT = config["PORT"]
@@ -67,8 +63,6 @@ var APP_ID string
 var WEBHOOK_VERIFY_TOKEN string
 var ADMIN_TOKEN string
 var ACCOUNT_ID string
-var TURSO_DATABASE_URL string
-var TURSO_AUTH_TOKEN string
 var HOST string
 var PORT string
 var LOCAL_DB_PATH string
