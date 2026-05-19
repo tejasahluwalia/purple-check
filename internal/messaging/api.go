@@ -15,7 +15,7 @@ import (
 )
 
 var API_HOST = "graph.instagram.com"
-var API_VERSION = "v25.0"
+var API_VERSION = config.INSTAGRAM_API_VERSION
 var API_URL = "https://" + API_HOST + "/" + API_VERSION
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}

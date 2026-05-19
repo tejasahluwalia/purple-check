@@ -353,7 +353,7 @@ func parseRatingPayload(payload string) (string, string, error) {
 	if len(parts) != 3 || parts[0] != "RATING" {
 		return "", "", errors.New("Invalid payload")
 	}
-	if parts[1] != ratingPositive && parts[1] != ratingNegative && parts[1] != ratingMixed {
+	if parts[1] != ratingPositive && parts[1] != ratingNegative {
 		return "", "", errors.New("Invalid payload")
 	}
 	username := helpers.NormalizeUsername(parts[2])

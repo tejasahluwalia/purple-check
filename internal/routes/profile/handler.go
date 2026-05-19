@@ -37,6 +37,8 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	feedbackList, err := h.Feedbacks.GetAllForUser(r.Context(), username)
 	if err != nil {
 		slog.Error("Error retrieving user feedback", "error", err)
+		http.Error(w, "Unable to retrieve feedback", http.StatusInternalServerError)
+		return
 	}
 	viewModel := ViewModel{
 		Username:     username,

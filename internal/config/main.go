@@ -30,6 +30,7 @@ func init() {
 		"PORT",
 		"HOST",
 		"DEV",
+		"INSTAGRAM_API_VERSION",
 	}
 
 	for _, key := range expected_keys {
@@ -37,6 +38,8 @@ func init() {
 		if config[key] == "" {
 			if key == "DEV" {
 				config[key] = "false"
+			} else if key == "INSTAGRAM_API_VERSION" {
+				config[key] = "v25.0"
 			} else if runningTests {
 				config[key] = "test"
 			} else {
@@ -55,6 +58,7 @@ func init() {
 	HOST = config["HOST"]
 	PORT = config["PORT"]
 	DEV = config["DEV"] == "true"
+	INSTAGRAM_API_VERSION = config["INSTAGRAM_API_VERSION"]
 }
 
 var APP_ID string
@@ -67,6 +71,7 @@ var HOST string
 var PORT string
 var LOCAL_DB_PATH string
 var DEV bool
+var INSTAGRAM_API_VERSION string
 
 // UpdateAccountToken allows runtime updates to the Instagram access token
 func UpdateAccountToken(newToken string) {

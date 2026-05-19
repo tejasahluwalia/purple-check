@@ -105,6 +105,7 @@ func TestParseRatingPayload(t *testing.T) {
 
 	tests := []string{
 		"RATING:UNKNOWN:purplecheck_org",
+		"RATING:MIXED:purplecheck_org",
 		"RATING:POSITIVE:..bad",
 		"RATE:POSITIVE:purplecheck_org",
 		"RATING:POSITIVE",

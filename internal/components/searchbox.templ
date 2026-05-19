@@ -35,19 +35,21 @@ templ SearchBox() {
         const errorMessage = document.getElementById('error-message');
 
         function validateInstagramUsername(username) {
-            // Remove @ if present
-            username = username.replace('@', '');
+            // Remove a leading @ if present
+            username = username.startsWith('@') ? username.slice(1) : username;
 
             // Instagram username rules:
-            // 1. 1-30 characters
+            // 1. 3-30 characters
             // 2. Can contain letters, numbers, periods, and underscores
             // 3. Can't start or end with a period
             // 4. Can't have consecutive periods
             const allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._";
             const hasConsecutivePeriods = /\.{2,}/.test(username);
 
-            return username.length >= 1 &&
+            return username.length >= 3 &&
                    username.length <= 30 &&
+                   !username.startsWith('.') &&
+                   !username.endsWith('.') &&
                    !hasConsecutivePeriods &&
                    [...username].every(char => allowedCharacters.includes(char));
         }
@@ -56,7 +58,7 @@ templ SearchBox() {
             const username = input.value.trim();
 
             if (!validateInstagramUsername(username)) {
-                errorMessage.textContent = 'Please enter a valid Instagram username (1-30 characters, letters, numbers, periods, or underscores only).';
+                errorMessage.textContent = 'Please enter a valid Instagram username (3-30 characters, letters, numbers, periods, or underscores only).';
                 errorMessage.classList.remove('hidden');
                 input.classList.remove('ring-slate-300');
                 input.classList.add('ring-red-500');

@@ -20,7 +20,6 @@ const (
 
 	ratingPositive = "POSITIVE"
 	ratingNegative = "NEGATIVE"
-	ratingMixed    = "MIXED"
 )
 
 type ConversationState struct {

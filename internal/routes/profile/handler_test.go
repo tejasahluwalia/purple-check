@@ -74,7 +74,7 @@ func TestGetRejectsInvalidUsername(t *testing.T) {
 	}
 }
 
-func TestGetStillRendersOnRepositoryError(t *testing.T) {
+func TestGetReturnsServerErrorOnRepositoryError(t *testing.T) {
 	repo := &feedbackRepo{err: errors.New("database unavailable")}
 	handler := NewHandler(repo)
 	req := httptest.NewRequest(http.MethodGet, "/profile/alice", nil)
@@ -83,7 +83,7 @@ func TestGetStillRendersOnRepositoryError(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
 	}
 }

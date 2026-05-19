@@ -1,3 +1,5 @@
 tmp/
 data/
 .env*
+# Binary
+purple-check

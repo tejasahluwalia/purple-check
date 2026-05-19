@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"purple-check/internal/config"
 	"purple-check/internal/messaging"
 	"purple-check/internal/models"
 )
@@ -52,7 +53,7 @@ func (h *InstagramHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var _ MessageRouter = (*messaging.Router)(nil)
 
 func shouldRouteMessageEvent(messageEvent models.MessageEvent) bool {
-	if messageEvent.Sender.Id == "" || messageEvent.Sender.Id == "954039343027729" {
+	if messageEvent.Sender.Id == "" || messageEvent.Sender.Id == config.ACCOUNT_ID {
 		return false
 	}
 	if messageEvent.Message.Is_echo || messageEvent.Message.Is_deleted || messageEvent.Message.Is_unsupported {

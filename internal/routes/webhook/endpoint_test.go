@@ -74,6 +74,11 @@ func TestShouldRouteMessageEvent(t *testing.T) {
 			body: `{"message":{"text":"ignored"}}`,
 			want: false,
 		},
+		{
+			name: "configured account sender",
+			body: `{"sender":{"id":"test"},"message":{"text":"ignored"}}`,
+			want: false,
+		},
 	}
 
 	for _, tt := range tests {

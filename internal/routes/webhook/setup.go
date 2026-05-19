@@ -25,7 +25,7 @@ func VerifyInstagramHook(w http.ResponseWriter, r *http.Request) {
 }
 
 func subscribeAccountToWebhooks(userId string) {
-	url := "https://" + API_HOST + "/v21.0/" + userId + "/subscribed_apps"
+	url := "https://" + API_HOST + "/" + config.INSTAGRAM_API_VERSION + "/" + userId + "/subscribed_apps"
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		log.Println(err)

@@ -21,7 +21,11 @@ func ConfigureCSP(mux *http.ServeMux) http.Handler {
 }
 
 type CSPConfig struct {
-	ScriptSrc []string // External script domains allowed
+	ScriptSrc  []string
+	StyleSrc   []string
+	ImgSrc     []string
+	FontSrc    []string
+	ConnectSrc []string
 }
 
 func withCSP(config CSPConfig) func(http.Handler) http.Handler {
@@ -30,22 +34,41 @@ func withCSP(config CSPConfig) func(http.Handler) http.Handler {
 			nonce, err := generateNonce()
 			if err != nil {
 				log.Printf("failed to generate nonce: %v", err)
-				w.Header().Set("Content-Security-Policy", "script-src 'self'")
+				w.Header().Set("Content-Security-Policy", buildCSP(config, ""))
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 
-			// Combine all script sources
-			scriptSources := append(
-				[]string{"'self'", fmt.Sprintf("'nonce-%s'", nonce)},
-				config.ScriptSrc...)
-
-			csp := fmt.Sprintf("script-src %s", strings.Join(scriptSources, " "))
-			w.Header().Set("Content-Security-Policy", csp)
+			w.Header().Set("Content-Security-Policy", buildCSP(config, nonce))
 
 			next.ServeHTTP(w, r.WithContext(templ.WithNonce(r.Context(), nonce)))
 		})
 	}
+}
+
+func buildCSP(config CSPConfig, nonce string) string {
+	scriptDefaults := []string{"'self'"}
+	if nonce != "" {
+		scriptDefaults = append(scriptDefaults, fmt.Sprintf("'nonce-%s'", nonce))
+	}
+
+	directives := []string{
+		"default-src 'self'",
+		fmt.Sprintf("script-src %s", joinSources(config.ScriptSrc, scriptDefaults...)),
+		fmt.Sprintf("style-src %s", joinSources(config.StyleSrc, "'self'")),
+		fmt.Sprintf("img-src %s", joinSources(config.ImgSrc, "'self'", "data:")),
+		fmt.Sprintf("font-src %s", joinSources(config.FontSrc, "'self'")),
+		fmt.Sprintf("connect-src %s", joinSources(config.ConnectSrc, "'self'")),
+		"base-uri 'self'",
+		"form-action 'self'",
+		"frame-ancestors 'none'",
+		"object-src 'none'",
+	}
+	return strings.Join(directives, "; ")
+}
+
+func joinSources(configured []string, defaults ...string) string {
+	return strings.Join(append(defaults, configured...), " ")
 }
 
 func generateNonce() (string, error) {
