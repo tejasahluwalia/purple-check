@@ -11,7 +11,7 @@ Send a message to [@purplecheck_org](https://ig.me/m/purplecheck_org) on Instagr
 - Starts a review flow from Instagram DM links and profile-page referral links.
 - Accepts Instagram webhook events for messages, quick replies, postbacks, and referrals.
 - Guides users through buyer/seller role selection, deal stage selection, and positive/negative rating submission.
-- Stores ratings in Turso/libSQL and syncs local changes with the remote Turso database.
+- Stores ratings in a local SQLite database.
 - Logs inbound user messages and conversation stage transitions for debugging/auditing.
 - Serves privacy policy, terms of service, and delete-my-data pages.
 
@@ -20,7 +20,7 @@ Send a message to [@purplecheck_org](https://ig.me/m/purplecheck_org) on Instagr
 - Go 1.25.1
 - [`templ`](https://templ.guide/) for server-rendered HTML components
 - Tailwind CSS v4 for styling
-- Turso/libSQL through `turso.tech/database/tursogo`
+- SQLite through `modernc.org/sqlite` (pure-Go driver)
 - Instagram Graph API for messaging, webhooks, profile lookup, persistent menu, and token refresh
 - HTMX and Alpine.js served from `static/js`
 
@@ -31,7 +31,7 @@ cmd/main.go                         Application entrypoint and route wiring
 internal/cache/                     Generic in-memory cache used for DM state
 internal/components/                Shared templ UI components
 internal/config/                    Environment variable loading
-internal/database/                  Turso sync database initialization
+internal/database/                  SQLite database initialization
 internal/helpers/                   Instagram username normalization/validation
 internal/layout/                    Global page shell, metadata, header, footer
 internal/messaging/                 Instagram DM state machine and API client
@@ -54,7 +54,7 @@ Files ending in `_templ.go` are generated from `.templ` files. Edit the `.templ`
 
 1. `GET /` renders the homepage and search form.
 2. `POST /search` reads `search-term`, normalizes and validates it as an Instagram username, then redirects to `/profile/{username}`.
-3. `GET /profile/{username}` pulls the latest Turso data, loads feedback where `receiver = username`, and renders the public profile page.
+3. `GET /profile/{username}` queries the local SQLite database for feedback where `receiver = username`, and renders the public profile page.
 4. The profile page links to Instagram with a `ref=username` query string so users can leave feedback for that account.
 
 ### Instagram DM Review Flow
@@ -68,7 +68,7 @@ Files ending in `_templ.go` are generated from `.templ` files. Edit the `.templ`
    - `AWAITING_RATING`
 4. A user can search by typing an `@username`, clicking the persistent menu, or entering through an Instagram referral link.
 5. A review asks for role, deal stage, and rating, then upserts one feedback row per `(giver, receiver)` pair.
-6. After writes, the local Turso database is pushed to the remote database.
+6. After writes, the feedback row is immediately persisted to the local SQLite database.
 
 ## HTTP Routes
 
@@ -95,8 +95,6 @@ APP_ID=
 WEBHOOK_VERIFY_TOKEN=
 ACCOUNT_ID=
 ADMIN_TOKEN=
-TURSO_DATABASE_URL=
-TURSO_AUTH_TOKEN=
 LOCAL_DB_PATH=
 PORT=
 HOST=
@@ -115,7 +113,7 @@ Notes:
 
 ## Database
 
-The code expects the live Turso schema to already exist. There are no migrations in this repository.
+The code expects the SQLite schema to already exist. There are no migrations in this repository.
 
 Expected tables:
 
@@ -124,7 +122,7 @@ Expected tables:
 - `user_message_logs` with `user_id`, `message`, `stage`, and `created_at`.
 - `app_settings` with `key`, `value`, and `updated_at`; the Instagram token is stored at key `instagram_account_token`.
 
-`internal/database.AppDB` wraps a local Turso sync database. Reads pull remote changes before querying. Writes update the local database and push changes afterward.
+`database.InitDb()` opens a local SQLite database via `sql.Open("sqlite", ...)` and returns a `*sql.DB`. Reads and writes operate directly against the local database — there is no remote sync.
 
 Seed the Instagram token with:
 
@@ -144,8 +142,6 @@ Install the external tools used by the Makefile:
 - `templ`
 - `tailwindcss`
 - `air`
-- `tursodb` if you want the local sync server target
-
 Common commands:
 
 ```sh
@@ -156,7 +152,7 @@ make dev/templ
 make dev/server
 make dev/tailwind
 make dev/sync_assets
-make db-up
+
 ```
 
 `make dev` runs the templ watcher, Go server watcher, Tailwind watcher, and static asset sync watcher together.

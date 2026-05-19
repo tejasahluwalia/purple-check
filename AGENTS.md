@@ -4,15 +4,15 @@ This file is the working reference for coding agents operating in this repositor
 
 ## Project Summary
 
-Purple Check is a Go web app plus Instagram DM bot for reviewing Instagram buyers and sellers. The web app serves searchable public profile pages. The bot receives Instagram webhook events, walks users through a review flow, and stores feedback in Turso/libSQL.
+Purple Check is a Go web app plus Instagram DM bot for reviewing Instagram buyers and sellers. The web app serves searchable public profile pages. The bot receives Instagram webhook events, walks users through a review flow, and stores feedback in a local SQLite database.
 
 Primary entrypoint: `cmd/main.go`.
 
 ## Architecture Map
 
-- `cmd/main.go`: starts the app, initializes the Instagram conversation cache, sets the Instagram persistent menu, connects to Turso, wires repositories, creates the messaging router, registers routes, wraps middleware, and starts `http.ListenAndServe`.
+- `cmd/main.go`: starts the app, initializes the Instagram conversation cache, sets the Instagram persistent menu, opens the SQLite database, wires repositories, creates the messaging router, registers routes, wraps middleware, and starts `http.ListenAndServe`.
 - `internal/config`: loads `.env` through `godotenv` and exposes package-level config variables. Tests get placeholder values instead of requiring `.env`.
-- `internal/database`: creates a Turso sync DB from `LOCAL_DB_PATH`, `TURSO_DATABASE_URL`, and `TURSO_AUTH_TOKEN`; exposes `Pull`, `Push`, and `Checkpoint`.
+- `internal/database`: opens a local SQLite database at `LOCAL_DB_PATH` via `modernc.org/sqlite`; exposes `InitDb` and a nil-safe `Close` helper.
 - `internal/models`: contains database repositories for feedback and message logs, plus Instagram webhook payload structs.
 - `internal/messaging`: contains the Instagram API client, message request structs, persistent menu setup, user lookup, in-memory conversation cache, and review-flow state machine.
 - `internal/routes`: contains HTTP handlers and page templates.
@@ -27,7 +27,7 @@ Startup sequence:
 
 1. `messaging.InitConversations()` creates the in-memory user-state cache.
 2. `messaging.SetPersistentMenu()` calls the Instagram Graph API to configure the persistent menu and ice breaker.
-3. `database.InitDb()` opens the local Turso sync database.
+3. `database.InitDb()` opens the local SQLite database and returns a `*sql.DB`.
 4. `FeedbackModel` and `MessageLogModel` are created around the DB.
 5. `AppSettingModel` is created around the DB and wrapped in a 24-hour in-memory Instagram token cache.
 6. `messaging.NewRouter()` receives the repositories and token store.
@@ -90,7 +90,7 @@ Expected schema from `internal/models/models.go`:
 - `user_message_logs(user_id, message, stage, created_at)`
 - `app_settings(key, value, updated_at)`
 
-Read paths call `Pull` before querying feedback. Write paths call `Push` after inserting/updating/deleting feedback or inserting message logs.
+
 
 The Instagram account token is stored in `app_settings` at key `instagram_account_token`. Runtime API calls use `instagram.TokenStore`, which caches that value in memory for 24 hours and updates the cache immediately after refresh writes.
 
@@ -102,8 +102,6 @@ Recognized `.env` keys:
 - `WEBHOOK_VERIFY_TOKEN`
 - `ACCOUNT_ID`
 - `ADMIN_TOKEN`
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
 - `LOCAL_DB_PATH`
 - `PORT`
 - `HOST`
@@ -158,7 +156,7 @@ Add focused tests when changing:
 - `internal/helpers/helpers.go`: test normalization and validation edge cases.
 - `internal/models/settings.go`: test app setting/token persistence with a local SQL connection.
 
-Avoid tests that require real Instagram or Turso credentials. The existing code is structured around interfaces for router dependencies; prefer fakes.
+Avoid tests that require real Instagram credentials or a live database. The existing code is structured around interfaces for router dependencies; prefer fakes.
 
 ## Implementation Notes and Pitfalls
 

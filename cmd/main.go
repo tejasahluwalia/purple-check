@@ -37,7 +37,7 @@ func main() {
 		log.Fatal("Failed to connect to database.\n", err)
 	}
 	defer func() {
-		if err := appDB.Close(); err != nil {
+		if err := database.Close(appDB); err != nil {
 			slog.Error("error closing database", "error", err)
 		}
 	}()

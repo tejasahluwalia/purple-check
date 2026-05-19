@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
-	"purple-check/internal/database"
 )
 
 type Feedback struct {
@@ -43,28 +41,11 @@ type FeedbackRepository interface {
 }
 
 type FeedbackModel struct {
-	DB *database.AppDB
+	DB *sql.DB
 }
 
 func (m *FeedbackModel) conn() *sql.DB {
-	if m.DB != nil {
-		return m.DB.Conn
-	}
-	return nil
-}
-
-func (m *FeedbackModel) pull(ctx context.Context) error {
-	if m.DB == nil {
-		return nil
-	}
-	return m.DB.Pull(ctx)
-}
-
-func (m *FeedbackModel) push(ctx context.Context) error {
-	if m.DB == nil {
-		return nil
-	}
-	return m.DB.Push(ctx)
+	return m.DB
 }
 
 func (m *FeedbackModel) InsertOrUpdateOne(ctx context.Context, input FeedbackInput) error {
@@ -90,16 +71,10 @@ func (m *FeedbackModel) InsertOrUpdateOne(ctx context.Context, input FeedbackInp
 	if _, err := stmt.ExecContext(ctx, input.Giver, input.Receiver, input.Rating, input.GiverRole, input.ReceiverRole, input.DealStage, input.Comment); err != nil {
 		return fmt.Errorf("execute feedback upsert: %w", err)
 	}
-	if err := m.push(ctx); err != nil {
-		return fmt.Errorf("push feedback upsert: %w", err)
-	}
 	return nil
 }
 
 func (m *FeedbackModel) GetAllForUser(ctx context.Context, username string) ([]Feedback, error) {
-	if err := m.pull(ctx); err != nil {
-		return nil, fmt.Errorf("pull feedback: %w", err)
-	}
 	conn := m.conn()
 	if conn == nil {
 		return nil, fmt.Errorf("feedback model database connection is nil")
@@ -136,9 +111,6 @@ func (m *FeedbackModel) GetAllForUser(ctx context.Context, username string) ([]F
 }
 
 func (m *FeedbackModel) CountForUser(ctx context.Context, username string) (int, error) {
-	if err := m.pull(ctx); err != nil {
-		return 0, fmt.Errorf("pull feedback count: %w", err)
-	}
 	conn := m.conn()
 	if conn == nil {
 		return 0, fmt.Errorf("feedback model database connection is nil")
@@ -151,9 +123,6 @@ func (m *FeedbackModel) CountForUser(ctx context.Context, username string) (int,
 }
 
 func (m *FeedbackModel) CountPositiveForUser(ctx context.Context, username string) (int, error) {
-	if err := m.pull(ctx); err != nil {
-		return 0, fmt.Errorf("pull positive feedback count: %w", err)
-	}
 	conn := m.conn()
 	if conn == nil {
 		return 0, fmt.Errorf("feedback model database connection is nil")
@@ -173,9 +142,6 @@ func (m *FeedbackModel) DeleteOne(ctx context.Context, userID string, feedbackID
 	if _, err := conn.ExecContext(ctx, "DELETE FROM feedback WHERE receiver = ? AND id = ?", userID, feedbackID); err != nil {
 		return fmt.Errorf("delete feedback: %w", err)
 	}
-	if err := m.push(ctx); err != nil {
-		return fmt.Errorf("push delete feedback: %w", err)
-	}
 	return nil
 }
 
@@ -187,9 +153,6 @@ func (m *FeedbackModel) DeleteAllForUser(ctx context.Context, userID string) err
 	if _, err := conn.ExecContext(ctx, "DELETE FROM feedback WHERE receiver = ?", userID); err != nil {
 		return fmt.Errorf("delete all feedback: %w", err)
 	}
-	if err := m.push(ctx); err != nil {
-		return fmt.Errorf("push delete all feedback: %w", err)
-	}
 	return nil
 }
 
@@ -198,7 +161,7 @@ type MessageLogRepository interface {
 }
 
 type MessageLogModel struct {
-	DB   *database.AppDB
+	DB   *sql.DB
 	Conn *sql.DB
 }
 
@@ -206,10 +169,7 @@ func (m *MessageLogModel) conn() *sql.DB {
 	if m.Conn != nil {
 		return m.Conn
 	}
-	if m.DB != nil {
-		return m.DB.Conn
-	}
-	return nil
+	return m.DB
 }
 
 func (m *MessageLogModel) Insert(ctx context.Context, userID string, message string, stage string) error {
@@ -219,11 +179,6 @@ func (m *MessageLogModel) Insert(ctx context.Context, userID string, message str
 	}
 	if _, err := conn.ExecContext(ctx, "INSERT INTO user_message_logs (user_id, message, stage, created_at) VALUES (?, ?, ?, datetime('now'))", userID, message, stage); err != nil {
 		return fmt.Errorf("insert message log: %w", err)
-	}
-	if m.DB != nil {
-		if err := m.DB.Push(ctx); err != nil {
-			return fmt.Errorf("push message log: %w", err)
-		}
 	}
 	return nil
 }
