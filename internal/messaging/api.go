@@ -21,10 +21,29 @@ var API_URL = "https://" + API_HOST + "/" + API_VERSION
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
-func sendButtonMessage(ctx context.Context, tokens AccountTokenReader, buttons []ElementButton, text string, userId string) error {
+type Sender interface {
+	SendTextMessage(ctx context.Context, text string, userID string) error
+	SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error
+	SendSenderAction(ctx context.Context, action string, userID string) error
+	UsernameFromUserID(ctx context.Context, userID string) (string, error)
+}
+
+type AccountTokenReader interface {
+	GetAccountToken(ctx context.Context) (string, error)
+}
+
+type InstagramSender struct {
+	Tokens AccountTokenReader
+}
+
+func (sender InstagramSender) UsernameFromUserID(ctx context.Context, userID string) (string, error) {
+	return getUsernameFromUserID(ctx, sender.Tokens, userID)
+}
+
+func (sender InstagramSender) SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error {
 	body, err := json.Marshal(MessageRequestBody[MessageButtons]{
 		MessageRecipient{
-			ID: userId,
+			ID: userID,
 		},
 		MessageButtons{
 			Attachment: MessageAttachment{
@@ -41,13 +60,13 @@ func sendButtonMessage(ctx context.Context, tokens AccountTokenReader, buttons [
 		return fmt.Errorf("marshal button message: %w", err)
 	}
 
-	return sendMessage(ctx, tokens, body)
+	return sendMessage(ctx, sender.Tokens, body)
 }
 
-func sendTextMessage(ctx context.Context, tokens AccountTokenReader, text string, userId string) error {
+func (sender InstagramSender) SendTextMessage(ctx context.Context, text string, userID string) error {
 	body, err := json.Marshal(MessageRequestBody[MessageText]{
 		MessageRecipient{
-			ID: userId,
+			ID: userID,
 		},
 		MessageText{
 			Text: text,
@@ -57,7 +76,20 @@ func sendTextMessage(ctx context.Context, tokens AccountTokenReader, text string
 		return fmt.Errorf("marshal text message: %w", err)
 	}
 
-	return sendMessage(ctx, tokens, body)
+	return sendMessage(ctx, sender.Tokens, body)
+}
+
+func (sender InstagramSender) SendSenderAction(ctx context.Context, action string, userID string) error {
+	body, err := json.Marshal(SenderActionRequest{
+		Recipient: MessageRecipient{
+			ID: userID,
+		},
+		SenderAction: action,
+	})
+	if err != nil {
+		return fmt.Errorf("marshal sender action: %w", err)
+	}
+	return sendMessage(ctx, sender.Tokens, body)
 }
 
 func sendMessage(ctx context.Context, tokens AccountTokenReader, body []byte) error {

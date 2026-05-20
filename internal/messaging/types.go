@@ -44,6 +44,11 @@ type MessageRequestBody[T Message] struct {
 	Message   T                `json:"message"`
 }
 
+type SenderActionRequest struct {
+	Recipient    MessageRecipient `json:"recipient"`
+	SenderAction string           `json:"sender_action"`
+}
+
 type MessengerProfileRequestBody struct {
 	Platform       string           `json:"platform"`
 	PersistentMenu []PersistentMenu `json:"persistent_menu"`

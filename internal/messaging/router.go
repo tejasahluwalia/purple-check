@@ -14,32 +14,6 @@ import (
 	"purple-check/internal/models"
 )
 
-type Sender interface {
-	SendTextMessage(ctx context.Context, text string, userID string) error
-	SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error
-	UsernameFromUserID(ctx context.Context, userID string) (string, error)
-}
-
-type AccountTokenReader interface {
-	GetAccountToken(ctx context.Context) (string, error)
-}
-
-type InstagramSender struct {
-	Tokens AccountTokenReader
-}
-
-func (sender InstagramSender) SendTextMessage(ctx context.Context, text string, userID string) error {
-	return sendTextMessage(ctx, sender.Tokens, text, userID)
-}
-
-func (sender InstagramSender) SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error {
-	return sendButtonMessage(ctx, sender.Tokens, buttons, text, userID)
-}
-
-func (sender InstagramSender) UsernameFromUserID(ctx context.Context, userID string) (string, error) {
-	return getUsernameFromUserID(ctx, sender.Tokens, userID)
-}
-
 type Router struct {
 	Feedbacks   models.FeedbackRepository
 	MessageLogs models.MessageLogRepository
@@ -64,6 +38,14 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 	if userId == "" {
 		return
 	}
+
+	// Send mark_seen and typing_on to acknowledge the user's message.
+	logSend(router.sendSenderAction(ctx, "mark_seen", userId))
+	logSend(router.sendSenderAction(ctx, "typing_on", userId))
+	defer func() {
+		logSend(router.sendSenderAction(ctx, "typing_off", userId))
+	}()
+
 	message := strings.TrimSpace(messageEvent.Message.Text)
 	payload := getPayload(messageEvent)
 	ref := getReferral(messageEvent)
@@ -299,6 +281,10 @@ func (router *Router) sendTextMessage(ctx context.Context, text string, userId s
 
 func (router *Router) sendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userId string) error {
 	return router.sender().SendButtonMessage(ctx, buttons, text, userId)
+}
+
+func (router *Router) sendSenderAction(ctx context.Context, action string, userId string) error {
+	return router.sender().SendSenderAction(ctx, action, userId)
 }
 
 func getPayload(messageEvent models.MessageEvent) string {
