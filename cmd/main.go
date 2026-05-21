@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"log"
 	"log/slog"
@@ -20,8 +19,6 @@ import (
 	"purple-check/internal/routes/profile"
 	"purple-check/internal/routes/search"
 	"purple-check/internal/routes/webhook"
-
-	"github.com/a-h/templ"
 )
 
 var origins = []string{
@@ -92,20 +89,4 @@ func disableCacheInDevMode(next http.Handler) http.Handler {
 		w.Header().Set("Cache-Control", "no-store")
 		next.ServeHTTP(w, r)
 	})
-}
-
-type page struct {
-	templ.Component
-}
-
-func renderComponent(ctx context.Context, w http.ResponseWriter, component templ.Component) {
-	var buf bytes.Buffer
-	if err := component.Render(ctx, &buf); err != nil {
-		slog.Error("render failed", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if _, err := buf.WriteTo(w); err != nil {
-		slog.Error("write response failed", "error", err)
-	}
 }

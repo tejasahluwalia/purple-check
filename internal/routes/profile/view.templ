@@ -2,12 +2,11 @@ package profile
 
 import (
 	"net/url"
-	"purple-check/internal/components"
 	"purple-check/internal/models"
 )
 
 type ViewModel struct {
-	Username string
+	Username     string
 	FeedbackList []models.Feedback
 }
 
@@ -34,7 +33,7 @@ templ View(vm ViewModel) {
 		</div>
 		<div class="my-4">
 			<h2 class="text-xl mb-4 font-bold tracking-tight">Feedback received</h2>
-			@components.FeedbackList(vm.FeedbackList)
+			@FeedbackList(vm.FeedbackList)
 		</div>
 	</section>
 }

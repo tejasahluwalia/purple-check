@@ -6,7 +6,7 @@ dev/templ:
 
 dev/server:
 	air \
-    --build.cmd "go build -o tmp/bin/main ./cmd/main.go" --build.bin "tmp/bin/main" --build.delay "300" \
+    --build.cmd "go build -o tmp/bin/main ./cmd/main.go" --build.bin "tmp/bin/main" --build.delay "100" \
     --build.entrypoint "./tmp/bin/main" \
     --build.exclude_dir "node_modules" \
     --build.include_ext "go" \
@@ -20,7 +20,7 @@ dev/sync_assets:
 	air \
 	--build.cmd "templ generate --notify-proxy" \
 	--build.bin "true" \
-	--build.delay "200" \
+	--build.delay "100" \
 	--build.exclude_dir "" \
 	--build.include_dir "static" \
 	--build.include_ext "js,css"

@@ -1,8 +1,6 @@
 package layout
 
-import (
-	"purple-check/internal/config"
-)
+import "purple-check/internal/config"
 
 templ ThemeSwitcherScript() {
 	{{ handle := templ.NewOnceHandle() }}
@@ -94,9 +92,8 @@ templ Header() {
 	</header>
 }
 
-
 templ Footer() {
-	<footer class="bg-primary text-primary-foreground mt-16">
+	<footer class="bg-foreground text-primary-foreground mt-16">
 		<div class="px-4 py-8 container mx-auto max-w-(--breakpoint-md)">
 			<nav class="flex flex-col gap-8 md:flex-row md:justify-between">
 				<div class="mb-4">

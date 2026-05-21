@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"maps"
 
 	"math/rand"
 
@@ -12,13 +13,13 @@ import (
 
 // TwMerge combines Tailwind classes and resolves conflicts.
 // Example: "bg-red-500 hover:bg-blue-500", "bg-green-500" → "hover:bg-blue-500 bg-green-500"
-func twMerge(classes ...string) string {
+func TwMerge(classes ...string) string {
 	return twmerge.Merge(classes...)
 }
 
 // TwIf returns value if condition is true, otherwise an empty value of type T.
 // Example: true, "bg-red-500" → "bg-red-500"
-func twIf[T comparable](condition bool, value T) T {
+func TwIf[T comparable](condition bool, value T) T {
 	var empty T
 	if condition {
 		return value
@@ -28,7 +29,7 @@ func twIf[T comparable](condition bool, value T) T {
 
 // TwIfElse returns trueValue if condition is true, otherwise falseValue.
 // Example: true, "bg-red-500", "bg-gray-300" → "bg-red-500"
-func twIfElse[T any](condition bool, trueValue T, falseValue T) T {
+func TwIfElse[T any](condition bool, trueValue T, falseValue T) T {
 	if condition {
 		return trueValue
 	}
@@ -37,12 +38,10 @@ func twIfElse[T any](condition bool, trueValue T, falseValue T) T {
 
 // MergeAttributes combines multiple Attributes into one.
 // Example: MergeAttributes(attr1, attr2) → combined attributes
-func mergeAttributes(attrs ...templ.Attributes) templ.Attributes {
+func MergeAttributes(attrs ...templ.Attributes) templ.Attributes {
 	merged := templ.Attributes{}
 	for _, attr := range attrs {
-		for k, v := range attr {
-			merged[k] = v
-		}
+		maps.Copy(merged, attr)
 	}
 	return merged
 }
