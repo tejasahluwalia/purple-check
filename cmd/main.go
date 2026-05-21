@@ -53,7 +53,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/", home.NewHandler())
+	mux.Handle("/", home.NewHandler(feedbacks))
 	mux.Handle("POST /search", search.NewHandler())
 
 	mux.Handle("/profile/{username}", profile.NewHandler(feedbacks))

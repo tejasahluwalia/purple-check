@@ -8,33 +8,33 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-type AlertVariant string
+type Variant string
 
 const (
-	AlertVariantDefault     AlertVariant = "default"
-	AlertVariantDestructive AlertVariant = "destructive"
+	VariantDefault     Variant = "default"
+	VariantDestructive Variant = "destructive"
 )
 
-type AlertProps struct {
+type Props struct {
 	ID         string
 	Class      string
 	Attributes templ.Attributes
-	Variant    AlertVariant
+	Variant    Variant
 }
 
-type AlertTitleProps struct {
-	ID         string
-	Class      string
-	Attributes templ.Attributes
-}
-
-type AlertDescriptionProps struct {
+type TitleProps struct {
 	ID         string
 	Class      string
 	Attributes templ.Attributes
 }
 
-func Alert(props ...AlertProps) templ.Component {
+type DescriptionProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+func Alert(props ...Props) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -55,16 +55,15 @@ func Alert(props ...AlertProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var p AlertProps
+		var p Props
 		if len(props) > 0 {
 			p = props[0]
 		}
 		var templ_7745c5c3_Var2 = []any{twMerge(
-			"relative w-full p-4",
-			"[&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
-			"[&>svg+div]:translate-y-[-3px] [&:has(svg)]:pl-11",
-			"rounded-lg border",
-			getAlertVariantClasses(p.Variant),
+			"relative w-full rounded-lg border px-4 py-3 text-sm",
+			"grid has-[>svg]:grid-cols-[1rem_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start",
+			"[&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
+			variantClasses(p.Variant),
 			p.Class,
 		),
 		}
@@ -95,7 +94,7 @@ func Alert(props ...AlertProps) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " data-slot=\"alert\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -132,7 +131,7 @@ func Alert(props ...AlertProps) templ.Component {
 	})
 }
 
-func AlertTitle(props ...AlertTitleProps) templ.Component {
+func AlertTitle(props ...TitleProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -153,12 +152,12 @@ func AlertTitle(props ...AlertTitleProps) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var p AlertTitleProps
+		var p TitleProps
 		if len(props) > 0 {
 			p = props[0]
 		}
 		var templ_7745c5c3_Var6 = []any{twMerge(
-			"mb-2 font-medium leading-none tracking-tight",
+			"col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
 			p.Class,
 		),
 		}
@@ -189,7 +188,7 @@ func AlertTitle(props ...AlertTitleProps) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " data-slot=\"alert-title\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -226,7 +225,7 @@ func AlertTitle(props ...AlertTitleProps) templ.Component {
 	})
 }
 
-func AlertDescription(props ...AlertDescriptionProps) templ.Component {
+func AlertDescription(props ...DescriptionProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -247,12 +246,12 @@ func AlertDescription(props ...AlertDescriptionProps) templ.Component {
 			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var p AlertDescriptionProps
+		var p DescriptionProps
 		if len(props) > 0 {
 			p = props[0]
 		}
 		var templ_7745c5c3_Var10 = []any{twMerge(
-			"[&_p]:leading-relaxed text-sm",
+			"text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
 			p.Class,
 		),
 		}
@@ -272,7 +271,7 @@ func AlertDescription(props ...AlertDescriptionProps) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 83, Col: 12}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/components/alert.templ`, Line: 84, Col: 12}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 			if templ_7745c5c3_Err != nil {
@@ -283,7 +282,7 @@ func AlertDescription(props ...AlertDescriptionProps) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " data-slot=\"alert-description\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -320,12 +319,12 @@ func AlertDescription(props ...AlertDescriptionProps) templ.Component {
 	})
 }
 
-func getAlertVariantClasses(variant AlertVariant) string {
+func variantClasses(variant Variant) string {
 	switch variant {
-	case AlertVariantDestructive:
-		return "border-destructive text-destructive"
+	case VariantDestructive:
+		return "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90"
 	default:
-		return "border-border text-foreground"
+		return "bg-card text-card-foreground"
 	}
 }
 

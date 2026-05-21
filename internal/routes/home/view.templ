@@ -1,9 +1,13 @@
 package home
 
-import "purple-check/internal/components"
+import (
+	"fmt"
+	"purple-check/internal/components"
+	"purple-check/internal/models"
+)
 
-templ View() {
-	<section class="flex-1 space-y-8 py-8">
+templ View(topStores *models.TopStores) {
+	<section class="flex-1 space-y-10 py-8">
 		<h1 class="text-2xl/7 font-bold sm:truncate sm:text-3xl sm:tracking-tight">Reviews for buyers and sellers on Instagram</h1>
 		@components.SearchBox()
 		@components.Alert() {
@@ -19,7 +23,79 @@ templ View() {
 				</p>
 			}
 		}
+		if topStores != nil && (len(topStores.MostPositive) > 0 || topStores.MostNegative != nil) {
+			@TopStoresCard(topStores)
+		}
 	</section>
+}
+
+templ TopStoresCard(topStores *models.TopStores) {
+	<div class="space-y-8">
+		<div class="space-y-4">
+			<h2 class="text-lg font-bold">Top Rated Stores</h2>
+			<div class="grid md:grid-cols-2 gap-6">
+				if len(topStores.MostPositive) == 0 {
+					<p class="text-sm text-muted-foreground">No positive reviews yet.</p>
+				} else {
+					for _, store := range topStores.MostPositive {
+						<a
+							href={ templ.URL("/profile/" + store.Username) }
+							class="flex items-center justify-between rounded-md border p-3 hover:bg-muted transition-colors"
+						>
+							<div>
+								<span class="font-medium text-primary">{ store.Username }</span>
+								{{
+									plural := ""
+									if store.TotalCount > 1 {
+										plural = "s"
+									}
+								}}
+								<p class="text-xs text-muted-foreground">
+									{ 
+										fmt.Sprintf("%d review%s", store.TotalCount, plural) }
+								</p>
+							</div>
+							<div class="flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+								{ fmt.Sprintf("%d positive", store.PositiveCount) }
+							</div>
+						</a>
+					}
+				}
+			</div>
+		</div>
+		<div class="space-y-4">
+			<h2 class="text-lg font-bold">Lowest Rated Stores</h2>
+			<div class="grid md:grid-cols-2 gap-6">
+				if topStores.MostNegative == nil {
+					<p class="text-sm text-muted-foreground">No negative reviews yet.</p>
+				} else {
+					for _, store := range topStores.MostNegative {
+						<a
+							href={ templ.URL("/profile/" + store.Username) }
+							class="flex items-center justify-between rounded-md border p-3 hover:bg-muted transition-colors"
+						>
+							<div>
+								<span class="font-medium text-primary">{ store.Username }</span>
+								{{
+									plural := ""
+									if store.TotalCount > 1 {
+										plural = "s"
+									}
+								}}
+								<p class="text-xs text-muted-foreground">
+									{ 
+										fmt.Sprintf("%d review%s", store.TotalCount, plural) }
+								</p>
+							</div>
+							<div class="flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200">
+								{ fmt.Sprintf("%d negative", store.NegativeCount) }
+							</div>
+						</a>
+					}
+				}
+			</div>
+		</div>
+	</div>
 }
 
 templ NotFound() {

@@ -27,6 +27,18 @@ type FeedbackInput struct {
 	Comment      string
 }
 
+type StoreStat struct {
+	Username      string
+	PositiveCount int
+	NegativeCount int
+	TotalCount    int
+}
+
+type TopStores struct {
+	MostPositive []StoreStat
+	MostNegative []StoreStat
+}
+
 // FeedbackModel expects the live Turso schema to provide feedback(id, giver,
 // receiver, rating, giver_role, receiver_role, deal_stage, comment, created_at)
 // with a unique constraint on (giver, receiver), and user_message_logs(user_id,
@@ -35,6 +47,7 @@ type FeedbackRepository interface {
 	GetAllForUser(ctx context.Context, username string) ([]Feedback, error)
 	CountForUser(ctx context.Context, username string) (int, error)
 	CountPositiveForUser(ctx context.Context, username string) (int, error)
+	GetTopStores(ctx context.Context) (*TopStores, error)
 	InsertOrUpdateOne(ctx context.Context, input FeedbackInput) error
 	DeleteOne(ctx context.Context, userID string, feedbackID string) error
 	DeleteAllForUser(ctx context.Context, userID string) error
@@ -132,6 +145,68 @@ func (m *FeedbackModel) CountPositiveForUser(ctx context.Context, username strin
 		return 0, fmt.Errorf("query positive feedback count: %w", err)
 	}
 	return count, nil
+}
+
+func (m *FeedbackModel) GetTopStores(ctx context.Context) (*TopStores, error) {
+	conn := m.conn()
+	if conn == nil {
+		return nil, fmt.Errorf("feedback model database connection is nil")
+	}
+
+	result := &TopStores{}
+
+	positiveRows, err := conn.QueryContext(ctx,
+		`SELECT receiver,
+		        COUNT(*) as total_count,
+		        SUM(CASE WHEN rating = 'POSITIVE' THEN 1 ELSE 0 END) as positive_count
+		 FROM feedback
+		 GROUP BY receiver
+		 HAVING positive_count > 0
+		 ORDER BY positive_count DESC, total_count DESC
+		 LIMIT 2`)
+	if err != nil {
+		return nil, fmt.Errorf("query top positive stores: %w", err)
+	}
+	defer positiveRows.Close()
+
+	for positiveRows.Next() {
+		var s StoreStat
+		if err := positiveRows.Scan(&s.Username, &s.TotalCount, &s.PositiveCount); err != nil {
+			return nil, fmt.Errorf("scan top positive store: %w", err)
+		}
+		result.MostPositive = append(result.MostPositive, s)
+	}
+	if err := positiveRows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate top positive stores: %w", err)
+	}
+
+	negativeRows, err := conn.QueryContext(ctx,
+		`SELECT receiver,
+		        COUNT(*) as total_count,
+		        SUM(CASE WHEN rating = 'NEGATIVE' THEN 1 ELSE 0 END) as negative_count
+		 FROM feedback
+		 GROUP BY receiver
+		 HAVING negative_count > 0
+		 ORDER BY negative_count DESC, total_count DESC
+		 LIMIT 2`)
+	if err != nil {
+		return nil, fmt.Errorf("query top positive stores: %w", err)
+	}
+	defer negativeRows.Close()
+
+	for negativeRows.Next() {
+		var neg StoreStat
+		if err := negativeRows.Scan(&neg.Username, &neg.TotalCount, &neg.NegativeCount); err != nil {
+			if err == sql.ErrNoRows {
+				// No negative feedback yet — leave MostNegative nil.
+				return result, nil
+			}
+			return nil, fmt.Errorf("query top negative store: %w", err)
+		}
+		result.MostNegative = append(result.MostNegative, neg)
+	}
+
+	return result, nil
 }
 
 func (m *FeedbackModel) DeleteOne(ctx context.Context, userID string, feedbackID string) error {

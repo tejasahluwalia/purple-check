@@ -1,33 +1,33 @@
 package components
 
-type AlertVariant string
+type Variant string
 
 const (
-	AlertVariantDefault     AlertVariant = "default"
-	AlertVariantDestructive AlertVariant = "destructive"
+	VariantDefault     Variant = "default"
+	VariantDestructive Variant = "destructive"
 )
 
-type AlertProps struct {
+type Props struct {
 	ID         string
 	Class      string
 	Attributes templ.Attributes
-	Variant    AlertVariant
+	Variant    Variant
 }
 
-type AlertTitleProps struct {
-	ID         string
-	Class      string
-	Attributes templ.Attributes
-}
-
-type AlertDescriptionProps struct {
+type TitleProps struct {
 	ID         string
 	Class      string
 	Attributes templ.Attributes
 }
 
-templ Alert(props ...AlertProps) {
-	{{ var p AlertProps }}
+type DescriptionProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Alert(props ...Props) {
+	{{ var p Props }}
 	if len(props) > 0 {
 		{{ p = props[0] }}
 	}
@@ -35,13 +35,13 @@ templ Alert(props ...AlertProps) {
 		if p.ID != "" {
 			id={ p.ID }
 		}
+		data-slot="alert"
 		class={
 			twMerge(
-				"relative w-full p-4",
-				"[&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
-				"[&>svg+div]:translate-y-[-3px] [&:has(svg)]:pl-11",
-				"rounded-lg border",
-				getAlertVariantClasses(p.Variant),
+				"relative w-full rounded-lg border px-4 py-3 text-sm",
+				"grid has-[>svg]:grid-cols-[1rem_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start",
+				"[&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
+				variantClasses(p.Variant),
 				p.Class,
 			),
 		}
@@ -52,8 +52,8 @@ templ Alert(props ...AlertProps) {
 	</div>
 }
 
-templ AlertTitle(props ...AlertTitleProps) {
-	{{ var p AlertTitleProps }}
+templ AlertTitle(props ...TitleProps) {
+	{{ var p TitleProps }}
 	if len(props) > 0 {
 		{{ p = props[0] }}
 	}
@@ -61,9 +61,10 @@ templ AlertTitle(props ...AlertTitleProps) {
 		if p.ID != "" {
 			id={ p.ID }
 		}
+		data-slot="alert-title"
 		class={
 			twMerge(
-				"mb-2 font-medium leading-none tracking-tight",
+				"col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
 				p.Class,
 			),
 		}
@@ -73,8 +74,8 @@ templ AlertTitle(props ...AlertTitleProps) {
 	</h5>
 }
 
-templ AlertDescription(props ...AlertDescriptionProps) {
-	{{ var p AlertDescriptionProps }}
+templ AlertDescription(props ...DescriptionProps) {
+	{{ var p DescriptionProps }}
 	if len(props) > 0 {
 		{{ p = props[0] }}
 	}
@@ -82,9 +83,10 @@ templ AlertDescription(props ...AlertDescriptionProps) {
 		if p.ID != "" {
 			id={ p.ID }
 		}
+		data-slot="alert-description"
 		class={
 			twMerge(
-				"[&_p]:leading-relaxed text-sm",
+				"text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
 				p.Class,
 			),
 		}
@@ -94,11 +96,11 @@ templ AlertDescription(props ...AlertDescriptionProps) {
 	</div>
 }
 
-func getAlertVariantClasses(variant AlertVariant) string {
+func variantClasses(variant Variant) string {
 	switch variant {
-	case AlertVariantDestructive:
-		return "border-destructive text-destructive"
+	case VariantDestructive:
+		return "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90"
 	default:
-		return "border-border text-foreground"
+		return "bg-card text-card-foreground"
 	}
 }

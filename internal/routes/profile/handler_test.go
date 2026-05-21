@@ -40,6 +40,10 @@ func (repo *feedbackRepo) DeleteAllForUser(ctx context.Context, userID string) e
 	return nil
 }
 
+func (repo *feedbackRepo) GetTopStores(ctx context.Context) (*models.TopStores, error) {
+	return &models.TopStores{}, nil
+}
+
 func TestGetUsesFeedbackRepository(t *testing.T) {
 	repo := &feedbackRepo{}
 	handler := NewHandler(repo)
