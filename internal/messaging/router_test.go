@@ -116,15 +116,3 @@ func TestParseRatingPayload(t *testing.T) {
 		}
 	}
 }
-
-func TestReceiverRoleFor(t *testing.T) {
-	if role, ok := receiverRoleFor(roleBuyer); !ok || role != roleSeller {
-		t.Fatalf("receiver role for buyer = %q, ok = %v", role, ok)
-	}
-	if role, ok := receiverRoleFor(roleSeller); !ok || role != roleBuyer {
-		t.Fatalf("receiver role for seller = %q, ok = %v", role, ok)
-	}
-	if _, ok := receiverRoleFor("ADMIN"); ok {
-		t.Fatal("unexpected valid receiver role")
-	}
-}

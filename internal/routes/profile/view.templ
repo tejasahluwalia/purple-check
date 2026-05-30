@@ -6,14 +6,14 @@ import (
 )
 
 type ViewModel struct {
-	Username     string
-	FeedbackList []models.Feedback
+	FeedbackList  []models.Feedback
+	ReceiverStats models.ReceiverStats
 }
 
 templ View(vm ViewModel) {
 	<section class="pt-8">
 		{{
-			username := vm.Username
+			username := vm.ReceiverStats.Username
 			instagramURL := "https://www.instagram.com/" + url.PathEscape(username)
 			refValues := url.Values{"ref": []string{username}}
 			feedbackURL := "https://ig.me/m/purplecheck_org?" + refValues.Encode()

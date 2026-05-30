@@ -1,6 +1,9 @@
 package messaging
 
-import "purple-check/internal/cache"
+import (
+	"purple-check/internal/cache"
+	"purple-check/internal/models"
+)
 
 const (
 	stageStart             = "START"
@@ -20,13 +23,14 @@ const (
 
 	ratingPositive = "POSITIVE"
 	ratingNegative = "NEGATIVE"
+	ratingMixed    = "MIXED"
 )
 
 type ConversationState struct {
 	Stage       string
 	TargetUser  string
-	Role        string
-	DealStage   string
+	Role        models.TransactionRole
+	DealStage   models.DealStage
 	CurrentUser string
 }
 

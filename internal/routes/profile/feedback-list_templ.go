@@ -57,7 +57,7 @@ func FeedbackList(feedbackList []models.Feedback) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><div class=\"flex space-x-2 items-center\"><h3 class=\"font-medium text-primary\"><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><div class=\"flex space-x-2 items-baseline\"><h3 class=\"font-medium text-primary\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -109,17 +109,40 @@ func FeedbackList(feedbackList []models.Feedback) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</time></p></div></li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</time></p>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if feedback.Medium == "REDDIT_THREAD" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<p class=\"text-muted-foreground text-xs ml-auto\">Source: <a class=\"underline\" href=\"")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var7 templ.SafeURL
+					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs("https://www.reddit.com" + feedback.Source)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/feedback-list.templ`, Line: 31, Col: 86}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\">Reddit </a></p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</ul>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</ul>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Var7 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var8 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -131,26 +154,26 @@ func FeedbackList(feedbackList []models.Feedback) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<script nonce=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<script nonce=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.GetNonce(ctx))
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.GetNonce(ctx))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/feedback-list.templ`, Line: 35, Col: 37}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/feedback-list.templ`, Line: 40, Col: 37}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\">\n        document.querySelectorAll('.created-at-datetime').forEach((datetime) => {\n            const createdAt = datetime.getAttribute('datetime');\n            const date = new Date(createdAt);\n\n            const since = Date.now() - date.getTime();\n            if (since < 1000 * 60) {\n                datetime.textContent = 'Just now';\n                return;\n            }\n            if (since < 1000 * 60 * 60) {\n                const minutes = Math.floor(since / (1000 * 60));\n                datetime.textContent = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;\n                return;\n            }\n            if (since < 1000 * 60 * 60 * 24) {\n                const hours = Math.floor(since / (1000 * 60 * 60));\n                datetime.textContent = `${hours} hour${hours > 1 ? 's' : ''} ago`;\n                return;\n            }\n\n            datetime.textContent = date.toLocaleDateString(undefined, {\n                month: 'short',\n                day: 'numeric',\n                year: 'numeric',\n            });\n        });\n    \t</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\">\n        document.querySelectorAll('.created-at-datetime').forEach((datetime) => {\n            const createdAt = datetime.getAttribute('datetime');\n            const date = new Date(createdAt);\n\n            const since = Date.now() - date.getTime();\n            if (since < 1000 * 60) {\n                datetime.textContent = 'Just now';\n                return;\n            }\n            if (since < 1000 * 60 * 60) {\n                const minutes = Math.floor(since / (1000 * 60));\n                datetime.textContent = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;\n                return;\n            }\n            if (since < 1000 * 60 * 60 * 24) {\n                const hours = Math.floor(since / (1000 * 60 * 60));\n                datetime.textContent = `${hours} hour${hours > 1 ? 's' : ''} ago`;\n                return;\n            }\n\n            datetime.textContent = date.toLocaleDateString(undefined, {\n                month: 'short',\n                day: 'numeric',\n                year: 'numeric',\n            });\n        });\n    \t</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = dateFormatter.Once().Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = dateFormatter.Once().Render(templ.WithChildren(ctx, templ_7745c5c3_Var8), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

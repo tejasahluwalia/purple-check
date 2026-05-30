@@ -13,9 +13,7 @@ import (
 )
 
 func ConfigureCSP(mux *http.ServeMux) http.Handler {
-	cspConfig := CSPConfig{
-		ScriptSrc: []string{"cdn.jsdelivr.net"}, // Add external script sources here
-	}
+	cspConfig := CSPConfig{}
 	wrappedMux := withCSP(cspConfig)(mux)
 	return wrappedMux
 }

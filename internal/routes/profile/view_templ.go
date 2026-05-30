@@ -14,8 +14,8 @@ import (
 )
 
 type ViewModel struct {
-	Username     string
-	FeedbackList []models.Feedback
+	FeedbackList  []models.Feedback
+	ReceiverStats models.ReceiverStats
 }
 
 func View(vm ViewModel) templ.Component {
@@ -43,7 +43,7 @@ func View(vm ViewModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		username := vm.Username
+		username := vm.ReceiverStats.Username
 		instagramURL := "https://www.instagram.com/" + url.PathEscape(username)
 		refValues := url.Values{"ref": []string{username}}
 		feedbackURL := "https://ig.me/m/purplecheck_org?" + refValues.Encode()

@@ -161,12 +161,9 @@ func (router *Router) RouteMessage(ctx context.Context, messageEvent models.Mess
 			logSend(router.askForUsernameToSearch(ctx, userId))
 			return
 		}
-		receiverRole, ok := receiverRoleFor(giverRole)
-		if !ok {
-			logSend(router.invalidResponseMessage(ctx, userId))
-			return
-		}
-		if err := router.saveRating(ctx, rating, giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage); err != nil {
+		receiverRole := receiverRoleFor(giverRole)
+
+		if err := router.saveRating(ctx, models.FeedbackSentiment(rating), giverUsername, receiverUsername, giverRole, receiverRole, state.DealStage); err != nil {
 			log.Printf("Failed to save rating: %v", err)
 			logSend(router.sendTextMessage(ctx, "Sorry, something went wrong while saving your rating. Please try again later.", userId))
 			return
@@ -215,13 +212,17 @@ func (router *Router) searchForUserAndRespond(ctx context.Context, usernameToSea
 	if router.Feedbacks == nil {
 		return fmt.Errorf("feedback repository is nil")
 	}
-	positiveRatings, err := router.Feedbacks.CountPositiveForUser(ctx, usernameToSearch)
+	feedbackList, err := router.Feedbacks.GetAll(ctx, usernameToSearch, models.FeedbackRoleReceiver)
 	if err != nil {
 		return err
 	}
-	totalRatings, err := router.Feedbacks.CountForUser(ctx, usernameToSearch)
-	if err != nil {
-		return err
+
+	totalRatings := len(feedbackList)
+	positiveRatings := 0
+	for _, feedback := range feedbackList {
+		if feedback.Rating == models.PositiveFeedback {
+			positiveRatings++
+		}
 	}
 
 	buttons := []ElementButton{
@@ -254,7 +255,7 @@ func (router *Router) searchForUserAndRespond(ctx context.Context, usernameToSea
 	return router.sendButtonMessage(ctx, buttons, text, userId)
 }
 
-func (router *Router) saveRating(ctx context.Context, rating string, giverUsername string, receiverUsername string, giverRole string, receiverRole string, dealStage string) error {
+func (router *Router) saveRating(ctx context.Context, rating models.FeedbackSentiment, giverUsername string, receiverUsername string, giverRole models.TransactionRole, receiverRole models.TransactionRole, dealStage models.DealStage) error {
 	if router.Feedbacks == nil {
 		return fmt.Errorf("feedback repository is nil")
 	}
@@ -320,34 +321,37 @@ func parseRatePayload(payload string) (string, error) {
 	return username, nil
 }
 
-func parseRolePayload(payload string) (string, bool) {
+func parseRolePayload(payload string) (models.TransactionRole, bool) {
 	command, value, ok := strings.Cut(payload, ":")
 	if !ok || command != "ROLE" {
 		return "", false
 	}
-	if value != roleBuyer && value != roleSeller {
-		return "", false
+
+	if value == string(models.TransactionRoleBuyer) || value == string(models.TransactionRoleSeller) {
+		role := models.TransactionRole(value)
+		return role, true
 	}
-	return value, true
+	return "", false
 }
 
-func parseDealStagePayload(payload string) (string, bool) {
+func parseDealStagePayload(payload string) (models.DealStage, bool) {
 	command, value, ok := strings.Cut(payload, ":")
 	if !ok || command != "DEAL_STAGE" {
 		return "", false
 	}
-	if value != dealStageComplete && value != dealStageIncomplete {
-		return "", false
+	if value == string(models.DealStageComplete) || value == string(models.DealStageIncomplete) {
+		stage := models.DealStage(value)
+		return stage, true
 	}
-	return value, true
+	return "", false
 }
 
-func parseRatingPayload(payload string) (string, string, error) {
+func parseRatingPayload(payload string) (models.FeedbackSentiment, string, error) {
 	parts := strings.Split(payload, ":")
 	if len(parts) != 3 || parts[0] != "RATING" {
 		return "", "", errors.New("Invalid payload")
 	}
-	if parts[1] != ratingPositive && parts[1] != ratingNegative {
+	if parts[1] != string(models.PositiveFeedback) && parts[1] != string(models.NegativeFeedback) && parts[1] != string(models.MixedFeedback) {
 		return "", "", errors.New("Invalid payload")
 	}
 	username := helpers.NormalizeUsername(parts[2])
@@ -355,18 +359,15 @@ func parseRatingPayload(payload string) (string, string, error) {
 	if err != nil {
 		return "", "", errors.New("Invalid payload")
 	}
-	return parts[1], username, nil
+	sentiment := models.FeedbackSentiment(parts[1])
+	return sentiment, username, nil
 }
 
-func receiverRoleFor(giverRole string) (string, bool) {
-	switch giverRole {
-	case roleBuyer:
-		return roleSeller, true
-	case roleSeller:
-		return roleBuyer, true
-	default:
-		return "", false
+func receiverRoleFor(giverRole models.TransactionRole) models.TransactionRole {
+	if giverRole == models.TransactionRoleBuyer {
+		return models.TransactionRoleSeller
 	}
+	return models.TransactionRoleBuyer
 }
 
 func logSend(err error) {

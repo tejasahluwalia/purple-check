@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"log/slog"
 	"net/http"
 	"time"
 
+	_ "modernc.org/sqlite"
+
 	"purple-check/internal/config"
-	"purple-check/internal/database"
 	"purple-check/internal/instagram"
 	"purple-check/internal/layout"
 	"purple-check/internal/messaging"
@@ -29,15 +31,10 @@ var origins = []string{
 func main() {
 	messaging.InitConversations()
 
-	appDB, err := database.InitDb(context.Background())
+	appDB, err := sql.Open("sqlite", config.LOCAL_DB_PATH)
 	if err != nil {
 		log.Fatal("Failed to connect to database.\n", err)
 	}
-	defer func() {
-		if err := database.Close(appDB); err != nil {
-			slog.Error("error closing database", "error", err)
-		}
-	}()
 
 	feedbacks := &models.FeedbackModel{DB: appDB}
 	messageLogs := &models.MessageLogModel{DB: appDB}

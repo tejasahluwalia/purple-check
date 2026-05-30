@@ -16,7 +16,7 @@ templ FeedbackList(feedbackList []models.Feedback) {
 							{ feedback.Rating }
 						</p>
 					</div>
-					<div class="flex space-x-2 items-center">
+					<div class="flex space-x-2 items-baseline">
 						<h3 class="font-medium text-primary">
 							<a href={ templ.URL("/profile/" + feedback.Giver) }>{ feedback.Giver }</a>
 						</h3>
@@ -26,6 +26,11 @@ templ FeedbackList(feedbackList []models.Feedback) {
 						<p class="text-muted-foreground">
 							<time datetime={ feedback.CreatedAt } class="created-at-datetime">{ feedback.CreatedAt }</time>
 						</p>
+						if feedback.Medium == "REDDIT_THREAD" {
+							<p class="text-muted-foreground text-xs ml-auto">
+								Source: <a class="underline" href={ "https://www.reddit.com" + feedback.Source }>Reddit </a>
+							</p>
+						}
 					</div>
 				</li>
 			}

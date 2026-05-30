@@ -6,7 +6,14 @@ import (
 	"purple-check/internal/models"
 )
 
-templ View(topStores *models.TopStores) {
+type ViewModel struct {
+	receivers struct {
+		MostPositive []models.ReceiverStats
+		MostNegative []models.ReceiverStats
+	}
+}
+
+templ View(vm ViewModel) {
 	<section class="flex-1 space-y-10 py-8">
 		<h1 class="text-2xl/7 font-bold sm:truncate sm:text-3xl sm:tracking-tight">Reviews for buyers and sellers on Instagram</h1>
 		@SearchBox()
@@ -20,21 +27,22 @@ templ View(topStores *models.TopStores) {
 				</p>
 			}
 		}
-		if topStores != nil && (len(topStores.MostPositive) > 0 || topStores.MostNegative != nil) {
-			@TopStoresList(topStores)
-		}
+		@TopStoresList(vm.receivers)
 	</section>
 }
 
-templ TopStoresList(topStores *models.TopStores) {
+templ TopStoresList(receivers struct {
+	MostPositive []models.ReceiverStats
+	MostNegative []models.ReceiverStats
+}) {
 	<div class="space-y-8">
 		<div class="space-y-4">
 			<h2 class="text-lg font-semibold">Top Rated Stores</h2>
 			<div class="grid md:grid-cols-2 gap-6">
-				if len(topStores.MostPositive) == 0 {
+				if len(receivers.MostPositive) == 0 {
 					<p class="text-sm text-muted-foreground">No positive reviews yet.</p>
 				} else {
-					for _, store := range topStores.MostPositive {
+					for _, store := range receivers.MostPositive {
 						@TopStoresCard(store)
 					}
 				}
@@ -43,10 +51,10 @@ templ TopStoresList(topStores *models.TopStores) {
 		<div class="space-y-4">
 			<h2 class="text-lg font-semibold">Lowest Rated Stores</h2>
 			<div class="grid md:grid-cols-2 gap-6">
-				if topStores.MostNegative == nil {
+				if receivers.MostNegative == nil {
 					<p class="text-sm text-muted-foreground">No negative reviews yet.</p>
 				} else {
-					for _, store := range topStores.MostNegative {
+					for _, store := range receivers.MostNegative {
 						@TopStoresCard(store)
 					}
 				}
@@ -55,7 +63,7 @@ templ TopStoresList(topStores *models.TopStores) {
 	</div>
 }
 
-templ TopStoresCard(store models.StoreStat) {
+templ TopStoresCard(store models.ReceiverStats) {
 	<a
 		href={ templ.URL("/profile/" + store.Username) }
 		class="flex items-center justify-between rounded-md border p-3 hover:bg-muted transition-colors"
@@ -69,17 +77,18 @@ templ TopStoresCard(store models.StoreStat) {
 				}
 			}}
 			<p class="text-xs text-muted-foreground">
-				{ 
+				{
 					fmt.Sprintf("%d review%s", store.TotalCount, plural) }
 			</p>
 		</div>
-		if store.PositiveCount >= store.NegativeCount {
+		{ store.Score }
+		if store.Score > 20 {
 			<div class="flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-				{ fmt.Sprintf("%d positive", store.PositiveCount) }
+				{ fmt.Sprintf("%.0f", store.Score*100) }
 			</div>
 		} else {
 			<div class="flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200">
-				{ fmt.Sprintf("%d negative", store.NegativeCount) }
+				{ fmt.Sprintf("%.4f", store.Score*100) }
 			</div>
 		}
 	</a>

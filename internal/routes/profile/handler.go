@@ -34,15 +34,33 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid username", http.StatusBadRequest)
 		return
 	}
-	feedbackList, err := h.Feedbacks.GetAllForUser(r.Context(), username)
+	feedbackList, err := h.Feedbacks.GetAll(r.Context(), username, models.FeedbackRoleReceiver)
 	if err != nil {
 		slog.Error("Error retrieving user feedback", "error", err)
 		http.Error(w, "Unable to retrieve feedback", http.StatusInternalServerError)
 		return
 	}
+	var positiveCount, negativeCount, mixedCount int
+	for _, feedback := range feedbackList {
+		if feedback.Rating == models.PositiveFeedback {
+			positiveCount += 1
+		}
+		if feedback.Rating == models.NegativeFeedback {
+			negativeCount += 1
+		}
+		if feedback.Rating == models.MixedFeedback {
+			mixedCount += 1
+		}
+	}
 	viewModel := ViewModel{
-		Username:     username,
 		FeedbackList: feedbackList,
+		ReceiverStats: models.ReceiverStats{
+			Username:      username,
+			PositiveCount: positiveCount,
+			MixedCount:    mixedCount,
+			NegativeCount: negativeCount,
+			TotalCount:    len(feedbackList),
+		},
 	}
 	v := layout.Handler(View(viewModel), layout.Head{})
 	v.ServeHTTP(w, r)
