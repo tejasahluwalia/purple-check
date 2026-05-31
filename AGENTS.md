@@ -12,7 +12,6 @@ Primary entrypoint: `cmd/main.go`.
 
 - `cmd/main.go`: starts the app, initializes the Instagram conversation cache, sets the Instagram persistent menu, opens the SQLite database, wires repositories, creates the messaging router, registers routes, wraps middleware, and starts `http.ListenAndServe`.
 - `internal/config`: loads `.env` through `godotenv` and exposes package-level config variables. Tests get placeholder values instead of requiring `.env`.
-- `internal/database`: opens a local SQLite database at `LOCAL_DB_PATH` via `modernc.org/sqlite`; exposes `InitDb` and a nil-safe `Close` helper.
 - `internal/models`: contains database repositories for feedback and message logs, plus Instagram webhook payload structs.
 - `internal/messaging`: contains the Instagram API client, message request structs, persistent menu setup, user lookup, in-memory conversation cache, and review-flow state machine.
 - `internal/routes`: contains HTTP handlers and page templates.
@@ -27,7 +26,7 @@ Startup sequence:
 
 1. `messaging.InitConversations()` creates the in-memory user-state cache.
 2. `messaging.SetPersistentMenu()` calls the Instagram Graph API to configure the persistent menu and ice breaker.
-3. `database.InitDb()` opens the local SQLite database and returns a `*sql.DB`.
+3. `cmd/main.go` opens the local SQLite database via `sql.Open` and returns a `*sql.DB`.
 4. `FeedbackModel` and `MessageLogModel` are created around the DB.
 5. `AppSettingModel` is created around the DB and wrapped in a 24-hour in-memory Instagram token cache.
 6. `messaging.NewRouter()` receives the repositories and token store.
@@ -85,7 +84,7 @@ There are no migrations in this repo. Do not assume schema management exists unl
 
 Expected schema from `internal/models/models.go`:
 
-- `feedback(id, giver, receiver, rating, giver_role, receiver_role, deal_stage, comment, created_at)`
+- `feedback(id, giver, receiver, rating, giver_role, receiver_role, deal_stage, comment, platform, medium, source, created_at, updated_at)`
 - unique constraint on `feedback(giver, receiver)`
 - `user_message_logs(user_id, message, stage, created_at)`
 - `app_settings(key, value, updated_at)`
@@ -107,8 +106,9 @@ Recognized `.env` keys:
 - `HOST`
 - `DEV`
 - `INSTAGRAM_API_VERSION`
+- `SCORING_ALGORITHM`
 
-`DEV` defaults to `false` if omitted. `INSTAGRAM_API_VERSION` defaults to `v25.0` if omitted. `ADMIN_TOKEN` defaults to empty, but the refresh endpoint returns unauthorized unless it is configured. During tests, missing keys use `"test"` except for those defaults.
+`DEV` defaults to `false` if omitted. `INSTAGRAM_API_VERSION` defaults to `v25.0` if omitted. `SCORING_ALGORITHM` defaults to `wilson` (supports `wilson`, `bayesian`, `dirichlet`). `ADMIN_TOKEN` defaults to empty, but the refresh endpoint returns unauthorized unless it is configured. During tests, missing keys use `"test"` except for those defaults.
 
 Do not commit real `.env` or `.env.prod` values. They are ignored.
 
@@ -171,6 +171,8 @@ Avoid tests that require real Instagram credentials or a live database. The exis
 - Instagram Graph API routes use `config.INSTAGRAM_API_VERSION`.
 - The CSP middleware sets default, script, style, image, font, connect, base-uri, form-action, frame-ancestor, and object directives.
 - Local database files under `data/`, build output under `tmp/`, env files, and the `purple-check` binary should stay untracked.
+- Usernames are normalized to lowercase in `internal/models/models.go` operations via `helpers.NormalizeUsername` to ensure case-insensitive routing/queries work reliably in SQLite.
+- Scoring algorithm calculations are selected dynamically using `config.SCORING_ALGORITHM` in `internal/models/scoring.go`.
 
 ## Coding Conventions
 

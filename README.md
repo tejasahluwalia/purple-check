@@ -31,7 +31,6 @@ cmd/main.go                         Application entrypoint and route wiring
 internal/cache/                     Generic in-memory cache used for DM state
 internal/components/                Shared templ UI components
 internal/config/                    Environment variable loading
-internal/database/                  SQLite database initialization
 internal/helpers/                   Instagram username normalization/validation
 internal/layout/                    Global page shell, metadata, header, footer
 internal/messaging/                 Instagram DM state machine and API client
@@ -54,7 +53,7 @@ Files ending in `_templ.go` are generated from `.templ` files. Edit the `.templ`
 
 1. `GET /` renders the homepage and search form.
 2. `POST /search` reads `search-term`, normalizes and validates it as an Instagram username, then redirects to `/profile/{username}`.
-3. `GET /profile/{username}` queries the local SQLite database for feedback where `receiver = username`, and renders the public profile page.
+3. `GET /profile/{username}` queries the local SQLite database for feedback where `receiver = username` (normalized to lowercase to ensure case-insensitivity), and renders the public profile page.
 4. The profile page links to Instagram with a `ref=username` query string so users can leave feedback for that account.
 
 ### Instagram DM Review Flow
@@ -100,6 +99,7 @@ PORT=
 HOST=
 DEV=false
 INSTAGRAM_API_VERSION=v25.0
+SCORING_ALGORITHM=wilson
 ```
 
 Notes:
@@ -117,12 +117,12 @@ The code expects the SQLite schema to already exist. There are no migrations in 
 
 Expected tables:
 
-- `feedback` with at least `id`, `giver`, `receiver`, `rating`, `giver_role`, `receiver_role`, `deal_stage`, `comment`, and `created_at`.
+- `feedback` with at least `id`, `giver`, `receiver`, `rating`, `giver_role`, `receiver_role`, `deal_stage`, `comment`, `platform`, `medium`, `source`, `created_at`, and `updated_at`.
 - `feedback` must have a unique constraint on `(giver, receiver)` for the upsert path.
 - `user_message_logs` with `user_id`, `message`, `stage`, and `created_at`.
 - `app_settings` with `key`, `value`, and `updated_at`; the Instagram token is stored at key `instagram_account_token`.
 
-`database.InitDb()` opens a local SQLite database via `sql.Open("sqlite", ...)` and returns a `*sql.DB`. Reads and writes operate directly against the local database — there is no remote sync.
+The database is opened directly via `sql.Open("sqlite", ...)` in `cmd/main.go` and returns a `*sql.DB`. Reads and writes operate directly against the local database — there is no remote sync. Usernames are automatically normalized to lowercase before database operations to allow case-insensitive matches.
 
 Seed the Instagram token with:
 
@@ -182,6 +182,8 @@ Current tests cover:
 - Messaging payload parsing and role/rating helpers.
 - Instagram webhook event filtering and routing.
 - Profile handler username normalization, validation, repository usage, and render behavior on repository errors.
+- FeedbackModel database operations and username normalization logic.
+- Scoring algorithms calculations (Wilson, Bayesian, Dirichlet).
 
 ## Operational Notes
 
