@@ -351,7 +351,7 @@ func parseRatingPayload(payload string) (models.FeedbackSentiment, string, error
 	if len(parts) != 3 || parts[0] != "RATING" {
 		return "", "", errors.New("Invalid payload")
 	}
-	if parts[1] != string(models.PositiveFeedback) && parts[1] != string(models.NegativeFeedback) && parts[1] != string(models.MixedFeedback) {
+	if parts[1] != string(models.PositiveFeedback) && parts[1] != string(models.NegativeFeedback) {
 		return "", "", errors.New("Invalid payload")
 	}
 	username := helpers.NormalizeUsername(parts[2])

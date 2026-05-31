@@ -29,6 +29,7 @@ func init() {
 		"HOST",
 		"DEV",
 		"INSTAGRAM_API_VERSION",
+		"SCORING_ALGORITHM",
 	}
 
 	for _, key := range expected_keys {
@@ -40,6 +41,8 @@ func init() {
 				config[key] = "v25.0"
 			} else if key == "ADMIN_TOKEN" {
 				config[key] = ""
+			} else if key == "SCORING_ALGORITHM" {
+				config[key] = "wilson"
 			} else if runningTests {
 				config[key] = "test"
 			} else {
@@ -57,6 +60,7 @@ func init() {
 	PORT = config["PORT"]
 	DEV = config["DEV"] == "true"
 	INSTAGRAM_API_VERSION = config["INSTAGRAM_API_VERSION"]
+	SCORING_ALGORITHM = config["SCORING_ALGORITHM"]
 }
 
 var APP_ID string
@@ -68,3 +72,4 @@ var PORT string
 var LOCAL_DB_PATH string
 var DEV bool
 var INSTAGRAM_API_VERSION string
+var SCORING_ALGORITHM string

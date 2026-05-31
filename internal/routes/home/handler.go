@@ -39,12 +39,12 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	slices.SortFunc(receiverStats, func(a, b models.ReceiverStats) int {
 		return cmp.Compare(b.Score, a.Score)
 	})
-	vm.receivers.MostPositive = slices.Clone(receiverStats[:20])
+	vm.receivers.MostPositive = slices.Clone(receiverStats[:8])
 
 	slices.SortFunc(receiverStats, func(a, b models.ReceiverStats) int {
 		return cmp.Compare(1-b.Score, 1-a.Score)
 	})
-	vm.receivers.MostNegative = slices.Clone(receiverStats[:20])
+	vm.receivers.MostNegative = slices.Clone(receiverStats[:8])
 	v := layout.Handler(View(vm), layout.Head{
 		Title: "Instagram Shop Reviews on Purple Check",
 	})

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"purple-check/internal/helpers"
 )
 
 type DealStage string
@@ -113,6 +114,10 @@ func (m *FeedbackModel) InsertOrUpdateOne(ctx context.Context, input FeedbackInp
 	if db == nil {
 		return fmt.Errorf("feedback model database connection is nil")
 	}
+
+	input.Giver = helpers.NormalizeUsername(input.Giver)
+	input.Receiver = helpers.NormalizeUsername(input.Receiver)
+
 	stmt, err := db.PrepareContext(ctx, `INSERT INTO feedback
 		(giver, receiver, rating, giver_role, receiver_role, deal_stage, comment, platform, medium, source)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -144,8 +149,16 @@ func (m *FeedbackModel) GetAll(ctx context.Context, username string, feedbackRol
 	}
 	var feedbackList []Feedback
 
-	// TODO: Implement branch for feedbackRole
-	stmt, err := db.PrepareContext(ctx, "SELECT id, giver, receiver, rating, giver_role, receiver_role, COALESCE(deal_stage, ''), COALESCE(comment, ''), platform, medium, source, created_at FROM feedback WHERE receiver = ? ORDER BY created_at DESC")
+	username = helpers.NormalizeUsername(username)
+
+	var query string
+	if feedbackRole == FeedbackRoleGiver {
+		query = "SELECT id, giver, receiver, rating, giver_role, receiver_role, COALESCE(deal_stage, ''), COALESCE(comment, ''), platform, medium, source, created_at FROM feedback WHERE giver = ? ORDER BY created_at DESC"
+	} else {
+		query = "SELECT id, giver, receiver, rating, giver_role, receiver_role, COALESCE(deal_stage, ''), COALESCE(comment, ''), platform, medium, source, created_at FROM feedback WHERE receiver = ? ORDER BY created_at DESC"
+	}
+
+	stmt, err := db.PrepareContext(ctx, query)
 	if err != nil {
 		return []Feedback{}, err
 	}
@@ -200,7 +213,7 @@ func (m *FeedbackModel) GetAllReceivers(ctx context.Context) ([]ReceiverStats, e
 		if err := rows.Scan(&s.Username, &s.TotalCount, &s.PositiveCount, &s.NegativeCount, &s.MixedCount); err != nil {
 			return nil, fmt.Errorf("scan all receivers: %w", err)
 		}
-		s.Score = WilsonLowerBound(s.PositiveCount, s.PositiveCount+s.NegativeCount)
+		s.Score = CalculateScore(s.PositiveCount, s.MixedCount, s.NegativeCount)
 		result = append(result, s)
 	}
 	if err := rows.Err(); err != nil {
@@ -214,6 +227,7 @@ func (m *FeedbackModel) DeleteOne(ctx context.Context, userID string, feedbackID
 	if db == nil {
 		return fmt.Errorf("feedback model database connection is nil")
 	}
+	userID = helpers.NormalizeUsername(userID)
 	if _, err := db.ExecContext(ctx, "DELETE FROM feedback WHERE receiver = ? AND id = ?", userID, feedbackID); err != nil {
 		return fmt.Errorf("delete feedback: %w", err)
 	}
@@ -225,6 +239,7 @@ func (m *FeedbackModel) DeleteAll(ctx context.Context, userID string) error {
 	if db == nil {
 		return fmt.Errorf("feedback model database connection is nil")
 	}
+	userID = helpers.NormalizeUsername(userID)
 	if _, err := db.ExecContext(ctx, "DELETE FROM feedback WHERE receiver = ?", userID); err != nil {
 		return fmt.Errorf("delete all feedback: %w", err)
 	}
