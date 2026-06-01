@@ -1,10 +1,7 @@
-package components
+package tw
 
 import (
-	"fmt"
 	"maps"
-
-	"math/rand"
 
 	"github.com/a-h/templ"
 
@@ -13,13 +10,13 @@ import (
 
 // TwMerge combines Tailwind classes and resolves conflicts.
 // Example: "bg-red-500 hover:bg-blue-500", "bg-green-500" → "hover:bg-blue-500 bg-green-500"
-func TwMerge(classes ...string) string {
+func Merge(classes ...string) string {
 	return twmerge.Merge(classes...)
 }
 
 // TwIf returns value if condition is true, otherwise an empty value of type T.
 // Example: true, "bg-red-500" → "bg-red-500"
-func TwIf[T comparable](condition bool, value T) T {
+func If[T comparable](condition bool, value T) T {
 	var empty T
 	if condition {
 		return value
@@ -29,7 +26,7 @@ func TwIf[T comparable](condition bool, value T) T {
 
 // TwIfElse returns trueValue if condition is true, otherwise falseValue.
 // Example: true, "bg-red-500", "bg-gray-300" → "bg-red-500"
-func TwIfElse[T any](condition bool, trueValue T, falseValue T) T {
+func IfElse[T any](condition bool, trueValue T, falseValue T) T {
 	if condition {
 		return trueValue
 	}
@@ -44,10 +41,4 @@ func MergeAttributes(attrs ...templ.Attributes) templ.Attributes {
 		maps.Copy(merged, attr)
 	}
 	return merged
-}
-
-// RandomID generates a random ID string.
-// Example: RandomID() → "id-123456"
-func randomID() string {
-	return fmt.Sprintf("id-%d", rand.Intn(1000000))
 }

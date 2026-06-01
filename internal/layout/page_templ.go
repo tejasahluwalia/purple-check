@@ -57,7 +57,7 @@ func ThemeSwitcherScript() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\">\n\t\t\t// Initial theme setup\n\t\t\tdocument.documentElement.classList.toggle('dark', localStorage.getItem('appTheme') === 'dark');\n\n\t\t\tdocument.addEventListener('alpine:init', () => {\n\t\t\t\tAlpine.data('themeHandler', () => ({\n\t\t\t\t\tisDark: localStorage.getItem('appTheme') === 'dark',\n\t\t\t\t\tthemeClasses() {\n\t\t\t\t\t\treturn this.isDark ? 'text-white' : 'bg-white text-black'\n\t\t\t\t\t},\n\t\t\t\t\ttoggleTheme() {\n\t\t\t\t\t\tthis.isDark = !this.isDark;\n\t\t\t\t\t\tlocalStorage.setItem('appTheme', this.isDark ? 'dark' : 'light');\n\t\t\t\t\t\tdocument.documentElement.classList.toggle('dark', this.isDark);\n\t\t\t\t\t}\n\t\t\t\t}))\n\t\t\t})\n\t\t</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\">\n\t\t\t// Initial theme setup\n\t\t\tconst isDark = localStorage.getItem('theme') === 'dark'\n\t\t\t\t|| (!(\"theme\" in localStorage) && window.matchMedia(\"(prefers-color-scheme: dark)\").matches);\n\t\t\tdocument.documentElement.classList.toggle('dark', isDark);\n\n\t\t\t// Synchronize toggle icons when DOM content is loaded\n\t\t\tdocument.addEventListener('DOMContentLoaded', () => {\n\t\t\t\tconst themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');\n\t\t\t\tconst themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');\n\t\t\t\tconst themeToggleBtn = document.getElementById('theme-toggle');\n\n\t\t\t\tif (!themeToggleBtn) return;\n\n\t\t\t\t// Toggle icon visibility based on current theme\n\t\t\t\tif (document.documentElement.classList.contains('dark')) {\n\t\t\t\t\tthemeToggleLightIcon.classList.remove('hidden');\n\t\t\t\t} else {\n\t\t\t\t\tthemeToggleDarkIcon.classList.remove('hidden');\n\t\t\t\t}\n\n\t\t\t\tthemeToggleBtn.addEventListener('click', () => {\n\t\t\t\t\t// Toggle icons\n\t\t\t\t\tthemeToggleDarkIcon.classList.toggle('hidden');\n\t\t\t\t\tthemeToggleLightIcon.classList.toggle('hidden');\n\n\t\t\t\t\t// Toggle class and store preference\n\t\t\t\t\tif (document.documentElement.classList.contains('dark')) {\n\t\t\t\t\t\tdocument.documentElement.classList.remove('dark');\n\t\t\t\t\t\tlocalStorage.setItem('theme', 'light');\n\t\t\t\t\t} else {\n\t\t\t\t\t\tdocument.documentElement.classList.add('dark');\n\t\t\t\t\t\tlocalStorage.setItem('theme', 'dark');\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t});\n\t\t</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -105,7 +105,7 @@ func Page(body templ.Component, head Head) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(head.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 41, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 60, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -123,7 +123,7 @@ func Page(body templ.Component, head Head) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(head.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 43, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 62, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 			if templ_7745c5c3_Err != nil {
@@ -141,7 +141,7 @@ func Page(body templ.Component, head Head) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(config.APP_ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 45, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 64, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 		if templ_7745c5c3_Err != nil {
@@ -154,7 +154,7 @@ func Page(body templ.Component, head Head) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(head.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 46, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 65, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
 		if templ_7745c5c3_Err != nil {
@@ -172,7 +172,7 @@ func Page(body templ.Component, head Head) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(head.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 48, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 67, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 			if templ_7745c5c3_Err != nil {
@@ -190,7 +190,7 @@ func Page(body templ.Component, head Head) templ.Component {
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(head.URL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 51, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 70, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
 		if templ_7745c5c3_Err != nil {
@@ -203,7 +203,7 @@ func Page(body templ.Component, head Head) templ.Component {
 		var templ_7745c5c3_Var11 templ.SafeURL
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(head.URL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 53, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 72, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -248,7 +248,7 @@ func Page(body templ.Component, head Head) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.GetNonce(ctx))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 73, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/layout/page.templ`, Line: 92, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 		if templ_7745c5c3_Err != nil {
@@ -283,7 +283,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var13 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<header><div class=\"flex py-4 justify-between items-center container mx-auto px-4 max-w-(--breakpoint-md)\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-purple-700 dark:text-purple-400 leading-none\">Purple Check</span></a></div></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<header><div class=\"flex py-4 justify-between items-center container mx-auto px-4 max-w-(--breakpoint-md)\"><div class=\"flex items-center h-full\"><a class=\"flex items-center justify-center\" href=\"/\"><img class=\"h-8 w-8 mr-4\" src=\"/static/purple-check-logo.svg\" alt=\"The Purple Check logo\"> <span class=\"text-lg font-bold text-accent-foreground leading-none\">Purple Check</span></a></div><div><button id=\"theme-toggle\" type=\"button\" class=\"text-muted-foreground hover:text-foreground focus:outline-hidden rounded-lg p-2.5 text-sm transition-colors cursor-pointer\" aria-label=\"Toggle dark mode\"><!-- Sun icon (visible in dark mode) --><svg id=\"theme-toggle-light-icon\" class=\"hidden h-5 w-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z\"></path></svg><!-- Moon icon (visible in light mode) --><svg id=\"theme-toggle-dark-icon\" class=\"hidden h-5 w-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z\"></path></svg></button></div></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -312,7 +312,7 @@ func Footer() templ.Component {
 			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<footer class=\"bg-foreground text-primary-foreground mt-16\"><div class=\"px-4 py-8 container mx-auto max-w-(--breakpoint-md)\"><nav class=\"flex flex-col gap-8 md:flex-row md:justify-between\"><div class=\"mb-4\"><div class=\"font-bold text-lg mb-2\">Purple Check</div><a href=\"mailto:contact@purple-check.org\" class=\"text-sm underline\">contact@purple-check.org</a></div><ul class=\"space-y-4 text-sm font-semibold\"><li><a href=\"/privacy-policy\">Privacy Policy</a></li><li><a href=\"/terms-of-service\">Terms of Service</a></li><li><a href=\"/delete-my-data\">Delete my data</a></li></ul></nav></div></footer>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<footer class=\"mt-16\"><div class=\"px-4 py-8 container mx-auto max-w-(--breakpoint-md)\"><nav class=\"flex flex-col gap-8 md:flex-row md:justify-between\"><div class=\"mb-4\"><div class=\"font-bold text-lg mb-2\">Purple Check</div><a href=\"mailto:contact@purple-check.org\" class=\"text-sm underline\">contact@purple-check.org</a></div><ul class=\"space-y-4 text-sm font-semibold\"><li><a href=\"/privacy-policy\">Privacy Policy</a></li><li><a href=\"/terms-of-service\">Terms of Service</a></li><li><a href=\"/delete-my-data\">Delete my data</a></li></ul></nav></div></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

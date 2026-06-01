@@ -61,7 +61,7 @@ func Alert(props ...Props) templ.Component {
 		if len(props) > 0 {
 			p = props[0]
 		}
-		var templ_7745c5c3_Var2 = []any{components.TwMerge(
+		var templ_7745c5c3_Var2 = []any{tw.Merge(
 			"relative w-full rounded-lg border px-4 py-3 text-sm",
 			"grid has-[>svg]:grid-cols-[1rem_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start",
 			"[&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
@@ -158,7 +158,7 @@ func Title(props ...TitleProps) templ.Component {
 		if len(props) > 0 {
 			p = props[0]
 		}
-		var templ_7745c5c3_Var6 = []any{components.TwMerge(
+		var templ_7745c5c3_Var6 = []any{tw.Merge(
 			"col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
 			p.Class,
 		),
@@ -252,7 +252,7 @@ func Description(props ...DescriptionProps) templ.Component {
 		if len(props) > 0 {
 			p = props[0]
 		}
-		var templ_7745c5c3_Var10 = []any{components.TwMerge(
+		var templ_7745c5c3_Var10 = []any{tw.Merge(
 			"text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
 			p.Class,
 		),

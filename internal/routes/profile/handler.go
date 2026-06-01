@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"purple-check/internal/helpers"
@@ -60,8 +61,11 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 			MixedCount:    mixedCount,
 			NegativeCount: negativeCount,
 			TotalCount:    len(feedbackList),
+			Score:         models.CalculateScore(positiveCount, mixedCount, negativeCount),
 		},
 	}
-	v := layout.Handler(View(viewModel), layout.Head{})
+	v := layout.Handler(View(viewModel), layout.Head{
+		Title: fmt.Sprintf("@%s rated %.0f on Purple Check", username, viewModel.ReceiverStats.Score*100),
+	})
 	v.ServeHTTP(w, r)
 }

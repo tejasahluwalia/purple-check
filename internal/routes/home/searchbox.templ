@@ -1,5 +1,8 @@
 package home
 
+import "purple-check/internal/components/button"
+import "purple-check/internal/components/input"
+
 var validateInstagramUsername = templ.NewOnceHandle()
 
 templ SearchBox() {
@@ -7,25 +10,28 @@ templ SearchBox() {
 		<label for="search-term" class="block font-medium">Search for a user to see reviews</label>
 		<div class="flex flex-col w-full space-y-4 mt-1 relative">
 			<div class="relative">
-				<input
-					placeholder="@username"
-					autocapitalize="none"
-					class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-purple-600 sm:text-sm/6"
-					type="text"
-					name="search-term"
-					id="search-term"
-					required
-				/>
+				{{
+					searchInput := input.Props{
+						ID:          "search-term",
+						Name:        "search-term",
+						Type:        input.TypeText,
+						Placeholder: "@username",
+						Required:    true,
+					}
+				}}
+				@input.Input(searchInput)
 				<p id="error-message" class="hidden text-red-500 text-sm mt-1"></p>
 			</div>
-			<input
-				class="rounded-md bg-purple-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:not-disabled:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-colors"
-				type="submit"
-				id="search-button"
-				value="Search"
-				aria-label="Search for an Instagram user."
-				disabled
-			/>
+			{{
+				searchButton := button.Props{
+					Type:     button.TypeSubmit,
+					ID:       "search-button",
+					Disabled: true,
+				}
+			}}
+			@button.Button(searchButton) {
+				Search
+			}
 		</div>
 	</form>
 	<script nonce={ templ.GetNonce(ctx) }>
@@ -46,12 +52,15 @@ templ SearchBox() {
             const allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._";
             const hasConsecutivePeriods = /\.{2,}/.test(username);
 
-            return username.length >= 3 &&
+            return username.length == 0 ||
+            (
+                   username.length >= 3 &&
                    username.length <= 30 &&
                    !username.startsWith('.') &&
                    !username.endsWith('.') &&
                    !hasConsecutivePeriods &&
-                   [...username].every(char => allowedCharacters.includes(char));
+                   [...username].every(char => allowedCharacters.includes(char))
+            );
         }
 
         input.addEventListener('input', function(e) {

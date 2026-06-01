@@ -17,7 +17,7 @@ templ FeedbackList(feedbackList []models.Feedback) {
 						</p>
 					</div>
 					<div class="flex space-x-2 items-baseline">
-						<h3 class="font-medium text-primary">
+						<h3 class="font-medium">
 							<a href={ templ.URL("/profile/" + feedback.Giver) }>{ feedback.Giver }</a>
 						</h3>
 						<span>

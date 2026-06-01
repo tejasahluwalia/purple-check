@@ -31,6 +31,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 		source TEXT DEFAULT 'DM' NOT NULL
 	);
 	CREATE UNIQUE INDEX idx_feedback ON feedback (giver, receiver);
+	CREATE INDEX idx_feedback_receiver_rating ON feedback (receiver, rating);
 	`
 	if _, err := db.Exec(schema); err != nil {
 		db.Close()

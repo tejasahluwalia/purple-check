@@ -39,7 +39,7 @@ templ Alert(props ...Props) {
 		}
 		data-slot="alert"
 		class={
-			components.TwMerge(
+			tw.Merge(
 				"relative w-full rounded-lg border px-4 py-3 text-sm",
 				"grid has-[>svg]:grid-cols-[1rem_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start",
 				"[&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
@@ -65,7 +65,7 @@ templ Title(props ...TitleProps) {
 		}
 		data-slot="alert-title"
 		class={
-			components.TwMerge(
+			tw.Merge(
 				"col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
 				p.Class,
 			),
@@ -87,7 +87,7 @@ templ Description(props ...DescriptionProps) {
 		}
 		data-slot="alert-description"
 		class={
-			components.TwMerge(
+			tw.Merge(
 				"text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
 				p.Class,
 			),

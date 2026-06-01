@@ -8,6 +8,9 @@ package home
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "purple-check/internal/components/button"
+import "purple-check/internal/components/input"
+
 var validateInstagramUsername = templ.NewOnceHandle()
 
 func SearchBox() templ.Component {
@@ -31,20 +34,66 @@ func SearchBox() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<form action=\"/search\" method=\"post\" class=\"block\" id=\"search-form\"><label for=\"search-term\" class=\"block font-medium\">Search for a user to see reviews</label><div class=\"flex flex-col w-full space-y-4 mt-1 relative\"><div class=\"relative\"><input placeholder=\"@username\" autocapitalize=\"none\" class=\"block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-purple-600 sm:text-sm/6\" type=\"text\" name=\"search-term\" id=\"search-term\" required><p id=\"error-message\" class=\"hidden text-red-500 text-sm mt-1\"></p></div><input class=\"rounded-md bg-purple-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:not-disabled:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-colors\" type=\"submit\" id=\"search-button\" value=\"Search\" aria-label=\"Search for an Instagram user.\" disabled></div></form><script nonce=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<form action=\"/search\" method=\"post\" class=\"block\" id=\"search-form\"><label for=\"search-term\" class=\"block font-medium\">Search for a user to see reviews</label><div class=\"flex flex-col w-full space-y-4 mt-1 relative\"><div class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.GetNonce(ctx))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/home/searchbox.templ`, Line: 31, Col: 36}
+		searchInput := input.Props{
+			ID:          "search-term",
+			Name:        "search-term",
+			Type:        input.TypeText,
+			Placeholder: "@username",
+			Required:    true,
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var2)
+		templ_7745c5c3_Err = input.Input(searchInput).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\">\n        const form = document.getElementById('search-form');\n        const input = document.getElementById('search-term');\n        const button = document.getElementById('search-button');\n        const errorMessage = document.getElementById('error-message');\n\n        function validateInstagramUsername(username) {\n            // Remove a leading @ if present\n            username = username.startsWith('@') ? username.slice(1) : username;\n\n            // Instagram username rules:\n            // 1. 3-30 characters\n            // 2. Can contain letters, numbers, periods, and underscores\n            // 3. Can't start or end with a period\n            // 4. Can't have consecutive periods\n            const allowedCharacters = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._\";\n            const hasConsecutivePeriods = /\\.{2,}/.test(username);\n\n            return username.length >= 3 &&\n                   username.length <= 30 &&\n                   !username.startsWith('.') &&\n                   !username.endsWith('.') &&\n                   !hasConsecutivePeriods &&\n                   [...username].every(char => allowedCharacters.includes(char));\n        }\n\n        input.addEventListener('input', function(e) {\n            const username = input.value.trim();\n\n            if (!validateInstagramUsername(username)) {\n                errorMessage.textContent = 'Please enter a valid Instagram username (3-30 characters, letters, numbers, periods, or underscores only).';\n                errorMessage.classList.remove('hidden');\n                input.classList.remove('ring-slate-300');\n                input.classList.add('ring-red-500');\n                button.disabled = true;\n            } else {\n                errorMessage.classList.add('hidden');\n                input.classList.remove('ring-red-500');\n                input.classList.add('ring-slate-300');\n                button.disabled = false;\n            }\n        });\n    </script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p id=\"error-message\" class=\"hidden text-red-500 text-sm mt-1\"></p></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		searchButton := button.Props{
+			Type:     button.TypeSubmit,
+			ID:       "search-button",
+			Disabled: true,
+		}
+		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+			if !templ_7745c5c3_IsBuffer {
+				defer func() {
+					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err == nil {
+						templ_7745c5c3_Err = templ_7745c5c3_BufErr
+					}
+				}()
+			}
+			ctx = templ.InitializeContext(ctx)
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "Search")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			return nil
+		})
+		templ_7745c5c3_Err = button.Button(searchButton).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></form><script nonce=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.GetNonce(ctx))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/home/searchbox.templ`, Line: 37, Col: 36}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\">\n        const form = document.getElementById('search-form');\n        const input = document.getElementById('search-term');\n        const button = document.getElementById('search-button');\n        const errorMessage = document.getElementById('error-message');\n\n        function validateInstagramUsername(username) {\n            // Remove a leading @ if present\n            username = username.startsWith('@') ? username.slice(1) : username;\n\n            // Instagram username rules:\n            // 1. 3-30 characters\n            // 2. Can contain letters, numbers, periods, and underscores\n            // 3. Can't start or end with a period\n            // 4. Can't have consecutive periods\n            const allowedCharacters = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._\";\n            const hasConsecutivePeriods = /\\.{2,}/.test(username);\n\n            return username.length == 0 ||\n            (\n                   username.length >= 3 &&\n                   username.length <= 30 &&\n                   !username.startsWith('.') &&\n                   !username.endsWith('.') &&\n                   !hasConsecutivePeriods &&\n                   [...username].every(char => allowedCharacters.includes(char))\n            );\n        }\n\n        input.addEventListener('input', function(e) {\n            const username = input.value.trim();\n\n            if (!validateInstagramUsername(username)) {\n                errorMessage.textContent = 'Please enter a valid Instagram username (3-30 characters, letters, numbers, periods, or underscores only).';\n                errorMessage.classList.remove('hidden');\n                input.classList.remove('ring-slate-300');\n                input.classList.add('ring-red-500');\n                button.disabled = true;\n            } else {\n                errorMessage.classList.add('hidden');\n                input.classList.remove('ring-red-500');\n                input.classList.add('ring-slate-300');\n                button.disabled = false;\n            }\n        });\n    </script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

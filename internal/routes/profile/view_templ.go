@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"net/url"
+	"purple-check/internal/components/button"
 	"purple-check/internal/models"
 )
 
@@ -47,14 +48,14 @@ func View(vm ViewModel) templ.Component {
 		instagramURL := "https://www.instagram.com/" + url.PathEscape(username)
 		refValues := url.Values{"ref": []string{username}}
 		feedbackURL := "https://ig.me/m/purplecheck_org?" + refValues.Encode()
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex items-center gap-4\"><h1 class=\"text-2xl font-bold bg-purple-100 text-purple-950 px-3 py-2 rounded-lg break-all text-wrap flex\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex items-center gap-4\"><h1 class=\"text-2xl font-bold bg-primary text-primary-foreground px-3 py-2 rounded-lg break-all text-wrap flex\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("@" + username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/view.templ`, Line: 22, Col: 126}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/view.templ`, Line: 23, Col: 131}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -67,26 +68,45 @@ func View(vm ViewModel) templ.Component {
 		var templ_7745c5c3_Var3 templ.SafeURL
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(instagramURL))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/view.templ`, Line: 23, Col: 119}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/view.templ`, Line: 24, Col: 119}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"><img class=\"h-12 w-12 p-3\" src=\"/static/Instagram_Glyph_Black.svg\" alt=\"The Instagram logo\"></a></div><div class=\"flex justify-center my-8\"><a class=\"border border-purple-400 font-semibold text-purple-950 rounded-lg w-full shadow-sm px-4 py-2 text-center transition-colors hover:bg-purple-50 active:bg-purple-50\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"><img class=\"h-12 w-12 p-3 dark:hidden\" src=\"/static/Instagram_Glyph_Black.svg\" alt=\"The Instagram logo\"> <img class=\"h-12 w-12 p-3 hidden dark:flex\" src=\"/static/Instagram_Glyph_White.svg\" alt=\"The Instagram logo\"></a></div><div class=\"flex justify-center my-8\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 templ.SafeURL
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(feedbackURL))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/routes/profile/view.templ`, Line: 30, Col: 33}
+		feedbackButton := button.Props{
+			Href:      templ.URL(feedbackURL),
+			Variant:   button.VariantOutline,
+			Target:    "_blank",
+			FullWidth: true,
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		templ_7745c5c3_Var4 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+			if !templ_7745c5c3_IsBuffer {
+				defer func() {
+					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err == nil {
+						templ_7745c5c3_Err = templ_7745c5c3_BufErr
+					}
+				}()
+			}
+			ctx = templ.InitializeContext(ctx)
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "Leave feedback for this user")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			return nil
+		})
+		templ_7745c5c3_Err = button.Button(feedbackButton).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" target=\"_blank\">Leave feedback for this user</a></div><div class=\"my-4\"><h2 class=\"text-xl mb-4 font-bold tracking-tight\">Feedback received</h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><div class=\"my-4\"><h2 class=\"text-xl mb-4 font-bold tracking-tight\">Feedback received</h2>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -94,7 +114,7 @@ func View(vm ViewModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

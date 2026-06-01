@@ -7,21 +7,40 @@ templ ThemeSwitcherScript() {
 	@handle.Once() {
 		<script nonce={ templ.GetNonce(ctx) }>
 			// Initial theme setup
-			document.documentElement.classList.toggle('dark', localStorage.getItem('appTheme') === 'dark');
+			const isDark = localStorage.getItem('theme') === 'dark'
+				|| (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+			document.documentElement.classList.toggle('dark', isDark);
 
-			document.addEventListener('alpine:init', () => {
-				Alpine.data('themeHandler', () => ({
-					isDark: localStorage.getItem('appTheme') === 'dark',
-					themeClasses() {
-						return this.isDark ? 'text-white' : 'bg-white text-black'
-					},
-					toggleTheme() {
-						this.isDark = !this.isDark;
-						localStorage.setItem('appTheme', this.isDark ? 'dark' : 'light');
-						document.documentElement.classList.toggle('dark', this.isDark);
+			// Synchronize toggle icons when DOM content is loaded
+			document.addEventListener('DOMContentLoaded', () => {
+				const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+				const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+				const themeToggleBtn = document.getElementById('theme-toggle');
+
+				if (!themeToggleBtn) return;
+
+				// Toggle icon visibility based on current theme
+				if (document.documentElement.classList.contains('dark')) {
+					themeToggleLightIcon.classList.remove('hidden');
+				} else {
+					themeToggleDarkIcon.classList.remove('hidden');
+				}
+
+				themeToggleBtn.addEventListener('click', () => {
+					// Toggle icons
+					themeToggleDarkIcon.classList.toggle('hidden');
+					themeToggleLightIcon.classList.toggle('hidden');
+
+					// Toggle class and store preference
+					if (document.documentElement.classList.contains('dark')) {
+						document.documentElement.classList.remove('dark');
+						localStorage.setItem('theme', 'light');
+					} else {
+						document.documentElement.classList.add('dark');
+						localStorage.setItem('theme', 'dark');
 					}
-				}))
-			})
+				});
+			});
 		</script>
 	}
 }
@@ -84,15 +103,32 @@ templ Header() {
 			<div class="flex items-center h-full">
 				<a class="flex items-center justify-center" href="/">
 					<img class="h-8 w-8 mr-4" src="/static/purple-check-logo.svg" alt="The Purple Check logo"/>
-					<span class="text-lg font-bold text-purple-700 dark:text-purple-400 leading-none">Purple Check</span>
+					<span class="text-lg font-bold text-accent-foreground leading-none">Purple Check</span>
 				</a>
+			</div>
+			<div>
+				<button
+					id="theme-toggle"
+					type="button"
+					class="text-muted-foreground hover:text-foreground focus:outline-hidden rounded-lg p-2.5 text-sm transition-colors cursor-pointer"
+					aria-label="Toggle dark mode"
+				>
+					<!-- Sun icon (visible in dark mode) -->
+					<svg id="theme-toggle-light-icon" class="hidden h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+					</svg>
+					<!-- Moon icon (visible in light mode) -->
+					<svg id="theme-toggle-dark-icon" class="hidden h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+					</svg>
+				</button>
 			</div>
 		</div>
 	</header>
 }
 
 templ Footer() {
-	<footer class="bg-foreground text-primary-foreground mt-16">
+	<footer class="mt-16">
 		<div class="px-4 py-8 container mx-auto max-w-(--breakpoint-md)">
 			<nav class="flex flex-col gap-8 md:flex-row md:justify-between">
 				<div class="mb-4">
