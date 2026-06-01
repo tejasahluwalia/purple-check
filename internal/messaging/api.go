@@ -26,6 +26,7 @@ type Sender interface {
 	SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error
 	SendSenderAction(ctx context.Context, action string, userID string) error
 	UsernameFromUserID(ctx context.Context, userID string) (string, error)
+	UsernameFromMedia(ctx context.Context, igMediaID string) (string, error)
 }
 
 type AccountTokenReader interface {
@@ -38,6 +39,15 @@ type InstagramSender struct {
 
 func (sender InstagramSender) UsernameFromUserID(ctx context.Context, userID string) (string, error) {
 	return getUsernameFromUserID(ctx, sender.Tokens, userID)
+}
+
+func (sender InstagramSender) UsernameFromMedia(ctx context.Context, igMediaID string) (string, error) {
+	igMedia, err := getIGMedia(ctx, sender.Tokens, igMediaID)
+	if err != nil {
+		return "", err
+	}
+	log.Print(igMedia)
+	return igMedia.Username, nil
 }
 
 func (sender InstagramSender) SendButtonMessage(ctx context.Context, buttons []ElementButton, text string, userID string) error {
@@ -246,4 +256,60 @@ func accountToken(ctx context.Context, tokens AccountTokenReader) (string, error
 		return "", errors.New("account token is empty")
 	}
 	return token, nil
+}
+
+type IGOwner struct {
+	ID string `json:"id"`
+}
+
+type IGMedia struct {
+	// ID            string  `json:"id"`
+	// MediaType     string  `json:"media_type"`
+	// MediaURL      string  `json:"media_url"`
+	// Owner         IGOwner `json:"owner"`
+	// Timestamp     string  `json:"timestamp"`
+	Username string `json:"username"`
+	// Caption       string  `json:"caption"`
+	// CommentsCount int     `json:"comments_count"`
+	// LikeCount     int     `json:"like_count"`
+	// Permalink     string  `json:"permalink"`
+	// Shortcode     string  `json:"shortcode"`
+	// ThumbnailURL  string  `json:"thumbnail_url"`
+}
+
+func getIGMedia(ctx context.Context, tokens AccountTokenReader, igMediaID string) (IGMedia, error) {
+	token, err := accountToken(ctx, tokens)
+	if err != nil {
+		return IGMedia{}, err
+	}
+
+	url := API_URL + "/" + igMediaID
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return IGMedia{}, fmt.Errorf("create ig media request: %w", err)
+	}
+
+	q := req.URL.Query()
+	q.Add("access_token", token)
+	q.Add("fields", "username")
+	req.URL.RawQuery = q.Encode()
+
+	log.Print(req)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return IGMedia{}, fmt.Errorf("do ig media request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return IGMedia{}, fmt.Errorf("ig media API error (status %d): %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var media IGMedia
+	if err := json.NewDecoder(resp.Body).Decode(&media); err != nil {
+		return IGMedia{}, fmt.Errorf("decode ig media response: %w", err)
+	}
+
+	return media, nil
 }

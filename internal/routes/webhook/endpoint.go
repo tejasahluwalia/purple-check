@@ -68,5 +68,11 @@ func shouldRouteMessageEvent(messageEvent models.MessageEvent) bool {
 	if messageEvent.Referral != nil || messageEvent.Message.Referral != nil {
 		return true
 	}
-	return messageEvent.Postback != nil && messageEvent.Postback.Referral != nil
+	if messageEvent.Postback != nil && messageEvent.Postback.Referral != nil {
+		return true
+	}
+	if len(messageEvent.Message.Attachments) > 0 {
+		return true
+	}
+	return false
 }

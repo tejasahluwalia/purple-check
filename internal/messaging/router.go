@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/url"
 	"strconv"
 	"strings"
@@ -19,6 +20,11 @@ type Router struct {
 	MessageLogs models.MessageLogRepository
 	Sender      Sender
 	Tokens      AccountTokenReader
+}
+
+type Referral struct {
+	Receiver  string
+	GiverRole models.TransactionRole
 }
 
 func NewRouter(feedbacks models.FeedbackRepository, messageLogs models.MessageLogRepository, tokens AccountTokenReader) *Router {
@@ -36,42 +42,43 @@ func NewRouter(feedbacks models.FeedbackRepository, messageLogs models.MessageLo
 func (router *Router) RouteMessage(ctx context.Context, messageEvent models.MessageEvent) {
 	userId := messageEvent.Sender.Id
 	if userId == "" {
+		slog.Error("Sender ID does not exist, this should never happen.")
 		return
 	}
 
 	// Send mark_seen and typing_on to acknowledge the user's message.
-	logSend(router.sendSenderAction(ctx, "mark_seen", userId))
-	logSend(router.sendSenderAction(ctx, "typing_on", userId))
+	router.sendSenderAction(ctx, "mark_seen", userId)
+	router.sendSenderAction(ctx, "typing_on", userId)
 	defer func() {
-		logSend(router.sendSenderAction(ctx, "typing_off", userId))
+		router.sendSenderAction(ctx, "typing_off", userId)
 	}()
 
 	message := strings.TrimSpace(messageEvent.Message.Text)
 	payload := getPayload(messageEvent)
 	ref := getReferral(messageEvent)
+	attachments := messageEvent.Message.Attachments
 
 	state := getUserConversationState(userId)
-	if ref != "" {
-		username := helpers.NormalizeUsername(ref)
+	if ref != nil {
+		username := helpers.NormalizeUsername(ref.Receiver)
 		if err := helpers.ValidateUsername(username); err != nil {
 			log.Printf("Ignoring invalid referral %q for user %s", ref, userId)
-			ref = ""
 		} else {
-			state = ConversationState{Stage: stageStart, TargetUser: username, CurrentUser: state.CurrentUser}
+			state = ConversationState{Stage: stageAwaitingRating, TargetUser: username, CurrentUser: state.CurrentUser, Role: ref.GiverRole}
 			setUserConversationState(userId, state)
-			ref = username
+			router.beginRatingFlow(ctx, userId, ref.Receiver)
+			return
 		}
+	}
+
+	if len(attachments) > 0 {
+		getUsernameFromAttachment(router.sender(), ctx, attachments)
 	}
 
 	if router.MessageLogs != nil {
-		if err := router.MessageLogs.Insert(ctx, userId, message+payload+ref, state.Stage); err != nil {
+		if err := router.MessageLogs.Insert(ctx, userId, fmt.Sprintf(message, payload, ref), state.Stage); err != nil {
 			log.Printf("Failed to log message: %v", err)
 		}
-	}
-
-	if ref != "" {
-		router.beginRatingFlow(ctx, userId, ref)
-		return
 	}
 
 	if payload == payloadSearch || payload == payloadLink {
@@ -295,17 +302,31 @@ func getPayload(messageEvent models.MessageEvent) string {
 	return messageEvent.Message.Quick_reply.Payload
 }
 
-func getReferral(messageEvent models.MessageEvent) string {
+func getReferral(messageEvent models.MessageEvent) *Referral {
 	if messageEvent.Referral != nil {
-		return messageEvent.Referral.Ref
+		return parseReferralParameter(messageEvent.Referral.Ref)
 	}
 	if messageEvent.Message.Referral != nil {
-		return messageEvent.Message.Referral.Ref
+		return parseReferralParameter(messageEvent.Message.Referral.Ref)
 	}
 	if messageEvent.Postback != nil && messageEvent.Postback.Referral != nil {
-		return messageEvent.Postback.Referral.Ref
+		return parseReferralParameter(messageEvent.Postback.Referral.Ref)
+	}
+	return nil
+}
+
+func getUsernameFromAttachment(sender Sender, ctx context.Context, attachments []models.Attachment) string {
+	for _, attachment := range attachments {
+		username, err := sender.UsernameFromMedia(ctx, attachment.Payload.IGPostMediaID)
+		log.Print(username, err)
 	}
 	return ""
+}
+
+// Referral parameter is a string in the form receiver=<receiver_username>-giver_role=<giver_role>
+func parseReferralParameter(ref string) *Referral {
+	log.Print(ref)
+	return nil
 }
 
 func parseRatePayload(payload string) (string, error) {

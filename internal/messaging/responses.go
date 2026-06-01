@@ -25,7 +25,7 @@ func (router *Router) askForRating(ctx context.Context, usernameToRate string, u
 }
 
 func (router *Router) askForUsernameToSearch(ctx context.Context, userId string) error {
-	return router.sendTextMessage(ctx, "Please enter the username (with '@' symbol) of the page you want to check. (e.g. @purplecheck_org)", userId)
+	return router.sendTextMessage(ctx, "Please enter the username of the page to search \n(e.g. @purplecheck_org)", userId)
 }
 
 func (router *Router) invalidResponseMessage(ctx context.Context, userId string) error {

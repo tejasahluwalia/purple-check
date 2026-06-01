@@ -9,18 +9,13 @@ type MessageEvent struct {
 	} `json:"recipient"`
 	Timestamp int `json:"timestamp"`
 	Message   struct {
-		Mid            string `json:"mid"`
-		Text           string `json:"text"`
-		Is_echo        bool   `json:"is_echo"`
-		Is_deleted     bool   `json:"is_deleted"`
-		Is_unsupported bool   `json:"is_unsupported"`
-		Attachments    []struct {
-			Type    string `json:"type"`
-			Payload struct {
-				url string
-			} `json:"payload"`
-		} `json:"attachments"`
-		Quick_reply struct {
+		Mid            string       `json:"mid"`
+		Text           string       `json:"text"`
+		Is_echo        bool         `json:"is_echo"`
+		Is_deleted     bool         `json:"is_deleted"`
+		Is_unsupported bool         `json:"is_unsupported"`
+		Attachments    []Attachment `json:"attachments"`
+		Quick_reply    struct {
 			Payload string `json:"payload"`
 		} `json:"quick_reply"`
 		Referral *Referral `json:"referral,omitempty"`
@@ -48,6 +43,15 @@ type MessageEvent struct {
 		Mid string `json:"mid"`
 	} `json:"read"`
 	Referral *Referral `json:"referral,omitempty"`
+}
+
+type Attachment struct {
+	Type    string `json:"type"`
+	Payload struct {
+		IGPostMediaID string `json:"ig_post_media_id"`
+		Title         string `json:"title"`
+		Url           string
+	} `json:"payload"`
 }
 
 type Referral struct {
