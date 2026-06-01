@@ -40,7 +40,7 @@ templ SearchBox() {
         const button = document.getElementById('search-button');
         const errorMessage = document.getElementById('error-message');
 
-        function validateInstagramUsername(username) {
+        function isInstagramUsernameValid(username) {
             // Remove a leading @ if present
             username = username.startsWith('@') ? username.slice(1) : username;
 
@@ -63,21 +63,24 @@ templ SearchBox() {
             );
         }
 
-        input.addEventListener('input', function(e) {
-            const username = input.value.trim();
+        function validateForm() {
+          const username = input.value.trim();
 
-            if (!validateInstagramUsername(username)) {
-                errorMessage.textContent = 'Please enter a valid Instagram username (3-30 characters, letters, numbers, periods, or underscores only).';
-                errorMessage.classList.remove('hidden');
-                input.classList.remove('ring-slate-300');
-                input.classList.add('ring-red-500');
-                button.disabled = true;
-            } else {
-                errorMessage.classList.add('hidden');
-                input.classList.remove('ring-red-500');
-                input.classList.add('ring-slate-300');
-                button.disabled = false;
-            }
-        });
+          if (!isInstagramUsernameValid(username)) {
+              errorMessage.textContent = 'Please enter a valid Instagram username (3-30 characters, letters, numbers, periods, or underscores only).';
+              errorMessage.classList.remove('hidden');
+              input.classList.remove('ring-slate-300');
+              input.classList.add('ring-red-500');
+              button.disabled = true;
+          } else {
+              errorMessage.classList.add('hidden');
+              input.classList.remove('ring-red-500');
+              input.classList.add('ring-slate-300');
+              button.disabled = false;
+          }
+        }
+
+        input.addEventListener('input', validateForm);
+        document.addEventListener('DOMContentLoaded', validateForm)
     </script>
 }
