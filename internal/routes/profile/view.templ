@@ -1,8 +1,11 @@
 package profile
 
 import (
+	"fmt"
 	"net/url"
+	"purple-check/internal/components"
 	"purple-check/internal/components/button"
+	"purple-check/internal/components/icon"
 	"purple-check/internal/models"
 )
 
@@ -20,11 +23,16 @@ templ View(vm ViewModel) {
 			feedbackURL := "https://ig.me/m/purplecheck_org?" + refValues.Encode()
 		}}
 		<div class="flex items-center gap-4">
-			<h1 class="text-2xl font-bold bg-primary text-primary-foreground px-3 py-2 rounded-lg break-all text-wrap flex">{ "@" + username }</h1>
+			<h1 class="text-xl font-bold bg-primary text-primary-foreground px-3 py-2 rounded-lg break-all text-wrap flex">{ "@" + username }</h1>
 			<a target="_blank" aria-label="Link to the user's Instagram profile" rel="noreferrer" href={ templ.URL(instagramURL) }>
 				<img class="h-12 w-12 p-3 dark:hidden" src="/static/Instagram_Glyph_Black.svg" alt="The Instagram logo"/>
 				<img class="h-12 w-12 p-3 hidden dark:flex" src="/static/Instagram_Glyph_White.svg" alt="The Instagram logo"/>
 			</a>
+			<div class={ tw.Merge("text-xl flex gap-2 ml-auto items-center px-3 py-2 rounded-lg", tw.IfElse(vm.ReceiverStats.Score > 0.5, "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200")) }>
+				{{ starIcon := icon.Props{Class: "size-4"} }}
+				@icon.Star(starIcon)
+				{ fmt.Sprintf("%.0f / 100", vm.ReceiverStats.Score * 100) }
+			</div>
 		</div>
 		<div class="flex justify-center my-8">
 			{{

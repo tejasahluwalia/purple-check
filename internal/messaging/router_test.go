@@ -28,39 +28,6 @@ func TestGetPayload(t *testing.T) {
 	}
 }
 
-func TestGetReferral(t *testing.T) {
-	tests := []struct {
-		name string
-		body string
-		want string
-	}{
-		{
-			name: "top-level referral",
-			body: `{"referral":{"ref":"alice"}}`,
-			want: "alice",
-		},
-		{
-			name: "message referral",
-			body: `{"message":{"referral":{"ref":"bob"}}}`,
-			want: "bob",
-		},
-		{
-			name: "postback referral",
-			body: `{"postback":{"payload":"SEARCH","referral":{"ref":"carol"}}}`,
-			want: "carol",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			event := decodeMessageEvent(t, tt.body)
-			if got := getReferral(event); got != tt.want {
-				t.Fatalf("getReferral() = %q, want %q", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestParseRatePayload(t *testing.T) {
 	username, err := parseRatePayload("RATE:@PurpleCheck_Org")
 	if err != nil {

@@ -225,13 +225,20 @@ func (router *Router) searchForUserAndRespond(ctx context.Context, usernameToSea
 	}
 
 	totalRatings := len(feedbackList)
-	positiveRatings := 0
+	var positiveCount, negativeCount, mixedCount int
 	for _, feedback := range feedbackList {
 		if feedback.Rating == models.PositiveFeedback {
-			positiveRatings++
+			positiveCount += 1
+		}
+		if feedback.Rating == models.NegativeFeedback {
+			negativeCount += 1
+		}
+		if feedback.Rating == models.MixedFeedback {
+			mixedCount += 1
 		}
 	}
 
+	score := models.CalculateScore(positiveCount, mixedCount, negativeCount)
 	buttons := []ElementButton{
 		{
 			Type:  "web_url",
@@ -253,12 +260,11 @@ func (router *Router) searchForUserAndRespond(ctx context.Context, usernameToSea
 	if totalRatings == 0 {
 		return router.sendButtonMessage(ctx, buttons, "No ratings found for @"+usernameToSearch, userId)
 	}
-	positivePercentage := (float64(positiveRatings) / float64(totalRatings)) * 100
 	ratingPlural := "ratings"
 	if totalRatings == 1 {
 		ratingPlural = "rating"
 	}
-	text := "@" + usernameToSearch + "\n\n" + strconv.FormatFloat(positivePercentage, 'f', 0, 64) + "% positive (" + strconv.Itoa(totalRatings) + " " + ratingPlural + ")"
+	text := fmt.Sprintf("@%s\n\nScore: %s/100 (%d %s)", usernameToSearch, strconv.FormatFloat(score*100, 'f', 0, 64), totalRatings, ratingPlural)
 	return router.sendButtonMessage(ctx, buttons, text, userId)
 }
 
